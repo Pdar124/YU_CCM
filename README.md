@@ -63,7 +63,38 @@
 | **v1.20** | 03/28 | **위치 예측 및 동선 분석(Path Analysis) 로직 통합 (Current)** |
 
 ---
+## 📝 Commit Message Convention
 
+본 프로젝트는 일관된 커밋 기록을 위해 **Conventional Commits** 스타일을 따릅니다.
+
+### 📌 Format
+
+```bash
+type: message
+type(scope): message
+```
+
+### ✨ Commit Types
+
+| Type     | Description                                      |
+|----------|--------------------------------------------------|
+| feat     | 새로운 기능 추가                                 |
+| fix      | 버그 수정                                        |
+| docs     | 문서 수정 (README 등)                            |
+| style    | 코드 스타일 변경 (공백, 세미콜론 등, 로직 변화 없음) |
+| refactor | 코드 리팩토링 (기능 변화 없음)                   |
+| test     | 테스트 코드 추가/수정                            |
+| chore    | 빌드, 설정, 패키지 관련 작업                    |
+| sync     | 로컬/원격 구조 동기화                           |
+| init     | 초기 설정                                       |
+
+#### 💡 examples
+- feat: add real-time map feature
+- fix: correct file structure issue
+- docs: update README with project details
+- refactor: rename core folder to CAMPUS_CAT_MATE
+- sync: match local file structure with remote repository
+---
 ## 👤 Author
 
 * **Name:** 박다래 (Darae Park)
