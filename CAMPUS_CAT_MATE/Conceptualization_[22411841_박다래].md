@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img src="./src/images/CCM_LOGO.jpeg" width="80%" alt="Campus Cat Mate Logo">
+  <img src="./src/images/LOGO.png">
 </p>
 
 **Project Title:** 캠퍼스 냥이 메이트 (Campus Cat Mate)
