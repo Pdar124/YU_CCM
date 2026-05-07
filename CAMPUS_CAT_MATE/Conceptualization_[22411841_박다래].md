@@ -3,7 +3,7 @@
 
 <img width="300" height="300" alt="Logo_Image" src="https://github.com/user-attachments/assets/d16ac81e-b9c0-491a-a371-f0545958a865" />
 
-**Project Title:** 캠퍼스 냥이 메이트 (Campus Cat Mate)
+**Project Title:** CCM (Campus Cat Mate)
 
 **Student No:** 22411841
 
@@ -18,11 +18,6 @@
 | Revision date | Version | Description | Author |
 | :--- | :--- | :--- | :--- |
 | 03/27/2026 | **1.00** | First Draft | 박다래 |
-| 03/27/2026 | **1.10** | Refined Actor Roles (Student, Caregiver, Admin) | 박다래 |
-| 03/28/2026 | **1.11** | Refined diagrams and glossary| 박다래 |
-| 03/28/2026 | **1.12** | Added Real-time Map features and refined documentation| 박다래 |
-| 03/28/2026 | **1.13** | Refined project logo | 박다래 |
-| 03/28/2026 | **1.20** |Integrated Predictive Location & Path Analysis Logic | 박다래 |
 
 ---
 
