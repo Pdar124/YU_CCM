@@ -1,7 +1,7 @@
 # 🐱 Campus Cat Mate (CCM)
 > **캠퍼스 길고양이와 인간의 건강한 공존을 위한 지능형 위치 예측 및 돌봄 네트워크**
 
-<img width="300" height="300" alt="Image" src="https://github.com/user-attachments/assets/d16ac81e-b9c0-491a-a371-f0545958a865" />
+<img width="300" height="300" alt="Logo_Image" src="https://github.com/user-attachments/assets/d16ac81e-b9c0-491a-a371-f0545958a865" />
 
 ![Version](https://img.shields.io/badge/version-1.20-blue)
 ![Platform](https://img.shields.io/badge/platform-Mobile%20Web-orange)
