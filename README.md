@@ -3,7 +3,7 @@
 
 <img width="300" height="300" alt="Logo_Image" src="https://github.com/user-attachments/assets/d16ac81e-b9c0-491a-a371-f0545958a865" />
 
-![Version](https://img.shields.io/badge/version-1.1-blue)
+![Version](https://img.shields.io/badge/version-1.00-blue)
 ![Platform](https://img.shields.io/badge/platform-Mobile%20Web-orange)
 
 **Campus Cat Mate**는 파편화된 캠퍼스 고양이 정보를 통합하여 실시간 위치 예측, 예상 동선 분석, 그리고 체계적인 건강 관리를 제공하는 **생태 기반 지능형 시스템**입니다.
