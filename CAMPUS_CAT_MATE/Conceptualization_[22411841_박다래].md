@@ -125,6 +125,9 @@ graph LR
 | 7 | **History View** | All | 위키 내용의 과거 수정 이력을 조회하여 데이터의 신뢰성을 확인하고 악의적인 수정을 모니터링한다. |
 | 8 | **Real-time Map View** | All | 최근 제보 데이터와 <font color="blue">최근 제보 가중치(Recency Weight)</font>가 적용된 고양이별 실시간 예상 위치를 지도상에서 확인한다. |
 | 9 | **Path Analysis View** | Student, Caregiver | 시간대별 루틴에 따라 고양이가 이동할 가능성이 높은 <font color="blue">예상 동선(Predicted Path)</font> 분석 결과를 확인한다.
+| 10 | **Permission Management** | Admin | 돌보미 신청 내역 검토 및 권한 부여/승인|
+| 11 | **Caregiver Mode Switch**| Caregiver| 학생 모드와 돌보미 전용 UI 모드 간 전환|
+| 12 |	**Caregiver Application** | Student, Caregiver |일반 학생이 고양이 돌봄 활동에 참여하기 위해 돌보미 권한을 관리자에게 신청하거나 돌보미가 고양이 추가를 위해 신청한다. |
 ---
 
 ## 4. Concept of operation
