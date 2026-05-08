@@ -18,6 +18,7 @@
 | Revision date | Version | Description | Author |
 | :--- | :--- | :--- | :--- |
 | 03/27/2026 | **1.00** | First Draft | 박다래 |
+| 05/08/2026 | **1.01** | Draft Revise (add use case) | 박다래 |
 
 ---
 
