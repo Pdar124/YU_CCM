@@ -6,13 +6,13 @@ function CatList({ cats, onCatClick }) {
       <div>
         <h2 className="text-lg font-bold text-slate-900 mb-2">🐾 우리 동네 고양이들</h2>
         <p className="text-sm text-slate-400 mb-6">캠퍼스를 누비는 길냥이들의 실시간 위치와 위키 정보를 확인해 보세요.</p>
-        
+
         <div className="space-y-3 overflow-y-auto max-h-[400px] pr-1">
           {cats.map((cat) => (
-            <div 
-              key={cat.id} 
+            <div
+              key={cat.id}
               className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition-colors cursor-pointer"
-              onClick={() => onCatClick(cat.lat, cat.lng)}
+              onClick={() => onCatClick(cat)}
             >
               <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-lg">
                 {cat.icon || '🐈'}

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 function ReportModal({ isOpen, onClose, onSubmit, lat, lng }) {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
+  const [bio, setBio] = useState(''); // 📝 추가
   const [icon, setIcon] = useState('🐈');
 
   if (!isOpen) return null;
@@ -14,12 +15,12 @@ function ReportModal({ isOpen, onClose, onSubmit, lat, lng }) {
       alert('고양이 이름과 출몰 위치를 입력해 주세요!');
       return;
     }
-    // 부모 컴포넌트에게 입력된 데이터 전달
-    onSubmit({ name, location, icon, lat, lng });
+    // bio 정보도 함께 제출
+    onSubmit({ name, location, bio, icon, lat, lng });
     
-    // 폼 초기화 및 닫기
     setName('');
     setLocation('');
+    setBio('');
     setIcon('🐈');
     onClose();
   };
@@ -33,7 +34,6 @@ function ReportModal({ isOpen, onClose, onSubmit, lat, lng }) {
         </div>
 
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          {/* 아이콘 선택 */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">고양이 아이콘</label>
             <div className="flex gap-2">
@@ -50,7 +50,6 @@ function ReportModal({ isOpen, onClose, onSubmit, lat, lng }) {
             </div>
           </div>
 
-          {/* 이름 입력 */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">고양이 이름 (별명)</label>
             <input
@@ -62,7 +61,6 @@ function ReportModal({ isOpen, onClose, onSubmit, lat, lng }) {
             />
           </div>
 
-          {/* 주요 출몰지 입력 */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">주요 출몰 위치</label>
             <input
@@ -74,27 +72,26 @@ function ReportModal({ isOpen, onClose, onSubmit, lat, lng }) {
             />
           </div>
 
-          {/* 선택된 좌표 확인 (읽기 전용) */}
+          {/* 📝 특징 입력칸 추가 */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">한 줄 특징 (냥위키 기초)</label>
+            <input
+              type="text"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="예: 사람을 좋아하고 츄르를 잘 먹음"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+          </div>
+
           <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 flex gap-4 text-xs text-slate-400">
             <div><strong>위도:</strong> {lat.toFixed(4)}</div>
             <div><strong>경도:</strong> {lng.toFixed(4)}</div>
           </div>
 
-          {/* 제출 버튼 */}
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-2xl text-sm transition-colors"
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-500 hover:from-indigo-700 hover:to-violet-600 text-white font-semibold rounded-2xl text-sm shadow-md shadow-indigo-200 transition-colors"
-            >
-              등록하기
-            </button>
+            <button type="button" onClick={onClose} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-2xl text-sm transition-colors">취소</button>
+            <button type="submit" className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-500 hover:from-indigo-700 hover:to-violet-600 text-white font-semibold rounded-2xl text-sm shadow-md shadow-indigo-200 transition-colors">등록하기</button>
           </div>
         </form>
       </div>
