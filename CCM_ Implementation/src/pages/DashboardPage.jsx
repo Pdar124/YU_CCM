@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { db, auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import { collection, onSnapshot } from 'firebase/firestore';
+import { getWeather } from '../config/weather';
 
 import Header from '../components/Header';
 import CatList from '../components/cat/CatList';
@@ -15,6 +16,10 @@ function DashboardPage({ user, setUser }) {
     const markersRef = useRef([]);
     const prevCatsRef = useRef([]);
 
+    // 날씨 관련 상태
+    const [weather, setWeather] = useState(null);
+    const [weatherLoading, setWeatherLoading] = useState(true); // 이름을 명확하게 변경
+
     const [cats, setCats] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
@@ -26,22 +31,40 @@ function DashboardPage({ user, setUser }) {
         setUser(null);
     };
 
-    // cats 실시간
+    // 🌤️ 날씨 정보 가져오기 (지도의 로딩을 방해하지 않음)
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                const data = await getWeather(
+                    35.8314, // 위도
+                    128.7570 // 경도
+                );
+                setWeather(data);
+            } catch (error) {
+                console.error("날씨 정보를 가져오는 데 실패했습니다:", error);
+            } finally {
+                setWeatherLoading(false);
+
+            }
+        };
+
+        fetchWeather();
+    }, []);
+
+    // 🐱 cats 실시간 데이터 구독
     useEffect(() => {
         const unsub = onSnapshot(collection(db, 'cats'), (snapshot) => {
             setCats(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
-
         return () => unsub();
     }, []);
 
-    // ⭐ 지도 로딩 (핵심 복구 코드)
+    // 🗺️ 카카오 지도 초기화
     useEffect(() => {
         const initMap = () => {
             if (!mapContainer.current) return;
 
             const center = new window.kakao.maps.LatLng(35.8242, 128.7530);
-
             const map = new window.kakao.maps.Map(mapContainer.current, {
                 center,
                 level: 3,
@@ -56,8 +79,7 @@ function DashboardPage({ user, setUser }) {
         }
 
         const script = document.createElement('script');
-        script.src =
-            'https://dapi.kakao.com/v2/maps/sdk.js?appkey=8309e0e8095058bb527deb1918011c3c&autoload=false';
+        script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=8309e0e8095058bb527deb1918011c3c&autoload=false';
         script.async = true;
 
         script.onload = () => {
@@ -71,18 +93,18 @@ function DashboardPage({ user, setUser }) {
 
     const currentSelectedCat = cats.find(c => c.id === selectedCatId);
 
-
+    // 📍 고양이 마커 업데이트
     useEffect(() => {
         if (!mapRef.current) return;
         if (prevCatsRef.current === cats) return;
 
         prevCatsRef.current = cats;
 
-        // 1. 기존 마커 삭제
+        // 기존 마커 삭제
         markersRef.current.forEach(marker => marker.setMap(null));
         markersRef.current = [];
 
-        // 2. 새 마커 생성
+        // 새 마커 생성
         cats.forEach((cat) => {
             const position = new window.kakao.maps.LatLng(cat.lat, cat.lng);
 
@@ -99,14 +121,26 @@ function DashboardPage({ user, setUser }) {
             markersRef.current.push(marker);
         });
     }, [cats]);
+    const weatherMain = weather?.weather?.[0]?.main;
+
+    const isRain = [
+        'Rain',
+        'Drizzle',
+        'Thunderstorm'
+    ].includes(weatherMain);
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
-
-            <Header user={user} onLogout={handleLogout} />
+            {/* 💡 Header에 weather와 loading 상태를 props로 전달합니다 */}
+            <Header
+                user={user}
+                onLogout={handleLogout}
+                weather={weather}
+                weatherLoading={weatherLoading}
+                isRain={isRain}
+            />
 
             <main className="flex flex-1 gap-6 p-4">
-
                 <CatList
                     cats={cats}
                     onCatClick={(cat) => {
@@ -119,11 +153,12 @@ function DashboardPage({ user, setUser }) {
                     }}
                 />
 
-                {/* 🔥 이거 그대로 유지 (너가 준 MapContainer) */}
+                {/* 지도 컨테이너 유지 */}
                 <MapContainer ref={mapContainer} />
 
                 <CatDetail
                     cat={currentSelectedCat}
+                    isRain={isRain}
                     onClose={() => setSelectedCatId(null)}
                 />
             </main>
