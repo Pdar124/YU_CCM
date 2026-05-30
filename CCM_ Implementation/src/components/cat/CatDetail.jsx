@@ -1,7 +1,7 @@
 // src/components/CatDetail.jsx
 import React, { useState, useEffect } from 'react';
 
-function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocation, reportCount, latestReport }) {
+function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocation, reportCount, latestReport, nearestShelter }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState('');
 
@@ -57,9 +57,9 @@ function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocati
             <span className="text-2xl">{cat.icon || '🐈'}</span>
             <h2 className="text-xl font-bold text-slate-900">{cat.name}</h2>
           </div>
-          {isRain && (
-            <div className="mb-4 bg-blue-100 text-blue-700 px-3 py-2 rounded-xl text-sm font-semibold">
-              ☔ 비 피하는 중
+          {isRain && nearestShelter && (
+            <div className="mt-2 text-xs text-blue-600 font-semibold">
+              ☔ 예상 대피소: {nearestShelter.name}
             </div>
           )}
           {/* 예측 위치가 있을 때만 보여주는 영역 */}

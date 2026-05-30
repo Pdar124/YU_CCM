@@ -26,7 +26,7 @@ function DashboardPage({ user, setUser }) {
     const [weatherLoading, setWeatherLoading] = useState(true); // 이름을 명확하게 변경
 
     //비오는날 테스트
-    const isRain = false; // 실제로는 weather 데이터에서 비 오는지 여부를 판단해야 함
+    const isRain = true; // 실제로는 weather 데이터에서 비 오는지 여부를 판단해야 함
 
 
     const [cats, setCats] = useState([]);
@@ -63,6 +63,37 @@ function DashboardPage({ user, setUser }) {
 
         return weight;
     };
+    // 두 지점 간의 거리 계산 함수 (간단한 유클리드 거리)
+    const getDistance = (lat1, lng1, lat2, lng2) => {
+        const dx = lat1 - lat2;
+        const dy = lng1 - lng2;
+
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const getNearestShelter = (lat, lng) => {
+        if (shelters.length === 0) return null;
+
+        return shelters.reduce((nearest, shelter) => {
+            const currentDistance = getDistance(
+                lat,
+                lng,
+                shelter.lat,
+                shelter.lng
+            );
+
+            const nearestDistance = getDistance(
+                lat,
+                lng,
+                nearest.lat,
+                nearest.lng
+            );
+
+            return currentDistance < nearestDistance
+                ? shelter
+                : nearest;
+        });
+    };
     // 고양이 ID에 따른 예측 위치 계산 함수
     const getPredictedLocation = (catId) => {
         const catReports =
@@ -94,7 +125,11 @@ function DashboardPage({ user, setUser }) {
         const predictedLat = weightedLat / totalWeight;
         const predictedLng = weightedLng / totalWeight;
         // 비 오는 날에는 보호소 위치도 고려 
-        const nearestShelter = shelters[0]; // 간단히 첫 번째 보호소를 사용 (개선 가능)
+
+        const nearestShelter = getNearestShelter(
+            predictedLat,
+            predictedLng
+        );
 
         if (isRain && nearestShelter) {
             return {
@@ -227,19 +262,26 @@ function DashboardPage({ user, setUser }) {
         ).length;
     // 현재 선택된 고양이에 대한 최신 신고 정보 계산
     const latestReport =
-    reports
-        .filter(
-            report =>
-                report.catId === currentSelectedCat?.id
+        reports
+            .filter(
+                report =>
+                    report.catId === currentSelectedCat?.id
+            )
+            .sort(
+                (a, b) =>
+                    b.createdAt.seconds -
+                    a.createdAt.seconds
+            )[0];
+    // 예측 위치에서 가장 가까운 보호소 계산
+    const nearestShelter =
+    predictedLocation
+        ? getNearestShelter(
+            predictedLocation.lat,
+            predictedLocation.lng
         )
-        .sort(
-            (a, b) =>
-                b.createdAt.seconds -
-                a.createdAt.seconds
-        )[0];
+        : null;
 
-    
-    
+
 
     // 디버깅용 로그
     useEffect(() => {
@@ -454,6 +496,7 @@ function DashboardPage({ user, setUser }) {
                     predictedLocation={predictedLocation}
                     reportCount={reportCount}
                     latestReport={latestReport}
+                    nearestShelter={nearestShelter}
                     onClose={() => setSelectedCatId(null)}
                 />
             </main>
