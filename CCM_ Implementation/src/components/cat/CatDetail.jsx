@@ -1,7 +1,7 @@
 // src/components/CatDetail.jsx
 import React, { useState, useEffect } from 'react';
 
-function CatDetail({ cat, onClose, onUpdateCat, isRain }) {
+function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocation }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState('');
 
@@ -36,6 +36,24 @@ function CatDetail({ cat, onClose, onUpdateCat, isRain }) {
           {isRain && (
             <div className="mb-4 bg-blue-100 text-blue-700 px-3 py-2 rounded-xl text-sm font-semibold">
               ☔ 비 피하는 중
+            </div>
+          )}
+          {/* 예측 위치가 있을 때만 보여주는 영역 */}
+          {predictedLocation && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-4">
+              <div className="font-semibold text-emerald-700">
+                📍 예측 위치
+              </div>
+
+              <div className="text-sm mt-1">
+                위도:
+                {predictedLocation.lat.toFixed(4)}
+              </div>
+
+              <div className="text-sm">
+                경도:
+                {predictedLocation.lng.toFixed(4)}
+              </div>
             </div>
           )}
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>

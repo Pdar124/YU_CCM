@@ -11,6 +11,7 @@ import ReportModal from '../components/modal/ReportModal';
 import CatDetail from '../components/cat/CatDetail';
 
 function DashboardPage({ user, setUser }) {
+    const [reports, setReports] = useState([]); // 신고 데이터 상태 추가
     const [mapReady, setMapReady] = useState(false); // 지도 로딩 상태 추가
     const mapContainer = useRef(null);
     const mapRef = useRef(null);
@@ -38,6 +39,55 @@ function DashboardPage({ user, setUser }) {
         await signOut(auth);
         setUser(null);
     };
+
+    // 신고의 최신성 가중치 계산 함수 <<Recency Weight 함수>>
+    const getRecencyWeight = (timestamp) => {
+        if (!timestamp) return 0;
+
+        const reportTime =
+            timestamp.toDate().getTime();
+
+        const hoursAgo =
+            (Date.now() - reportTime) /
+            (1000 * 60 * 60);
+
+        return Math.exp(-0.1 * hoursAgo);
+    };
+    // 고양이 ID에 따른 예측 위치 계산 함수
+    const getPredictedLocation = (catId) => {
+        const catReports =
+            reports.filter(
+                report => report.catId === catId
+            );
+
+        if (catReports.length === 0)
+            return null;
+
+        let weightedLat = 0;
+        let weightedLng = 0;
+        let totalWeight = 0;
+
+        catReports.forEach(report => {
+            const weight =
+                getRecencyWeight(
+                    report.createdAt
+                );
+
+            weightedLat +=
+                report.lat * weight;
+
+            weightedLng +=
+                report.lng * weight;
+
+            totalWeight += weight;
+        });
+
+        return {
+            lat: weightedLat / totalWeight,
+            lng: weightedLng / totalWeight
+        };
+    };
+    
 
     // 🌤️ 날씨 정보 가져오기 (지도의 로딩을 방해하지 않음)
     useEffect(() => {
@@ -87,6 +137,23 @@ function DashboardPage({ user, setUser }) {
         return () => unsub();
     }, []);
 
+    // 📝 reports 실시간 데이터 구독
+    useEffect(() => {
+        const unsub = onSnapshot(
+            collection(db, 'reports'),
+            (snapshot) => {
+                setReports(
+                    snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }))
+                );
+            }
+        );
+
+        return () => unsub();
+    }, []);
+
     // 🗺️ 카카오 지도 초기화
     useEffect(() => {
         const initMap = () => {
@@ -121,6 +188,13 @@ function DashboardPage({ user, setUser }) {
     }, []);
 
     const currentSelectedCat = cats.find(c => c.id === selectedCatId);
+    // 현재 선택된 고양이의 예측 위치 계산
+    const predictedLocation =
+    currentSelectedCat
+        ? getPredictedLocation(
+              currentSelectedCat.id
+          )
+        : null;
 
     // 📍 고양이 마커 업데이트
     useEffect(() => {
@@ -248,6 +322,7 @@ function DashboardPage({ user, setUser }) {
                 <CatDetail
                     cat={currentSelectedCat}
                     isRain={isRain}
+                    predictedLocation={predictedLocation}
                     onClose={() => setSelectedCatId(null)}
                 />
             </main>
