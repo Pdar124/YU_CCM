@@ -17,6 +17,7 @@ function DashboardPage({ user, setUser }) {
     const mapRef = useRef(null);
     const markersRef = useRef([]);
     const prevCatsRef = useRef([]);
+    const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
 
@@ -25,7 +26,7 @@ function DashboardPage({ user, setUser }) {
     const [weatherLoading, setWeatherLoading] = useState(true); // 이름을 명확하게 변경
 
     //비오는날 테스트
-    const isRain = false;
+    const isRain = false; // 실제로는 weather 데이터에서 비 오는지 여부를 판단해야 함
 
 
     const [cats, setCats] = useState([]);
@@ -219,6 +220,26 @@ function DashboardPage({ user, setUser }) {
                 currentSelectedCat.id
             )
             : null;
+    // 현재 선택된 고양이에 대한 신고 건수 계산
+    const reportCount =
+        reports.filter(
+            report => report.catId === currentSelectedCat?.id
+        ).length;
+    // 현재 선택된 고양이에 대한 최신 신고 정보 계산
+    const latestReport =
+    reports
+        .filter(
+            report =>
+                report.catId === currentSelectedCat?.id
+        )
+        .sort(
+            (a, b) =>
+                b.createdAt.seconds -
+                a.createdAt.seconds
+        )[0];
+
+    
+    
 
     // 디버깅용 로그
     useEffect(() => {
@@ -268,6 +289,9 @@ function DashboardPage({ user, setUser }) {
 
         if (predictedMarkerRef.current) {
             predictedMarkerRef.current.setMap(null);
+        }
+        if (predictedCircleRef.current) {
+            predictedCircleRef.current.setMap(null);
         }
 
         const position =
@@ -327,6 +351,7 @@ function DashboardPage({ user, setUser }) {
 
 
         predictedMarkerRef.current = marker;
+        predictedCircleRef.current = circle;
 
     }, [predictedLocation, mapReady]);
 
@@ -427,6 +452,8 @@ function DashboardPage({ user, setUser }) {
                     cat={currentSelectedCat}
                     isRain={isRain}
                     predictedLocation={predictedLocation}
+                    reportCount={reportCount}
+                    latestReport={latestReport}
                     onClose={() => setSelectedCatId(null)}
                 />
             </main>

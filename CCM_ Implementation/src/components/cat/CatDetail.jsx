@@ -1,7 +1,7 @@
 // src/components/CatDetail.jsx
 import React, { useState, useEffect } from 'react';
 
-function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocation }) {
+function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocation, reportCount, latestReport }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState('');
 
@@ -23,6 +23,30 @@ function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocati
     const nextStatus = cat.lastFed === '밥 가득함 🍗' ? '배고픔 🐾' : '밥 가득함 🍗';
     onUpdateCat(cat.id, { lastFed: nextStatus });
   };
+  const getMinutesAgo = (timestamp) => {
+    if (!timestamp) return null;
+
+    const minutes =
+      Math.floor(
+        (Date.now() -
+          timestamp.toDate().getTime()) /
+        (1000 * 60)
+      );
+
+    if (minutes < 60)
+      return `${minutes}분 전`;
+
+    const hours =
+      Math.floor(minutes / 60);
+
+    if (hours < 24)
+      return `${hours}시간 전`;
+
+    const days =
+      Math.floor(hours / 24);
+
+    return `${days}일 전`;
+  };
 
   return (
     <div className="w-full md:w-80 bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col justify-between shrink-0 animate-in slide-in-from-right-5 duration-200">
@@ -42,13 +66,29 @@ function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocati
           {predictedLocation && (
             <div className="mt-4 p-3 bg-indigo-50 rounded-xl">
               <div className="font-bold">
-                📍 예측 출몰 위치
+                📍 AI 예측 출몰 위치
               </div>
+
               <div className="text-sm">
                 위도: {predictedLocation.lat.toFixed(5)}
               </div>
+
               <div className="text-sm">
                 경도: {predictedLocation.lng.toFixed(5)}
+              </div>
+              <div className="mt-2 text-xs text-slate-500">
+                최근 {reportCount}건의 제보를 기반으로 예측했습니다.
+                {latestReport && (
+                  <div className="mt-1 text-xs text-slate-500">
+                    🕒 최근 제보:
+                    {getMinutesAgo(latestReport.createdAt)}
+                  </div>
+                )}
+                {isRain && (
+                  <div>
+                    ☔ 우천 시 보호소 위치를 추가 반영합니다.
+                  </div>
+                )}
               </div>
             </div>
           )}
