@@ -42,7 +42,9 @@ function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocati
           {predictedLocation && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-4">
               <div className="font-semibold text-emerald-700">
-                📍 예측 위치
+                📍 예측 위치 활성화
+                <br />
+                최근 제보 + 날씨 데이터 반영
               </div>
 
               <div className="text-sm mt-1">

@@ -18,6 +18,7 @@ function DashboardPage({ user, setUser }) {
     const markersRef = useRef([]);
     const prevCatsRef = useRef([]);
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
+    const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
 
     // 날씨 관련 상태
     const [weather, setWeather] = useState(null);
@@ -81,13 +82,28 @@ function DashboardPage({ user, setUser }) {
 
             totalWeight += weight;
         });
+        const predictedLat = weightedLat / totalWeight;
+        const predictedLng = weightedLng / totalWeight;
+        // 비 오는 날에는 보호소 위치도 고려 
+        const nearestShelter = shelters[0]; // 간단히 첫 번째 보호소를 사용 (개선 가능)
 
+        if (isRain && nearestShelter) {
+            return {
+                lat:
+                    weightedLat / totalWeight * 0.7 +
+                    nearestShelter.lat * 0.3,
+
+                lng:
+                    weightedLng / totalWeight * 0.7 +
+                    nearestShelter.lng * 0.3
+            };
+        }
         return {
-            lat: weightedLat / totalWeight,
-            lng: weightedLng / totalWeight
+            lat: predictedLat,
+            lng: predictedLng
         };
     };
-    
+
 
     // 🌤️ 날씨 정보 가져오기 (지도의 로딩을 방해하지 않음)
     useEffect(() => {
@@ -190,11 +206,18 @@ function DashboardPage({ user, setUser }) {
     const currentSelectedCat = cats.find(c => c.id === selectedCatId);
     // 현재 선택된 고양이의 예측 위치 계산
     const predictedLocation =
-    currentSelectedCat
-        ? getPredictedLocation(
-              currentSelectedCat.id
-          )
-        : null;
+        currentSelectedCat
+            ? getPredictedLocation(
+                currentSelectedCat.id
+            )
+            : null;
+
+    // 디버깅용 로그
+    useEffect(() => {
+        console.log("reports:", reports);
+        console.log("selectedCat:", currentSelectedCat);
+        console.log("predictedLocation:", predictedLocation);
+    }, [reports, currentSelectedCat, predictedLocation]);
 
     // 📍 고양이 마커 업데이트
     useEffect(() => {
@@ -225,6 +248,70 @@ function DashboardPage({ user, setUser }) {
         });
     }, [cats]);
     const weatherMain = weather?.weather?.[0]?.main;
+
+    // 📍 예측 위치 마커 업데이트
+    useEffect(() => {
+        console.log("예측마커 실행");
+        console.log("mapRef:", mapRef.current);
+        console.log("predictedLocation:", predictedLocation);
+
+        if (!mapRef.current) return;
+        if (!predictedLocation) return;
+
+        if (predictedMarkerRef.current) {
+            predictedMarkerRef.current.setMap(null);
+        }
+
+        const position =
+            new window.kakao.maps.LatLng(
+                predictedLocation.lat,
+                predictedLocation.lng
+            );
+
+        // 예측 위치 마커는 고양이 마커와는 다른 아이콘으로 표시
+        const imageSrc =
+            'https://cdn-icons-png.flaticon.com/512/1828/1828884.png';
+
+        const imageSize =
+            new window.kakao.maps.Size(32, 32);
+
+        const markerImage =
+            new window.kakao.maps.MarkerImage(
+                imageSrc,
+                imageSize
+            );
+
+        const marker = new window.kakao.maps.Marker({
+            map: mapRef.current,
+            position,
+            image: markerImage
+        });
+        mapRef.current.panTo(position);
+
+        const infowindow =
+            new window.kakao.maps.InfoWindow({
+                content: `
+            <div style="padding:8px;">
+                📍 Recency Weight 예측 위치
+            </div>
+        `
+            });
+
+        window.kakao.maps.event.addListener(
+            marker,
+            'click',
+            () => {
+                infowindow.open(
+                    mapRef.current,
+                    marker
+                );
+            }
+        );
+
+
+        predictedMarkerRef.current = marker;
+
+    }, [predictedLocation, mapReady]);
 
     // ☔ 비 오는 날 보호소 마커 업데이트
     useEffect(() => {
