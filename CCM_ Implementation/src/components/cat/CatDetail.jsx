@@ -1,7 +1,7 @@
 // src/components/CatDetail.jsx
 import React, { useState, useEffect } from 'react';
 
-function CatDetail({ cat, onClose, onUpdateCat }) {
+function CatDetail({ cat, onClose, onUpdateCat, isRain, Shelter, predictedLocation, reportCount, latestReport, nearestShelter }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState('');
 
@@ -23,6 +23,30 @@ function CatDetail({ cat, onClose, onUpdateCat }) {
     const nextStatus = cat.lastFed === '밥 가득함 🍗' ? '배고픔 🐾' : '밥 가득함 🍗';
     onUpdateCat(cat.id, { lastFed: nextStatus });
   };
+  const getMinutesAgo = (timestamp) => {
+    if (!timestamp) return null;
+
+    const minutes =
+      Math.floor(
+        (Date.now() -
+          timestamp.toDate().getTime()) /
+        (1000 * 60)
+      );
+
+    if (minutes < 60)
+      return `${minutes}분 전`;
+
+    const hours =
+      Math.floor(minutes / 60);
+
+    if (hours < 24)
+      return `${hours}시간 전`;
+
+    const days =
+      Math.floor(hours / 24);
+
+    return `${days}일 전`;
+  };
 
   return (
     <div className="w-full md:w-80 bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col justify-between shrink-0 animate-in slide-in-from-right-5 duration-200">
@@ -33,6 +57,41 @@ function CatDetail({ cat, onClose, onUpdateCat }) {
             <span className="text-2xl">{cat.icon || '🐈'}</span>
             <h2 className="text-xl font-bold text-slate-900">{cat.name}</h2>
           </div>
+          {isRain && nearestShelter && (
+            <div className="mt-2 text-xs text-blue-600 font-semibold">
+              ☔ 예상 대피소: {nearestShelter.name}
+            </div>
+          )}
+          {/* 예측 위치가 있을 때만 보여주는 영역 */}
+          {predictedLocation && (
+            <div className="mt-4 p-3 bg-indigo-50 rounded-xl">
+              <div className="font-bold">
+                📍 AI 예측 출몰 위치
+              </div>
+
+              <div className="text-sm">
+                위도: {predictedLocation.lat.toFixed(5)}
+              </div>
+
+              <div className="text-sm">
+                경도: {predictedLocation.lng.toFixed(5)}
+              </div>
+              <div className="mt-2 text-xs text-slate-500">
+                최근 {reportCount}건의 제보를 기반으로 예측했습니다.
+                {latestReport && (
+                  <div className="mt-1 text-xs text-slate-500">
+                    🕒 최근 제보:
+                    {getMinutesAgo(latestReport.createdAt)}
+                  </div>
+                )}
+                {isRain && (
+                  <div>
+                    ☔ 우천 시 보호소 위치를 추가 반영합니다.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
 
@@ -42,11 +101,10 @@ function CatDetail({ cat, onClose, onUpdateCat }) {
           <div className="text-lg font-black text-slate-800 mb-3">{cat.lastFed || '정보 없음 ❓'}</div>
           <button
             onClick={toggleFeeding}
-            className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${
-              cat.lastFed === '밥 가득함 🍗'
-                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'
-            }`}
+            className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${cat.lastFed === '밥 가득함 🍗'
+              ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+              : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'
+              }`}
           >
             {cat.catName} {cat.lastFed === '밥 가득함 🍗' ? '🔄 배고픈 상태로 변경' : '🍖 사료 챙겨줬음!'}
           </button>
