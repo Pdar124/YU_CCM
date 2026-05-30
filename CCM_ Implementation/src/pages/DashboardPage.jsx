@@ -25,7 +25,7 @@ function DashboardPage({ user, setUser }) {
     const [weatherLoading, setWeatherLoading] = useState(true); // 이름을 명확하게 변경
 
     //비오는날 테스트
-    const isRain = true;
+    const isRain = false;
 
 
     const [cats, setCats] = useState([]);
@@ -52,7 +52,15 @@ function DashboardPage({ user, setUser }) {
             (Date.now() - reportTime) /
             (1000 * 60 * 60);
 
-        return Math.exp(-0.1 * hoursAgo);
+        let weight =
+            Math.exp(-0.1 * hoursAgo);
+
+        // 1시간 이내의 신고는 가중치를 2배로 높여서 최근 신고에 더 큰 영향을 주도록 함
+        if (hoursAgo <= 1) {
+            weight *= 2;
+        }//
+
+        return weight;
     };
     // 고양이 ID에 따른 예측 위치 계산 함수
     const getPredictedLocation = (catId) => {
@@ -285,6 +293,15 @@ function DashboardPage({ user, setUser }) {
             map: mapRef.current,
             position,
             image: markerImage
+        });
+
+        const circle = new window.kakao.maps.Circle({
+            center: position,
+            radius: 50,
+            strokeWeight: 2,
+            strokeOpacity: 0.8,
+            fillOpacity: 0.2,
+            map: mapRef.current
         });
         mapRef.current.panTo(position);
 
