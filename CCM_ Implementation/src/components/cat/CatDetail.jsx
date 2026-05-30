@@ -34,8 +34,8 @@ function CatDetail({ cat, onClose, onUpdateCat, isRain }) {
             <h2 className="text-xl font-bold text-slate-900">{cat.name}</h2>
           </div>
           {isRain && (
-            <div className="mt-3 mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-xl text-sm">
-              ☔ 비를 피하고 있을 가능성이 높습니다
+            <div className="mb-4 bg-blue-100 text-blue-700 px-3 py-2 rounded-xl text-sm font-semibold">
+              ☔ 비 피하는 중
             </div>
           )}
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
@@ -48,8 +48,8 @@ function CatDetail({ cat, onClose, onUpdateCat, isRain }) {
           <button
             onClick={toggleFeeding}
             className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${cat.lastFed === '밥 가득함 🍗'
-                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'
+              ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+              : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'
               }`}
           >
             {cat.catName} {cat.lastFed === '밥 가득함 🍗' ? '🔄 배고픈 상태로 변경' : '🍖 사료 챙겨줬음!'}

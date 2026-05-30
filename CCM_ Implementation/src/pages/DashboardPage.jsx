@@ -11,20 +11,28 @@ import ReportModal from '../components/modal/ReportModal';
 import CatDetail from '../components/cat/CatDetail';
 
 function DashboardPage({ user, setUser }) {
+    const [mapReady, setMapReady] = useState(false); // 지도 로딩 상태 추가
     const mapContainer = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef([]);
     const prevCatsRef = useRef([]);
+    const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
 
     // 날씨 관련 상태
     const [weather, setWeather] = useState(null);
     const [weatherLoading, setWeatherLoading] = useState(true); // 이름을 명확하게 변경
+
+    //비오는날 테스트
+    const isRain = true;
+
 
     const [cats, setCats] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
 
+    // 보호소 데이터 상태 추가
+    const [shelters, setShelters] = useState([]);
     // 로그아웃
     const handleLogout = async () => {
         await signOut(auth);
@@ -59,6 +67,26 @@ function DashboardPage({ user, setUser }) {
         return () => unsub();
     }, []);
 
+    // 🏠 shelters 실시간 데이터 구독
+    useEffect(() => {
+        const unsub = onSnapshot(
+            collection(db, 'shelters'),
+            (snapshot) => {
+
+                const data = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log("shelters 데이터:", data);
+
+                setShelters(data);
+            }
+        );
+
+        return () => unsub();
+    }, []);
+
     // 🗺️ 카카오 지도 초기화
     useEffect(() => {
         const initMap = () => {
@@ -71,6 +99,7 @@ function DashboardPage({ user, setUser }) {
             });
 
             mapRef.current = map;
+            setMapReady(true);
         };
 
         if (window.kakao && window.kakao.maps) {
@@ -123,11 +152,71 @@ function DashboardPage({ user, setUser }) {
     }, [cats]);
     const weatherMain = weather?.weather?.[0]?.main;
 
-    const isRain = [
-        'Rain',
-        'Drizzle',
-        'Thunderstorm'
-    ].includes(weatherMain);
+    // ☔ 비 오는 날 보호소 마커 업데이트
+    useEffect(() => {
+        if (!mapRef.current) return;
+
+        console.log('shelters:', shelters);
+        console.log('isRain:', isRain);
+
+        shelterMarkersRef.current.forEach(marker =>
+            marker.setMap(null)
+        );
+
+        shelterMarkersRef.current = [];
+
+        if (!isRain) return;
+
+        const imageSrc =
+            'https://cdn-icons-png.flaticon.com/512/3313/3313888.png';
+
+        const imageSize =
+            new window.kakao.maps.Size(36, 36);
+
+        const markerImage =
+            new window.kakao.maps.MarkerImage(
+                imageSrc,
+                imageSize
+            );
+
+        shelters.forEach((shelter) => {
+            const marker = new window.kakao.maps.Marker({
+                map: mapRef.current,
+                position: new window.kakao.maps.LatLng(
+                    shelter.lat,
+                    shelter.lng
+                ),
+                image: markerImage
+            });
+
+            const infowindow =
+                new window.kakao.maps.InfoWindow({
+                    content: `
+                <div style="padding:8px;">
+                    ☔ ${shelter.name}
+                </div>
+            `
+                });
+
+            window.kakao.maps.event.addListener(
+                marker,
+                'click',
+                () => {
+                    console.log('보호소 클릭!');
+
+                    infowindow.open(
+                        mapRef.current,
+                        marker
+                    );
+                }
+            );
+
+            shelterMarkersRef.current.push(marker);
+        });
+
+    }, [shelters, isRain, mapReady]);
+
+
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
