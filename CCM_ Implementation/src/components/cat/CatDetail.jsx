@@ -4,6 +4,7 @@ import React from 'react';
 function CatDetail({
   cat,
   onClose,
+  onReport,
   isRain,
   predictedLocation,
   reportCount,
@@ -97,11 +98,14 @@ function CatDetail({
           상세 보기
         </button>
 
-        <button className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 text-sm font-bold">
+        <button
+          onClick={() => onReport(cat)}
+          className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 text-sm font-bold"
+        >
           제보하기
         </button>
-      </div>
     </div>
+    </div >
   );
 }
 

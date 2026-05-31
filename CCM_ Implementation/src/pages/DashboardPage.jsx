@@ -195,6 +195,19 @@ function DashboardPage({ user, setUser }) {
         };
     };
 
+    const handleReportClick = (cat) => {
+        setSelectedCatId(cat.id);
+
+        const latestReport = getLatestReport(cat.id);
+
+        setClickedCoords({
+            lat: latestReport?.lat || cat.lat,
+            lng: latestReport?.lng || cat.lng
+        });
+
+        setIsModalOpen(true);
+    };
+
 
     // 🌤️ 날씨 정보 가져오기 (지도의 로딩을 방해하지 않음)
     useEffect(() => {
@@ -626,6 +639,7 @@ function DashboardPage({ user, setUser }) {
                         latestReport={latestReport}
                         nearestShelter={nearestShelter}
                         onClose={() => setSelectedCatId(null)}
+                        onReport={handleReportClick}
                     />
                 </main>
                 <BottomNavigation />
@@ -635,8 +649,9 @@ function DashboardPage({ user, setUser }) {
                     onClose={() => setIsModalOpen(false)}
                     cats={cats}
                     clickedCoords={clickedCoords}
+                    selectedCatId={selectedCatId}
                     onSubmit={handleAddReport}
-                />
+                />ƒ
 
             </div>
         </div>
