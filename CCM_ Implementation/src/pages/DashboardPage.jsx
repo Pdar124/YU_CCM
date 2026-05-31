@@ -6,6 +6,11 @@ import {
     addDoc,
     serverTimestamp
 } from 'firebase/firestore';
+import { getNearestShelter } from '../utils/distance';
+import {
+    getLatestReport,
+    getPredictedLocation
+} from '../utils/prediction';
 import { getWeather } from '../config/weather';
 
 import useCats from '../hooks/useCats';
@@ -63,131 +68,11 @@ function DashboardPage({ user, setUser }) {
         }
     };
 
-    // 신고의 최신성 가중치 계산 함수 <<Recency Weight 함수>>
-    const getRecencyWeight = (timestamp) => {
-        if (!timestamp) return 0;
-
-        const reportTime =
-            timestamp.toDate().getTime();
-
-        const hoursAgo =
-            (Date.now() - reportTime) /
-            (1000 * 60 * 60);
-
-        let weight =
-            Math.exp(-0.1 * hoursAgo);
-
-        // 1시간 이내의 신고는 가중치를 2배로 높여서 최근 신고에 더 큰 영향을 주도록 함
-        if (hoursAgo <= 1) {
-            weight *= 2;
-        }//
-
-        return weight;
-    };
-    // 두 지점 간의 거리 계산 함수 (간단한 유클리드 거리)
-    const getDistance = (lat1, lng1, lat2, lng2) => {
-        const dx = lat1 - lat2;
-        const dy = lng1 - lng2;
-
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    const getNearestShelter = (lat, lng) => {
-        if (shelters.length === 0) return null;
-
-        return shelters.reduce((nearest, shelter) => {
-            const currentDistance = getDistance(
-                lat,
-                lng,
-                shelter.lat,
-                shelter.lng
-            );
-
-            const nearestDistance = getDistance(
-                lat,
-                lng,
-                nearest.lat,
-                nearest.lng
-            );
-
-            return currentDistance < nearestDistance
-                ? shelter
-                : nearest;
-        });
-    };
-    // 고양이 ID에 따른 최신 신고 정보 계산 함수
-    const getLatestReport = (catId) => {
-        const catReports = reports
-            .filter(
-                report => report.catId === catId
-            )
-            .sort(
-                (a, b) =>
-                    b.createdAt?.toMillis() -
-                    a.createdAt?.toMillis()
-            );
-
-        return catReports[0];
-    };
-    // 고양이 ID에 따른 예측 위치 계산 함수
-    const getPredictedLocation = (catId) => {
-
-        const catReports =
-            reports.filter(
-                report => report.catId === catId
-            );
-
-        if (catReports.length === 0)
-            return null;
-
-        let weightedLat = 0;
-        let weightedLng = 0;
-        let totalWeight = 0;
-
-        catReports.forEach(report => {
-            const weight =
-                getRecencyWeight(
-                    report.createdAt
-                );
-
-            weightedLat +=
-                report.lat * weight;
-
-            weightedLng +=
-                report.lng * weight;
-
-            totalWeight += weight;
-        });
-        const predictedLat = weightedLat / totalWeight;
-        const predictedLng = weightedLng / totalWeight;
-        // 비 오는 날에는 보호소 위치도 고려 
-
-        const nearestShelter = getNearestShelter(
-            predictedLat,
-            predictedLng
-        );
-
-        if (isRain && nearestShelter) {
-            return {
-                lat:
-                    weightedLat / totalWeight * 0.7 +
-                    nearestShelter.lat * 0.3,
-
-                lng:
-                    weightedLng / totalWeight * 0.7 +
-                    nearestShelter.lng * 0.3
-            };
-        }
-        return {
-            lat: predictedLat,
-            lng: predictedLng
-        };
-    };
 
     const handleReportClick = (cat) => {
         setSelectedCatId(cat.id);
 
-        const latestReport = getLatestReport(cat.id);
+        const latestReport = getLatestReport(cat.id, reports);
 
         setClickedCoords({
             lat: latestReport?.lat || cat.lat,
@@ -256,9 +141,12 @@ function DashboardPage({ user, setUser }) {
     // 현재 선택된 고양이의 예측 위치 계산
     const predictedLocation =
         currentSelectedCat
-            ? getPredictedLocation(
-                currentSelectedCat.id
-            )
+            ? getPredictedLocation({
+                catId: currentSelectedCat.id,
+                reports,
+                shelters,
+                isRain
+            })
             : null;
     // 현재 선택된 고양이에 대한 신고 건수 계산
     const reportCount =
@@ -282,12 +170,10 @@ function DashboardPage({ user, setUser }) {
         predictedLocation
             ? getNearestShelter(
                 predictedLocation.lat,
-                predictedLocation.lng
+                predictedLocation.lng,
+                shelters
             )
             : null;
-
-
-
     // 디버깅용 로그
     useEffect(() => {
         console.log("reports:", reports);
@@ -307,7 +193,7 @@ function DashboardPage({ user, setUser }) {
         // 새 마커 생성
         cats.forEach((cat) => {
             const latestReport =
-                getLatestReport(cat.id);
+                getLatestReport(cat.id, reports);
 
             const position =
                 latestReport
@@ -542,7 +428,7 @@ function DashboardPage({ user, setUser }) {
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);
 
-                        const latestReport = getLatestReport(cat.id);
+                        const latestReport = getLatestReport(cat.id, reports);
 
                         const position = latestReport
                             ? new window.kakao.maps.LatLng(latestReport.lat, latestReport.lng)
