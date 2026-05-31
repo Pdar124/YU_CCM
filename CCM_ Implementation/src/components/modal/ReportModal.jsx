@@ -1,32 +1,38 @@
 // src/components/modal/ReportModal.jsx
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 
 function ReportModal({
   isOpen,
   onClose,
   onSubmit,
   cats,
-  clickedCoords
+  clickedCoords,
+  selectedCatId
 }) {
-  const [selectedCatId, setSelectedCatId] = useState('');
+  const [selectedReportCatId, setSelectedReportCatId] = useState('');
   const [memo, setMemo] = useState('');
+
+  useEffect(() => {
+    setSelectedReportCatId(selectedCatId || '');
+  }, [selectedCatId, isOpen]);
 
   if (!isOpen) return null;
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    if (!selectedCatId) {
+    if (!selectedReportCatId) {
       alert('제보할 고양이를 선택해 주세요!');
       return;
     }
 
     onSubmit({
-      catId: selectedCatId,
+      catId: selectedReportCatId,
       memo
     });
 
-    setSelectedCatId('');
+    setSelectedReportCatId('');
     setMemo('');
   };
 
@@ -52,8 +58,8 @@ function ReportModal({
             </label>
 
             <select
-              value={selectedCatId}
-              onChange={(e) => setSelectedCatId(e.target.value)}
+              value={selectedReportCatId}
+              onChange={(e)=> setSelectedReportCatId(e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
             >
               <option value="">고양이를 선택해 주세요</option>
