@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { db, auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -10,7 +10,7 @@ import {
     getLatestReport
 } from '../utils/prediction';
 
-
+import useKakaoMap from '../hooks/useKakaoMap';
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
 import useShelters from '../hooks/useShelters';
@@ -29,9 +29,7 @@ function DashboardPage({ user, setUser }) {
     const { shelters } = useShelters();
     const { weather, weatherLoading, isRain } = useWeather();
 
-    const [mapReady, setMapReady] = useState(false); // 지도 로딩 상태 추가
-    const mapContainer = useRef(null);
-    const mapRef = useRef(null);
+
     const markersRef = useRef([]);
     const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
@@ -43,6 +41,19 @@ function DashboardPage({ user, setUser }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
+
+    const handleMapClick = useCallback(({ lat, lng }) => {
+        setClickedCoords({ lat, lng });
+        setIsModalOpen(true);
+    }, []);
+
+    const {
+        mapContainer,
+        mapRef,
+        mapReady
+    } = useKakaoMap({
+        onMapClick: handleMapClick
+    });
 
     // 로그아웃
     const handleLogout = async () => {
@@ -79,62 +90,13 @@ function DashboardPage({ user, setUser }) {
         setIsModalOpen(true);
     };
 
-    // 🗺️ 카카오 지도 초기화
-    useEffect(() => {
-        const initMap = () => {
-            if (!mapContainer.current) return;
-
-            const center = new window.kakao.maps.LatLng(35.8242, 128.7530);
-            const map = new window.kakao.maps.Map(mapContainer.current, {
-                center,
-                level: 3,
-            });
-
-            mapRef.current = map;
-            setMapReady(true);
-
-            // 지도 클릭 이벤트 등록
-            window.kakao.maps.event.addListener(
-                map,
-                'click',
-                (mouseEvent) => {
-                    const latlng = mouseEvent.latLng;
-
-                    setClickedCoords({
-                        lat: latlng.getLat(),
-                        lng: latlng.getLng()
-                    });
-
-                    setIsModalOpen(true);
-                }
-            );
-        };
-
-        if (window.kakao && window.kakao.maps) {
-            initMap();
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=8309e0e8095058bb527deb1918011c3c&autoload=false';
-        script.async = true;
-
-        script.onload = () => {
-            window.kakao.maps.load(() => {
-                initMap();
-            });
-        };
-
-        document.head.appendChild(script);
-    }, []);
-
     const filteredCats = cats.filter((cat) =>
         cat.name
             ?.toLowerCase()
             .includes(searchKeyword.toLowerCase())
     );
-    const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter} 
-    = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
+    const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter }
+        = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
 
     // 디버깅용 로그
     useEffect(() => {
@@ -154,6 +116,9 @@ function DashboardPage({ user, setUser }) {
 
         // 새 마커 생성
         cats.forEach((cat) => {
+            console.log('mapRef', mapRef.current);
+            console.log('mapReady', mapReady);
+
             const latestReport =
                 getLatestReport(cat.id, reports);
 
