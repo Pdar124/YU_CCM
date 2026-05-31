@@ -3,11 +3,14 @@ import { db, auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import {
     collection,
-    onSnapshot,
     addDoc,
     serverTimestamp
 } from 'firebase/firestore';
 import { getWeather } from '../config/weather';
+
+import useCats from '../hooks/useCats';
+import useReports from '../hooks/useReports';
+import useShelters from '../hooks/useShelters';
 
 import Header from '../components/Header';
 import CatList from '../components/cat/CatList';
@@ -17,7 +20,11 @@ import CatDetail from '../components/cat/CatDetail';
 import BottomNavigation from '../components/navigation/BottomNavigation';
 
 function DashboardPage({ user, setUser }) {
-    const [reports, setReports] = useState([]); // 신고 데이터 상태 추가
+    const { cats } = useCats();
+    const { reports } = useReports();
+    const { shelters } = useShelters();
+
+
     const [mapReady, setMapReady] = useState(false); // 지도 로딩 상태 추가
     const mapContainer = useRef(null);
     const mapRef = useRef(null);
@@ -45,14 +52,12 @@ function DashboardPage({ user, setUser }) {
     //비오는날 테스트
     // const isRain = true; 
 
-    const [cats, setCats] = useState([]);
+
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
 
-    // 보호소 데이터 상태 추가
-    const [shelters, setShelters] = useState([]);
     // 로그아웃
     const handleLogout = async () => {
         await signOut(auth);
@@ -227,51 +232,6 @@ function DashboardPage({ user, setUser }) {
         };
 
         fetchWeather();
-    }, []);
-
-    // 🐱 cats 실시간 데이터 구독
-    useEffect(() => {
-        const unsub = onSnapshot(collection(db, 'cats'), (snapshot) => {
-            setCats(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-        return () => unsub();
-    }, []);
-
-    // 🏠 shelters 실시간 데이터 구독
-    useEffect(() => {
-        const unsub = onSnapshot(
-            collection(db, 'shelters'),
-            (snapshot) => {
-
-                const data = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-
-                console.log("shelters 데이터:", data);
-
-                setShelters(data);
-            }
-        );
-
-        return () => unsub();
-    }, []);
-
-    // 📝 reports 실시간 데이터 구독
-    useEffect(() => {
-        const unsub = onSnapshot(
-            collection(db, 'reports'),
-            (snapshot) => {
-                setReports(
-                    snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }))
-                );
-            }
-        );
-
-        return () => unsub();
     }, []);
 
     // 🗺️ 카카오 지도 초기화

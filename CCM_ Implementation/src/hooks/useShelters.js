@@ -1,17 +1,17 @@
-// src/hooks/useCats.js
+// src/hooks/useShelters.js
 
 import { useEffect, useState } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
-export default function useCats() {
-  const [cats, setCats] = useState([]);
+export default function useShelters() {
+  const [shelters, setShelters] = useState([]);
 
   useEffect(() => {
     const unsub = onSnapshot(
-      collection(db, 'cats'),
+      collection(db, 'shelters'),
       (snapshot) => {
-        setCats(
+        setShelters(
           snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data()
@@ -23,5 +23,5 @@ export default function useCats() {
     return () => unsub();
   }, []);
 
-  return { cats };
+  return { shelters };
 }
