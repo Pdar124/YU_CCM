@@ -10,6 +10,7 @@ import {
     getLatestReport
 } from '../utils/prediction';
 
+import PredictedMarker from '../components/map/PredictedMarker';
 import CatMarkers from '../components/map/CatMarkers';
 import useKakaoMap from '../hooks/useKakaoMap';
 import useCats from '../hooks/useCats';
@@ -104,85 +105,6 @@ function DashboardPage({ user, setUser }) {
         console.log("selectedCat:", currentSelectedCat);
         console.log("predictedLocation:", predictedLocation);
     }, [reports, currentSelectedCat, predictedLocation]);
-
-
-
-    // 📍 예측 위치 마커 업데이트
-    useEffect(() => {
-        console.log("예측마커 실행");
-        console.log("mapRef:", mapRef.current);
-        console.log("predictedLocation:", predictedLocation);
-
-        if (!mapRef.current) return;
-        if (!predictedLocation) return;
-
-        if (predictedMarkerRef.current) {
-            predictedMarkerRef.current.setMap(null);
-        }
-        if (predictedCircleRef.current) {
-            predictedCircleRef.current.setMap(null);
-        }
-
-        const position =
-            new window.kakao.maps.LatLng(
-                predictedLocation.lat,
-                predictedLocation.lng
-            );
-
-        // 예측 위치 마커는 고양이 마커와는 다른 아이콘으로 표시
-        const imageSrc =
-            'https://cdn-icons-png.flaticon.com/512/1828/1828884.png';
-
-        const imageSize =
-            new window.kakao.maps.Size(32, 32);
-
-        const markerImage =
-            new window.kakao.maps.MarkerImage(
-                imageSrc,
-                imageSize
-            );
-
-        const marker = new window.kakao.maps.Marker({
-            map: mapRef.current,
-            position,
-            image: markerImage
-        });
-
-        const circle = new window.kakao.maps.Circle({
-            center: position,
-            radius: 50,
-            strokeWeight: 2,
-            strokeOpacity: 0.8,
-            fillOpacity: 0.2,
-            map: mapRef.current
-        });
-        mapRef.current.panTo(position);
-
-        const infowindow =
-            new window.kakao.maps.InfoWindow({
-                content: `
-            <div style="padding:8px;">
-                📍 Recency Weight 예측 위치
-            </div>
-        `
-            });
-
-        window.kakao.maps.event.addListener(
-            marker,
-            'click',
-            () => {
-                infowindow.open(
-                    mapRef.current,
-                    marker
-                );
-            }
-        );
-
-
-        predictedMarkerRef.current = marker;
-        predictedCircleRef.current = circle;
-
-    }, [predictedLocation, mapReady]);
 
     // 🛣️ 고양이 이동 경로(Polyline) 표시
     useEffect(() => {
@@ -333,6 +255,10 @@ function DashboardPage({ user, setUser }) {
                             setSelectedCatId(cat.id);
                             mapRef.current?.panTo(position);
                         }}
+                    />
+                    <PredictedMarker
+                        mapRef={mapRef}
+                        predictedLocation={predictedLocation}
                     />
 
                     <CatDetail
