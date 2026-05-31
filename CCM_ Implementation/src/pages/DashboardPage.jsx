@@ -14,6 +14,7 @@ import CatList from '../components/cat/CatList';
 import MapContainer from '../components/map/MapContainer';
 import ReportModal from '../components/modal/ReportModal';
 import CatDetail from '../components/cat/CatDetail';
+import BottomNavigation from '../components/navigation/BottomNavigation';
 
 function DashboardPage({ user, setUser }) {
     const [reports, setReports] = useState([]); // 신고 데이터 상태 추가
@@ -580,51 +581,55 @@ function DashboardPage({ user, setUser }) {
 
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
-            {/* 💡 Header에 weather와 loading 상태를 props로 전달합니다 */}
-            <Header
-                user={user}
-                onLogout={handleLogout}
-                weather={weather}
-                weatherLoading={weatherLoading}
-                isRain={isRain}
-            />
+        <div className="min-h-screen bg-slate-100 flex justify-center">
+            <div className="w-full max-w-md min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
 
-            <main className="flex flex-1 gap-6 p-4">
-                <CatList
+                {/* 💡 Header에 weather와 loading 상태를 props로 전달합니다 */}
+                <Header
+                    user={user}
+                    onLogout={handleLogout}
+                    weather={weather}
+                    weatherLoading={weatherLoading}
+                    isRain={isRain}
                     cats={cats}
+                    selectedCatId={selectedCatId}
+                    latestReport={latestReport}
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);
-                        if (mapRef.current) {
-                            mapRef.current.panTo(
-                                new window.kakao.maps.LatLng(cat.lat, cat.lng)
-                            );
-                        }
+
+                        const latestReport = getLatestReport(cat.id);
+
+                        const position = latestReport
+                            ? new window.kakao.maps.LatLng(latestReport.lat, latestReport.lng)
+                            : new window.kakao.maps.LatLng(cat.lat, cat.lng);
+
+                        mapRef.current?.panTo(position);
                     }}
                 />
+                <main className="relative flex-1 overflow-hidden">
+                    <MapContainer ref={mapContainer} />
 
-                {/* 지도 컨테이너 유지 */}
-                <MapContainer ref={mapContainer} />
+                    <CatDetail
+                        cat={currentSelectedCat}
+                        isRain={isRain}
+                        predictedLocation={predictedLocation}
+                        reportCount={reportCount}
+                        latestReport={latestReport}
+                        nearestShelter={nearestShelter}
+                        onClose={() => setSelectedCatId(null)}
+                    />
+                </main>
+                <BottomNavigation />
 
-                <CatDetail
-                    cat={currentSelectedCat}
-                    isRain={isRain}
-                    predictedLocation={predictedLocation}
-                    reportCount={reportCount}
-                    latestReport={latestReport}
-                    nearestShelter={nearestShelter}
-                    onClose={() => setSelectedCatId(null)}
+                <ReportModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    cats={cats}
+                    clickedCoords={clickedCoords}
+                    onSubmit={handleAddReport}
                 />
-            </main>
 
-            <ReportModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                cats={cats}
-                clickedCoords={clickedCoords}
-                onSubmit={handleAddReport}
-            />
-
+            </div>
         </div>
     );
 }
