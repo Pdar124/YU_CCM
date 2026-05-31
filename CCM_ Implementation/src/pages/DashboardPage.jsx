@@ -29,11 +29,20 @@ function DashboardPage({ user, setUser }) {
 
     // 날씨 관련 상태
     const [weather, setWeather] = useState(null);
-    const [weatherLoading, setWeatherLoading] = useState(true); // 이름을 명확하게 변경
+    const [weatherLoading, setWeatherLoading] = useState(true);
+
+    // 날씨 상태에서 비 여부 판단
+    const weatherMain =
+        weather?.weather?.[0]?.main;
+
+    const isRain = [
+        'Rain',
+        'Drizzle',
+        'Thunderstorm'
+    ].includes(weatherMain);
 
     //비오는날 테스트
-    const isRain = true; // 실제로는 weather 데이터에서 비 오는지 여부를 판단해야 함
-
+    // const isRain = true; 
 
     const [cats, setCats] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -380,7 +389,7 @@ function DashboardPage({ user, setUser }) {
             markersRef.current.push(marker);
         });
     }, [cats, reports, mapReady]);
-    const weatherMain = weather?.weather?.[0]?.main;
+
 
     // 📍 예측 위치 마커 업데이트
     useEffect(() => {
