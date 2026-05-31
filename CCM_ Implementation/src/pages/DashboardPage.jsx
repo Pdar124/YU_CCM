@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { db, auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
-import { collection, onSnapshot } from 'firebase/firestore';
+import {
+    collection,
+    onSnapshot,
+    addDoc,
+    serverTimestamp
+} from 'firebase/firestore';
 import { getWeather } from '../config/weather';
 
 import Header from '../components/Header';
@@ -20,14 +25,24 @@ function DashboardPage({ user, setUser }) {
     const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
+    const polylineRef = useRef(null); // 동선 참조 추가
 
     // 날씨 관련 상태
     const [weather, setWeather] = useState(null);
-    const [weatherLoading, setWeatherLoading] = useState(true); // 이름을 명확하게 변경
+    const [weatherLoading, setWeatherLoading] = useState(true);
+
+    // 날씨 상태에서 비 여부 판단
+    const weatherMain =
+        weather?.weather?.[0]?.main;
+
+    const isRain = [
+        'Rain',
+        'Drizzle',
+        'Thunderstorm'
+    ].includes(weatherMain);
 
     //비오는날 테스트
-    const isRain = true; // 실제로는 weather 데이터에서 비 오는지 여부를 판단해야 함
-
+    // const isRain = true; 
 
     const [cats, setCats] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,6 +55,21 @@ function DashboardPage({ user, setUser }) {
     const handleLogout = async () => {
         await signOut(auth);
         setUser(null);
+    };
+    // 신고 등록 함수
+    const handleAddReport = async (reportData) => {
+        try {
+            await addDoc(collection(db, 'reports'), {
+                catId: reportData.catId,
+                lat: clickedCoords.lat,
+                lng: clickedCoords.lng,
+                createdAt: serverTimestamp()
+            });
+
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error('제보 등록 실패:', error);
+        }
     };
 
     // 신고의 최신성 가중치 계산 함수 <<Recency Weight 함수>>
@@ -94,8 +124,23 @@ function DashboardPage({ user, setUser }) {
                 : nearest;
         });
     };
+    // 고양이 ID에 따른 최신 신고 정보 계산 함수
+    const getLatestReport = (catId) => {
+        const catReports = reports
+            .filter(
+                report => report.catId === catId
+            )
+            .sort(
+                (a, b) =>
+                    b.createdAt?.toMillis() -
+                    a.createdAt?.toMillis()
+            );
+
+        return catReports[0];
+    };
     // 고양이 ID에 따른 예측 위치 계산 함수
     const getPredictedLocation = (catId) => {
+
         const catReports =
             reports.filter(
                 report => report.catId === catId
@@ -227,6 +272,22 @@ function DashboardPage({ user, setUser }) {
 
             mapRef.current = map;
             setMapReady(true);
+
+            // 지도 클릭 이벤트 등록
+            window.kakao.maps.event.addListener(
+                map,
+                'click',
+                (mouseEvent) => {
+                    const latlng = mouseEvent.latLng;
+
+                    setClickedCoords({
+                        lat: latlng.getLat(),
+                        lng: latlng.getLng()
+                    });
+
+                    setIsModalOpen(true);
+                }
+            );
         };
 
         if (window.kakao && window.kakao.maps) {
@@ -267,19 +328,19 @@ function DashboardPage({ user, setUser }) {
                 report =>
                     report.catId === currentSelectedCat?.id
             )
-            .sort(
-                (a, b) =>
-                    b.createdAt.seconds -
-                    a.createdAt.seconds
-            )[0];
+            .sort((a, b) => {
+                const aTime = a.createdAt?.seconds ?? 0;
+                const bTime = b.createdAt?.seconds ?? 0;
+                return bTime - aTime;
+            })[0];
     // 예측 위치에서 가장 가까운 보호소 계산
     const nearestShelter =
-    predictedLocation
-        ? getNearestShelter(
-            predictedLocation.lat,
-            predictedLocation.lng
-        )
-        : null;
+        predictedLocation
+            ? getNearestShelter(
+                predictedLocation.lat,
+                predictedLocation.lng
+            )
+            : null;
 
 
 
@@ -293,9 +354,7 @@ function DashboardPage({ user, setUser }) {
     // 📍 고양이 마커 업데이트
     useEffect(() => {
         if (!mapRef.current) return;
-        if (prevCatsRef.current === cats) return;
 
-        prevCatsRef.current = cats;
 
         // 기존 마커 삭제
         markersRef.current.forEach(marker => marker.setMap(null));
@@ -303,7 +362,19 @@ function DashboardPage({ user, setUser }) {
 
         // 새 마커 생성
         cats.forEach((cat) => {
-            const position = new window.kakao.maps.LatLng(cat.lat, cat.lng);
+            const latestReport =
+                getLatestReport(cat.id);
+
+            const position =
+                latestReport
+                    ? new window.kakao.maps.LatLng(
+                        latestReport.lat,
+                        latestReport.lng
+                    )
+                    : new window.kakao.maps.LatLng(
+                        cat.lat,
+                        cat.lng
+                    );
 
             const marker = new window.kakao.maps.Marker({
                 map: mapRef.current,
@@ -317,8 +388,8 @@ function DashboardPage({ user, setUser }) {
 
             markersRef.current.push(marker);
         });
-    }, [cats]);
-    const weatherMain = weather?.weather?.[0]?.main;
+    }, [cats, reports, mapReady]);
+
 
     // 📍 예측 위치 마커 업데이트
     useEffect(() => {
@@ -396,6 +467,51 @@ function DashboardPage({ user, setUser }) {
         predictedCircleRef.current = circle;
 
     }, [predictedLocation, mapReady]);
+
+    // 🛣️ 고양이 이동 경로(Polyline) 표시
+    useEffect(() => {
+        if (!mapRef.current) return;
+        if (!currentSelectedCat) return;
+
+        const catReports = reports
+            .filter(
+                report =>
+                    report.catId === currentSelectedCat.id
+            )
+            .sort(
+                (a, b) =>
+                    a.createdAt?.toMillis() -
+                    b.createdAt?.toMillis()
+            );
+
+        if (catReports.length < 2) return;
+
+        const path = catReports.map(
+            report =>
+                new window.kakao.maps.LatLng(
+                    report.lat,
+                    report.lng
+                )
+        );
+
+        if (polylineRef.current) {
+            polylineRef.current.setMap(null);
+        }
+
+        const polyline =
+            new window.kakao.maps.Polyline({
+                path,
+                strokeWeight: 4,
+                strokeColor: '#6366F1',
+                strokeOpacity: 0.8,
+                strokeStyle: 'dashed'
+            });
+
+        polyline.setMap(mapRef.current);
+
+        polylineRef.current = polyline;
+
+    }, [reports, currentSelectedCat]);
 
     // ☔ 비 오는 날 보호소 마커 업데이트
     useEffect(() => {
@@ -504,7 +620,11 @@ function DashboardPage({ user, setUser }) {
             <ReportModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                cats={cats}
+                clickedCoords={clickedCoords}
+                onSubmit={handleAddReport}
             />
+
         </div>
     );
 }
