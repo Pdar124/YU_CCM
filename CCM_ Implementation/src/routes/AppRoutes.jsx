@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
+import SignupPage from '../pages/SignupPage';
 import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
 
@@ -35,6 +36,12 @@ function AppRoutes() {
         path="/login"
         element={
           user ? <Navigate to="/" /> : <LoginPage setUser={setUser} />
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          user ? <Navigate to="/" /> : <SignupPage setUser={setUser} />
         }
       />
 

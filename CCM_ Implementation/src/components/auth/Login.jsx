@@ -1,14 +1,16 @@
 // src/components/auth/Login.jsx
 import React, { useState } from 'react';
-import { auth } from '../../config/firebase.js'; 
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../config/firebase.js';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 function Login({ onLoginSuccess, onGuestLogin }) {
   const [studentId, setStudentId] = useState(''); // 💡 이메일 대신 학번 상태 사용
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isSignUpMode, setIsSignUpMode] = useState(false);
+
+  const navigate = useNavigate();
 
   // 💡 고정으로 사용할 학교 이메일 도메인
   const SCHOOL_DOMAIN = '@yu.ac.kr';
@@ -27,7 +29,7 @@ function Login({ onLoginSuccess, onGuestLogin }) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, emailFormat, password);
       const user = userCredential.user;
-      
+
       console.log("로그인 성공:", studentId);
       // App.jsx에는 깔끔하게 도메인을 뗀 '학번'만 넘겨서 화면에 띄우기 좋게 합니다.
       onLoginSuccess({ id: studentId, role: 'member', uid: user.uid });
@@ -41,55 +43,22 @@ function Login({ onLoginSuccess, onGuestLogin }) {
     }
   };
 
-  // [경로 C] 신규 사용자 가입 처리
-  const handleSignUpSubmit = async (e) => {
-    e.preventDefault();
-    if (!studentId.trim() || !password.trim()) {
-      alert('학번과 비밀번호를 입력해주세요!');
-      return;
-    }
-    if (password.length < 6) {
-      alert('비밀번호는 최소 6자리 이상이어야 합니다.');
-      return;
-    }
-
-    // 💡 가입할 때도 자동으로 도메인을 붙여서 가입 요청
-    const emailFormat = `${studentId.trim()}${SCHOOL_DOMAIN}`;
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, emailFormat, password);
-      const user = userCredential.user;
-      
-      alert(`CCM의 정식 메이트가 되신 것을 환영합니다! 🎉`);
-      onLoginSuccess({ id: studentId, role: 'member', uid: user.uid });
-    } catch (error) {
-      console.error("회원가입 에러:", error.code);
-      if (error.code === 'auth/email-already-in-use') {
-        alert('이미 가입된 학번입니다.');
-      } else if (error.code === 'auth/invalid-email') {
-        alert('학번 형식이 올바르지 않습니다. 숫자만 입력해 주세요.');
-      } else {
-        alert('회원가입 중 오류가 발생했습니다.');
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md border border-slate-200">
-        
+
         {/* 서비스 로고 및 타이틀 */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🐾</div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Campus Cat Mate</h1>
           <p className="text-sm text-slate-500 mt-1">
-            {isSignUpMode ? '새로운 메이트 학번 등록' : '우리 캠퍼스 고양이들을 함께 돌봐요'}
+            우리 캠퍼스 고양이들을 함께 돌봐요
           </p>
         </div>
 
         {/* 1.1 인증 정보 입력 영역 */}
-        <form onSubmit={isSignUpMode ? handleSignUpSubmit : handleLoginSubmit} className="space-y-4">
-          
+        <form onSubmit={handleLoginSubmit} className="space-y-4">
+
           {/* 학번 입력란 (인풋 뒤에 학교 도메인을 시각적으로 표시해 주면 훨씬 친절합니다!) */}
           <div className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500">
             <span className="pl-3 text-slate-400">
@@ -138,67 +107,62 @@ function Login({ onLoginSuccess, onGuestLogin }) {
             </button>
           </div>
 
-          {!isSignUpMode && (
-            <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 accent-emerald-600"
-                />
-                로그인 상태 유지
-              </label>
-              <button type="button" onClick={() => alert('학과 사무실이나 관리자에게 문의해 주세요.')} className="hover:underline">
-                비밀번호 찾기
-              </button>
-            </div>
-          )}
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 accent-emerald-600"
+              />
+              로그인 상태 유지
+            </label>
+
+            <button
+              type="button"
+              onClick={() => alert('학과 사무실이나 관리자에게 문의해 주세요.')}
+              className="hover:underline"
+            >
+              비밀번호 찾기
+            </button>
+          </div>
 
           <button
             type="submit"
             className="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm"
           >
-            {isSignUpMode ? '회원가입 완료하기' : '로그인'}
+            로그인
           </button>
         </form>
 
-        {/* 하단 옵션 영역 */}
-        {!isSignUpMode ? (
-          <>
-            <div className="my-6 border-t border-slate-100 relative">
-              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs text-slate-400">또는</span>
-            </div>
+        <div className="my-6 border-t border-slate-100 relative">
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs text-slate-400">또는</span>
+        </div>
 
-            <div 
-              onClick={onGuestLogin}
-              className="border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 p-4 rounded-xl cursor-pointer transition text-left group"
-            >
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                  로그인 없이 이용
-                </span>
-                <span className="text-slate-400 group-hover:translate-x-0.5 transition-transform text-sm">➔</span>
-              </div>
-              <h3 className="text-sm font-bold text-slate-700">조회 전용 모드로 시작</h3>
-              <p className="text-xs text-slate-500 mt-0.5">지도 조회 및 고양이의 기본 정보 확인만 가능합니다.</p>
-            </div>
-
-            <div className="text-center mt-8 text-xs text-slate-500">
-              아직 계정이 없으신가요?{' '}
-              <button onClick={() => setIsSignUpMode(true)} className="text-emerald-600 font-bold hover:underline">
-                회원가입 &gt;
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="text-center mt-6 text-xs text-slate-500">
-            이미 계정이 있으신가요?{' '}
-            <button onClick={() => setIsSignUpMode(false)} className="text-emerald-600 font-bold hover:underline">
-              로그인으로 돌아가기
-            </button>
+        <div
+          onClick={onGuestLogin}
+          className="border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 p-4 rounded-xl cursor-pointer transition text-left group"
+        >
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+              로그인 없이 이용
+            </span>
+            <span className="text-slate-400 group-hover:translate-x-0.5 transition-transform text-sm">➔</span>
           </div>
-        )}
+          <h3 className="text-sm font-bold text-slate-700">조회 전용 모드로 시작</h3>
+          <p className="text-xs text-slate-500 mt-0.5">지도 조회 및 고양이의 기본 정보 확인만 가능합니다.</p>
+        </div>
+
+        <div className="text-center mt-8 text-xs text-slate-500">
+          아직 계정이 없으신가요?{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/signup')}
+            className="text-emerald-600 font-bold hover:underline"
+          >
+            회원가입 &gt;
+          </button>
+        </div>
 
       </div>
     </div>
