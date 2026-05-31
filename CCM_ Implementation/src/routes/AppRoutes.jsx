@@ -3,8 +3,13 @@ import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
+import SignupCompletePage from '../pages/SignupCompletePage';
+import SignupTermsPage from '../pages/SignupTermsPages';
+import SignupProfilePage from '../pages/SignupProfilePage';
+import SignupPage from '../pages/SignupPage';
 import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
+
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
@@ -36,6 +41,28 @@ function AppRoutes() {
         element={
           user ? <Navigate to="/" /> : <LoginPage setUser={setUser} />
         }
+      />
+      <Route
+        path="/signup"
+        element={
+          user ? <Navigate to="/" /> : <SignupPage setUser={setUser} />
+        }
+      />
+      <Route path="/signup" element={<SignupPage />} />
+
+      <Route
+        path="/signup/profile"
+        element={<SignupProfilePage />}
+      />
+
+      <Route
+        path="/signup/terms"
+        element={<SignupTermsPage />}
+      />
+
+      <Route
+        path="/signup/complete"
+        element={<SignupCompletePage />}
       />
 
       <Route

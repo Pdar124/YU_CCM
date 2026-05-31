@@ -294,7 +294,7 @@ function DashboardPage({ user, setUser }) {
             new window.kakao.maps.Polyline({
                 path,
                 strokeWeight: 4,
-                strokeColor: '#6366F1',
+                strokeColor: '#7ED957',
                 strokeOpacity: 0.8,
                 strokeStyle: 'dashed'
             });
