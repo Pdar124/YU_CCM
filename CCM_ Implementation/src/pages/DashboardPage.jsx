@@ -10,6 +10,7 @@ import {
     getLatestReport
 } from '../utils/prediction';
 
+import CatMarkers from '../components/map/CatMarkers';
 import useKakaoMap from '../hooks/useKakaoMap';
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
@@ -30,7 +31,6 @@ function DashboardPage({ user, setUser }) {
     const { weather, weatherLoading, isRain } = useWeather();
 
 
-    const markersRef = useRef([]);
     const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
@@ -105,47 +105,6 @@ function DashboardPage({ user, setUser }) {
         console.log("predictedLocation:", predictedLocation);
     }, [reports, currentSelectedCat, predictedLocation]);
 
-    // 📍 고양이 마커 업데이트
-    useEffect(() => {
-        if (!mapRef.current) return;
-
-
-        // 기존 마커 삭제
-        markersRef.current.forEach(marker => marker.setMap(null));
-        markersRef.current = [];
-
-        // 새 마커 생성
-        cats.forEach((cat) => {
-            console.log('mapRef', mapRef.current);
-            console.log('mapReady', mapReady);
-
-            const latestReport =
-                getLatestReport(cat.id, reports);
-
-            const position =
-                latestReport
-                    ? new window.kakao.maps.LatLng(
-                        latestReport.lat,
-                        latestReport.lng
-                    )
-                    : new window.kakao.maps.LatLng(
-                        cat.lat,
-                        cat.lng
-                    );
-
-            const marker = new window.kakao.maps.Marker({
-                map: mapRef.current,
-                position,
-            });
-
-            window.kakao.maps.event.addListener(marker, 'click', () => {
-                setSelectedCatId(cat.id);
-                mapRef.current.panTo(position);
-            });
-
-            markersRef.current.push(marker);
-        });
-    }, [cats, reports, mapReady]);
 
 
     // 📍 예측 위치 마커 업데이트
@@ -366,6 +325,15 @@ function DashboardPage({ user, setUser }) {
                 />
                 <main className="relative flex-1 overflow-hidden">
                     <MapContainer ref={mapContainer} />
+                    <CatMarkers
+                        map={mapRef.current}
+                        cats={cats}
+                        reports={reports}
+                        onSelectCat={(cat, position) => {
+                            setSelectedCatId(cat.id);
+                            mapRef.current?.panTo(position);
+                        }}
+                    />
 
                     <CatDetail
                         cat={currentSelectedCat}
