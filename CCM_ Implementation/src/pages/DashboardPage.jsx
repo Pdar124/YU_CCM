@@ -46,6 +46,7 @@ function DashboardPage({ user, setUser }) {
     // const isRain = true; 
 
     const [cats, setCats] = useState([]);
+    const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
@@ -308,6 +309,12 @@ function DashboardPage({ user, setUser }) {
 
         document.head.appendChild(script);
     }, []);
+
+    const filteredCats = cats.filter((cat) =>
+        cat.name
+            ?.toLowerCase()
+            .includes(searchKeyword.toLowerCase())
+    );
 
     const currentSelectedCat = cats.find(c => c.id === selectedCatId);
     // 현재 선택된 고양이의 예측 위치 계산
@@ -591,8 +598,10 @@ function DashboardPage({ user, setUser }) {
                     weather={weather}
                     weatherLoading={weatherLoading}
                     isRain={isRain}
-                    cats={cats}
+                    cats={filteredCats}
                     selectedCatId={selectedCatId}
+                    searchKeyword={searchKeyword}
+                    onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);

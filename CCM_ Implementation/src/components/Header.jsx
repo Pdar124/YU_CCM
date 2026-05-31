@@ -10,6 +10,8 @@ function Header({
     isRain,
     cats,
     selectedCatId,
+    searchKeyword,
+    onSearchChange,
     latestReport,
     onCatClick
 }) {
@@ -20,7 +22,10 @@ function Header({
                     ☰
                 </button>
 
-                <SearchBar />
+                <SearchBar
+                    value={searchKeyword}
+                    onChange={onSearchChange}
+                />
 
                 <button className="text-xl text-slate-700">
                     ⚙️
