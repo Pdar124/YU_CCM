@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { db, auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
-import { collection, onSnapshot } from 'firebase/firestore';
+import {
+    collection,
+    onSnapshot,
+    addDoc,
+    serverTimestamp
+} from 'firebase/firestore';
 import { getWeather } from '../config/weather';
 
 import Header from '../components/Header';
@@ -40,6 +45,21 @@ function DashboardPage({ user, setUser }) {
     const handleLogout = async () => {
         await signOut(auth);
         setUser(null);
+    };
+    // 신고 등록 함수
+    const handleAddReport = async (reportData) => {
+        try {
+            await addDoc(collection(db, 'reports'), {
+                catId: reportData.catId,
+                lat: clickedCoords.lat,
+                lng: clickedCoords.lng,
+                createdAt: serverTimestamp()
+            });
+
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error('제보 등록 실패:', error);
+        }
     };
 
     // 신고의 최신성 가중치 계산 함수 <<Recency Weight 함수>>
@@ -227,6 +247,22 @@ function DashboardPage({ user, setUser }) {
 
             mapRef.current = map;
             setMapReady(true);
+
+            // 지도 클릭 이벤트 등록
+            window.kakao.maps.event.addListener(
+                map,
+                'click',
+                (mouseEvent) => {
+                    const latlng = mouseEvent.latLng;
+
+                    setClickedCoords({
+                        lat: latlng.getLat(),
+                        lng: latlng.getLng()
+                    });
+
+                    setIsModalOpen(true);
+                }
+            );
         };
 
         if (window.kakao && window.kakao.maps) {
@@ -274,12 +310,12 @@ function DashboardPage({ user, setUser }) {
             )[0];
     // 예측 위치에서 가장 가까운 보호소 계산
     const nearestShelter =
-    predictedLocation
-        ? getNearestShelter(
-            predictedLocation.lat,
-            predictedLocation.lng
-        )
-        : null;
+        predictedLocation
+            ? getNearestShelter(
+                predictedLocation.lat,
+                predictedLocation.lng
+            )
+            : null;
 
 
 
@@ -504,7 +540,11 @@ function DashboardPage({ user, setUser }) {
             <ReportModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                cats={cats}
+                clickedCoords={clickedCoords}
+                onSubmit={handleAddReport}
             />
+
         </div>
     );
 }
