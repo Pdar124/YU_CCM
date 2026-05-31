@@ -6,20 +6,18 @@ import {
     addDoc,
     serverTimestamp
 } from 'firebase/firestore';
-import { getNearestShelter } from '../utils/distance';
 import {
-    getLatestReport,
-    getPredictedLocation
+    getLatestReport
 } from '../utils/prediction';
-import { getWeather } from '../config/weather';
+
 
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
 import useShelters from '../hooks/useShelters';
 import useWeather from '../hooks/useWeather';
+import useCatPrediction from '../hooks/useCatPrediction';
 
 import Header from '../components/Header';
-import CatList from '../components/cat/CatList';
 import MapContainer from '../components/map/MapContainer';
 import ReportModal from '../components/modal/ReportModal';
 import CatDetail from '../components/cat/CatDetail';
@@ -35,7 +33,6 @@ function DashboardPage({ user, setUser }) {
     const mapContainer = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef([]);
-    const prevCatsRef = useRef([]);
     const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
@@ -136,44 +133,9 @@ function DashboardPage({ user, setUser }) {
             ?.toLowerCase()
             .includes(searchKeyword.toLowerCase())
     );
+    const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter} 
+    = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
 
-    const currentSelectedCat = cats.find(c => c.id === selectedCatId);
-    // 현재 선택된 고양이의 예측 위치 계산
-    const predictedLocation =
-        currentSelectedCat
-            ? getPredictedLocation({
-                catId: currentSelectedCat.id,
-                reports,
-                shelters,
-                isRain
-            })
-            : null;
-    // 현재 선택된 고양이에 대한 신고 건수 계산
-    const reportCount =
-        reports.filter(
-            report => report.catId === currentSelectedCat?.id
-        ).length;
-    // 현재 선택된 고양이에 대한 최신 신고 정보 계산
-    const latestReport =
-        reports
-            .filter(
-                report =>
-                    report.catId === currentSelectedCat?.id
-            )
-            .sort((a, b) => {
-                const aTime = a.createdAt?.seconds ?? 0;
-                const bTime = b.createdAt?.seconds ?? 0;
-                return bTime - aTime;
-            })[0];
-    // 예측 위치에서 가장 가까운 보호소 계산
-    const nearestShelter =
-        predictedLocation
-            ? getNearestShelter(
-                predictedLocation.lat,
-                predictedLocation.lng,
-                shelters
-            )
-            : null;
     // 디버깅용 로그
     useEffect(() => {
         console.log("reports:", reports);
@@ -460,7 +422,7 @@ function DashboardPage({ user, setUser }) {
                     clickedCoords={clickedCoords}
                     selectedCatId={selectedCatId}
                     onSubmit={handleAddReport}
-                />ƒ
+                />
 
             </div>
         </div>
