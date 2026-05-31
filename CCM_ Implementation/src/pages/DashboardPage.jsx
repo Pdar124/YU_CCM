@@ -10,6 +10,8 @@ import {
     getLatestReport
 } from '../utils/prediction';
 
+import CatPath from '../components/map/CatPath';
+import ShelterMarkers from '../components/map/ShelterMarkers';
 import PredictedMarker from '../components/map/PredictedMarker';
 import CatMarkers from '../components/map/CatMarkers';
 import useKakaoMap from '../hooks/useKakaoMap';
@@ -30,13 +32,6 @@ function DashboardPage({ user, setUser }) {
     const { reports } = useReports();
     const { shelters } = useShelters();
     const { weather, weatherLoading, isRain } = useWeather();
-
-
-    const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
-    const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
-    const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
-    const polylineRef = useRef(null); // 동선 참조 추가
-
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,114 +101,6 @@ function DashboardPage({ user, setUser }) {
         console.log("predictedLocation:", predictedLocation);
     }, [reports, currentSelectedCat, predictedLocation]);
 
-    // 🛣️ 고양이 이동 경로(Polyline) 표시
-    useEffect(() => {
-        if (!mapRef.current) return;
-        if (!currentSelectedCat) return;
-
-        const catReports = reports
-            .filter(
-                report =>
-                    report.catId === currentSelectedCat.id
-            )
-            .sort(
-                (a, b) =>
-                    a.createdAt?.toMillis() -
-                    b.createdAt?.toMillis()
-            );
-
-        if (catReports.length < 2) return;
-
-        const path = catReports.map(
-            report =>
-                new window.kakao.maps.LatLng(
-                    report.lat,
-                    report.lng
-                )
-        );
-
-        if (polylineRef.current) {
-            polylineRef.current.setMap(null);
-        }
-
-        const polyline =
-            new window.kakao.maps.Polyline({
-                path,
-                strokeWeight: 4,
-                strokeColor: '#6366F1',
-                strokeOpacity: 0.8,
-                strokeStyle: 'dashed'
-            });
-
-        polyline.setMap(mapRef.current);
-
-        polylineRef.current = polyline;
-
-    }, [reports, currentSelectedCat]);
-
-    // ☔ 비 오는 날 보호소 마커 업데이트
-    useEffect(() => {
-        if (!mapRef.current) return;
-
-        console.log('shelters:', shelters);
-        console.log('isRain:', isRain);
-
-        shelterMarkersRef.current.forEach(marker =>
-            marker.setMap(null)
-        );
-
-        shelterMarkersRef.current = [];
-
-        if (!isRain) return;
-
-        const imageSrc =
-            'https://cdn-icons-png.flaticon.com/512/3313/3313888.png';
-
-        const imageSize =
-            new window.kakao.maps.Size(36, 36);
-
-        const markerImage =
-            new window.kakao.maps.MarkerImage(
-                imageSrc,
-                imageSize
-            );
-
-        shelters.forEach((shelter) => {
-            const marker = new window.kakao.maps.Marker({
-                map: mapRef.current,
-                position: new window.kakao.maps.LatLng(
-                    shelter.lat,
-                    shelter.lng
-                ),
-                image: markerImage
-            });
-
-            const infowindow =
-                new window.kakao.maps.InfoWindow({
-                    content: `
-                <div style="padding:8px;">
-                    ☔ ${shelter.name}
-                </div>
-            `
-                });
-
-            window.kakao.maps.event.addListener(
-                marker,
-                'click',
-                () => {
-                    console.log('보호소 클릭!');
-
-                    infowindow.open(
-                        mapRef.current,
-                        marker
-                    );
-                }
-            );
-
-            shelterMarkersRef.current.push(marker);
-        });
-
-    }, [shelters, isRain, mapReady]);
 
 
 
@@ -259,6 +146,16 @@ function DashboardPage({ user, setUser }) {
                     <PredictedMarker
                         mapRef={mapRef}
                         predictedLocation={predictedLocation}
+                    />
+                    <ShelterMarkers
+                        mapRef={mapRef}
+                        shelters={shelters}
+                        isRain={isRain}
+                    />
+                    <CatPath
+                        mapRef={mapRef}
+                        reports={reports}
+                        currentSelectedCat={currentSelectedCat}
                     />
 
                     <CatDetail
