@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { db, auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -100,7 +100,6 @@ function DashboardPage({ user, setUser }) {
         console.log("selectedCat:", currentSelectedCat);
         console.log("predictedLocation:", predictedLocation);
     }, [reports, currentSelectedCat, predictedLocation]);
-
 
 
 
