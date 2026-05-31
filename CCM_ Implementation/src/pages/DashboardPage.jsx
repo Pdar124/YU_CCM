@@ -11,6 +11,7 @@ import { getWeather } from '../config/weather';
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
 import useShelters from '../hooks/useShelters';
+import useWeather from '../hooks/useWeather';
 
 import Header from '../components/Header';
 import CatList from '../components/cat/CatList';
@@ -23,7 +24,7 @@ function DashboardPage({ user, setUser }) {
     const { cats } = useCats();
     const { reports } = useReports();
     const { shelters } = useShelters();
-
+    const { weather, weatherLoading, isRain } = useWeather();
 
     const [mapReady, setMapReady] = useState(false); // 지도 로딩 상태 추가
     const mapContainer = useRef(null);
@@ -34,23 +35,6 @@ function DashboardPage({ user, setUser }) {
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const polylineRef = useRef(null); // 동선 참조 추가
-
-    // 날씨 관련 상태
-    const [weather, setWeather] = useState(null);
-    const [weatherLoading, setWeatherLoading] = useState(true);
-
-    // 날씨 상태에서 비 여부 판단
-    const weatherMain =
-        weather?.weather?.[0]?.main;
-
-    const isRain = [
-        'Rain',
-        'Drizzle',
-        'Thunderstorm'
-    ].includes(weatherMain);
-
-    //비오는날 테스트
-    // const isRain = true; 
 
 
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -212,27 +196,6 @@ function DashboardPage({ user, setUser }) {
 
         setIsModalOpen(true);
     };
-
-
-    // 🌤️ 날씨 정보 가져오기 (지도의 로딩을 방해하지 않음)
-    useEffect(() => {
-        const fetchWeather = async () => {
-            try {
-                const data = await getWeather(
-                    35.8314, // 위도
-                    128.7570 // 경도
-                );
-                setWeather(data);
-            } catch (error) {
-                console.error("날씨 정보를 가져오는 데 실패했습니다:", error);
-            } finally {
-                setWeatherLoading(false);
-
-            }
-        };
-
-        fetchWeather();
-    }, []);
 
     // 🗺️ 카카오 지도 초기화
     useEffect(() => {
