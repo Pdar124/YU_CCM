@@ -18,6 +18,7 @@ import useShelters from '../hooks/useShelters';
 import useWeather from '../hooks/useWeather';
 import useCatPrediction from '../hooks/useCatPrediction';
 
+import DietHealthModal from '../components/modal/DietHealthModal';
 import Header from '../components/Header';
 import MapContainer from '../components/map/MapContainer';
 import ReportModal from '../components/modal/ReportModal';
@@ -44,27 +45,58 @@ function DashboardPage({ user, setUser }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
+    const [dietModalOpen, setDietModalOpen] =
+        useState(false);
+    const [dietTargetCat, setDietTargetCat] =
+        useState(null);
 
-    const handleDietCheck = async (cat) => {
+    const handleDietCheck = (cat) => {
+        setDietTargetCat(cat);
+        setDietModalOpen(true);
+    };
+
+    const handleSaveDietLog = async (formData) => {
+        if (!dietTargetCat) return;
+
+        const isMyCat =
+            user?.caregiverCatIds?.includes(dietTargetCat.id);
+
+        if (!isMyCat) {
+            alert('담당 고양이가 아닙니다. 돌보미 신청을 먼저 해주세요.');
+            return;
+        }
+
+        if (!formData.amount) {
+            alert('급여량을 선택해주세요.');
+            return;
+        }
+
         try {
             await addDoc(
                 collection(db, 'dietLogs'),
                 {
-                    catId: cat.id,
-                    catName: cat.name,
+                    catId: dietTargetCat.id,
+                    catName: dietTargetCat.name,
                     caregiverUid: user.uid,
                     caregiverName:
                         user.nickname ||
-                        user.studentId,
-                    fedAt: serverTimestamp(),
-                    memo: '급여 완료'
+                        user.studentId ||
+                        user.id,
+                    foodType: formData.foodType || '',
+                    amount: formData.amount,
+                    symptoms: formData.symptoms || [],
+                    memo: formData.memo || '',
+                    fedAt: serverTimestamp()
                 }
             );
 
-            alert('급여 기록이 저장되었습니다.');
+            alert('급여 및 건강 기록이 저장되었습니다.');
+
+            setDietModalOpen(false);
+            setDietTargetCat(null);
         } catch (error) {
-            console.error(error);
-            alert('급여 기록 저장 실패');
+            console.error('급여/건강 기록 저장 실패:', error);
+            alert('기록 저장 중 오류가 발생했습니다.');
         }
     };
     // 로그아웃
@@ -455,6 +487,16 @@ function DashboardPage({ user, setUser }) {
                     clickedCoords={clickedCoords}
                     selectedCatId={selectedCatId}
                     onSubmit={handleAddReport}
+                />
+
+                <DietHealthModal
+                    isOpen={dietModalOpen}
+                    cat={dietTargetCat}
+                    onClose={() => {
+                        setDietModalOpen(false);
+                        setDietTargetCat(null);
+                    }}
+                    onSave={handleSaveDietLog}
                 />
 
             </div>

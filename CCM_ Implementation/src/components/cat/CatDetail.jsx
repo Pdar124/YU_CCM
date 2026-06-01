@@ -4,13 +4,13 @@ import React from 'react';
 function CatDetail({
   cat,
   user,
-  onClose,
-  onReport,
   isRain,
   predictedLocation,
   reportCount,
   latestReport,
   nearestShelter,
+  onClose,
+  onReport,
   onDietCheck
 }) {
   if (!cat) return null;
@@ -61,14 +61,14 @@ function CatDetail({
                       담당 고양이
                     </span>
                   )}
-                  </span>
+              </span>
 
 
-                {isRain && (
-                  <span className="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
-                    ☔ 대피 가능성
-                  </span>
-                )}
+              {isRain && (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
+                  ☔ 대피 가능성
+                </span>
+              )}
             </div>
 
             <p className="text-xs text-slate-500 mt-1">
