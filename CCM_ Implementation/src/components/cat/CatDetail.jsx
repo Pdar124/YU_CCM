@@ -14,7 +14,6 @@ function CatDetail({
   nearestShelter,
   onClose,
   onReport,
-  onDietCheck,
   onWikiEdit,
   onHistoryView
 }) {
