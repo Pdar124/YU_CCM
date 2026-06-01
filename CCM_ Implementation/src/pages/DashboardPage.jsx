@@ -4,6 +4,10 @@ import { signOut } from 'firebase/auth';
 
 import {
     collection,
+    query,
+    orderBy,
+    limit,
+    onSnapshot,
     addDoc,
     serverTimestamp,
     doc,
@@ -41,7 +45,7 @@ function DashboardPage({ user, setUser }) {
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const polylineRef = useRef(null); // 동선 참조 추가
-
+    const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -132,7 +136,7 @@ function DashboardPage({ user, setUser }) {
             alert('위키 저장 실패');
         }
     };
-    
+
     // 로그아웃
     const handleLogout = async () => {
         await signOut(auth);
@@ -464,6 +468,25 @@ function DashboardPage({ user, setUser }) {
 
     }, [shelters, isRain, mapReady]);
 
+    useEffect(() => {
+        const q = query(
+            collection(db, 'dietLogs'),
+            orderBy('fedAt', 'desc'),
+            limit(1)
+        );
+
+        const unsub = onSnapshot(q, (snapshot) => {
+            if (!snapshot.empty) {
+                setLatestDietLog({
+                    id: snapshot.docs[0].id,
+                    ...snapshot.docs[0].data()
+                });
+            }
+        });
+
+        return () => unsub();
+    }, []);
+
 
 
     return (
@@ -484,6 +507,7 @@ function DashboardPage({ user, setUser }) {
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
                     caregiverCats={caregiverCats}
+                    latestDietLog={latestDietLog}
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);
 

@@ -4,10 +4,6 @@ import React from 'react';
 function CatDetail({
   cat,
   user,
-  onClose,
-  onReport,
-  onDietCheck,
-  onWikiEdit,
   isRain,
   predictedLocation,
   reportCount,
@@ -15,7 +11,8 @@ function CatDetail({
   nearestShelter,
   onClose,
   onReport,
-  onDietCheck
+  onDietCheck,
+  onWikiEdit
 }) {
   if (!cat) return null;
 
