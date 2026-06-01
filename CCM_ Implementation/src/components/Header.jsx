@@ -70,7 +70,10 @@ function Header({
                     onChange={onSearchChange}
                 />
 
-                <button className="text-xl text-slate-700">
+                <button
+                    onClick={() => navigate('/profile')}
+                    className="text-xl text-slate-700"
+                >
                     ⚙️
                 </button>
             </div>

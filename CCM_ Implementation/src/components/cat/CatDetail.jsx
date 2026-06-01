@@ -1,5 +1,6 @@
 // src/components/cat/CatDetail.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function CatDetail({
   cat,
@@ -14,6 +15,8 @@ function CatDetail({
   onDietCheck,
   onWikiEdit
 }) {
+  const navigate = useNavigate();
+
   if (!cat) return null;
 
   const getMinutesAgo = (timestamp) => {
@@ -118,11 +121,11 @@ function CatDetail({
         <div className="grid grid-cols-3 gap-2">
 
           <button
-            onClick={() => onDietCheck(cat)}
+            onClick={() => navigate(`/diet-health/${cat.id}`)}
             className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
           >
             🍽️<br />
-            급여/건강 기록
+            급여 기록 작성
           </button>
 
           <button

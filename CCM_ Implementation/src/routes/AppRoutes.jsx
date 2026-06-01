@@ -4,6 +4,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 
+import DietHealthRecordPage from '../pages/DietHealthRecordPage';
+import ProfilePage from '../pages/ProfilePage';
 import AdminPage from '../pages/AdminPage';
 import CaregiverApplicationPage from '../pages/CaregiverApplicationPage';
 import SignupCompletePage from '../pages/SignupCompletePage';
@@ -122,6 +124,19 @@ function AppRoutes() {
           ) : (
             <Navigate to="/" />
           )
+        }
+      />
+      <Route
+        path="/diet-health/:catId"
+        element={
+          user ? <DietHealthRecordPage user={user} /> : <Navigate to="/login" />
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          user ? <ProfilePage user={user} setUser={setUser} /> : <Navigate to="/login" />
         }
       />
 
