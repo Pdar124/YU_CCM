@@ -1,4 +1,10 @@
-function StatusFilterBar({ weather, weatherLoading, isRain, latestReport }) {
+function StatusFilterBar({
+  weather,
+  weatherLoading,
+  isRain,
+  latestReport,
+  activeMode
+}) {
     const temp = weather?.main?.temp;
 
     const getMinutesAgo = (timestamp) => {
@@ -19,15 +25,32 @@ function StatusFilterBar({ weather, weatherLoading, isRain, latestReport }) {
     const latestTimeText = getMinutesAgo(latestReport?.createdAt);
 
     return (
-        <div className="mt-3 flex items-center gap-3 overflow-x-auto text-xs text-slate-600 pb-1">
-            <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                🎯 최근 제보 {latestTimeText || '없음'}
-            </div>
+        <div className="mt-3 ml-0 flex items-center gap-3 overflow-x-auto text-xs text-slate-600 pb-1">
+            <div className="flex ml-0 items-center">
+                {activeMode === 'caregiver' ? (
+                    <>
+                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
+                            🎯 최근 급여
+                        </div>
 
-            <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                📍 인기 제보 구역
-            </div>
+                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
+                            📍 나의 담당 고양이
+                        </div>
 
+    
+                    </>
+                ) : (
+                    <>
+                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
+                            🎯 최근 제보 {latestTimeText || '없음'}
+                        </div>
+
+                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
+                            📍 인기 제보 구역
+                        </div>
+                    </>
+                )}
+            </div>
             <div className="shrink-0 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
                 {weatherLoading ? (
                     <span>날씨 불러오는 중...</span>

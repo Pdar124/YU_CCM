@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { db, auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
+
 import {
     collection,
     addDoc,
@@ -44,6 +45,28 @@ function DashboardPage({ user, setUser }) {
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
 
+    const handleDietCheck = async (cat) => {
+        try {
+            await addDoc(
+                collection(db, 'dietLogs'),
+                {
+                    catId: cat.id,
+                    catName: cat.name,
+                    caregiverUid: user.uid,
+                    caregiverName:
+                        user.nickname ||
+                        user.studentId,
+                    fedAt: serverTimestamp(),
+                    memo: '급여 완료'
+                }
+            );
+
+            alert('급여 기록이 저장되었습니다.');
+        } catch (error) {
+            console.error(error);
+            alert('급여 기록 저장 실패');
+        }
+    };
     // 로그아웃
     const handleLogout = async () => {
         await signOut(auth);
@@ -133,8 +156,14 @@ function DashboardPage({ user, setUser }) {
             ?.toLowerCase()
             .includes(searchKeyword.toLowerCase())
     );
-    const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter} 
-    = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
+    const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter }
+        = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
+    const caregiverCats =
+        user?.caregiverCatIds?.length
+            ? cats.filter(cat =>
+                user.caregiverCatIds.includes(cat.id)
+            )
+            : [];
 
     // 디버깅용 로그
     useEffect(() => {
@@ -378,6 +407,7 @@ function DashboardPage({ user, setUser }) {
                 {/* 💡 Header에 weather와 loading 상태를 props로 전달합니다 */}
                 <Header
                     user={user}
+                    setUser={setUser}
                     onLogout={handleLogout}
                     weather={weather}
                     weatherLoading={weatherLoading}
@@ -387,6 +417,7 @@ function DashboardPage({ user, setUser }) {
                     searchKeyword={searchKeyword}
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
+                    caregiverCats={caregiverCats}
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);
 
@@ -404,6 +435,7 @@ function DashboardPage({ user, setUser }) {
 
                     <CatDetail
                         cat={currentSelectedCat}
+                        user={user}
                         isRain={isRain}
                         predictedLocation={predictedLocation}
                         reportCount={reportCount}
@@ -411,6 +443,7 @@ function DashboardPage({ user, setUser }) {
                         nearestShelter={nearestShelter}
                         onClose={() => setSelectedCatId(null)}
                         onReport={handleReportClick}
+                        onDietCheck={handleDietCheck}
                     />
                 </main>
                 <BottomNavigation />

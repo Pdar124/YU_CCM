@@ -3,13 +3,15 @@ import React from 'react';
 
 function CatDetail({
   cat,
+  user,
   onClose,
   onReport,
   isRain,
   predictedLocation,
   reportCount,
   latestReport,
-  nearestShelter
+  nearestShelter,
+  onDietCheck
 }) {
   if (!cat) return null;
 
@@ -31,6 +33,9 @@ function CatDetail({
 
   const latestTimeText = getMinutesAgo(latestReport?.createdAt);
 
+  const isMyCat =
+    user?.caregiverCatIds?.includes(cat.id);
+
   return (
     <div className="absolute left-4 right-4 bottom-20 z-30 bg-white rounded-3xl p-4 shadow-2xl border border-slate-100">
       <div className="flex items-start justify-between mb-3">
@@ -44,12 +49,26 @@ function CatDetail({
               <h2 className="text-lg font-black text-slate-900">
                 {cat.name}
               </h2>
+              <span
+                className={`text-[10px] px-2 py-1 rounded-full font-bold ${user?.activeMode === 'caregiver'
+                  ? 'bg-orange-50 text-orange-600'
+                  : 'bg-emerald-50 text-emerald-600'
+                  }`}
+              >
+                {user?.activeMode === 'caregiver' &&
+                  isMyCat && (
+                    <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-orange-50 text-orange-600">
+                      담당 고양이
+                    </span>
+                  )}
+                  </span>
 
-              {isRain && (
-                <span className="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
-                  ☔ 대피 가능성
-                </span>
-              )}
+
+                {isRain && (
+                  <span className="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
+                    ☔ 대피 가능성
+                  </span>
+                )}
             </div>
 
             <p className="text-xs text-slate-500 mt-1">
@@ -93,18 +112,44 @@ function CatDetail({
         </div>
       )}
 
-      <div className="flex gap-2">
-        <button className="flex-1 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold shadow-md shadow-emerald-100">
-          상세 보기
-        </button>
+      {user?.activeMode === 'caregiver' ? (
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            onClick={() => onDietCheck(cat)}
+            className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
+          >
+            🍽️<br />
+            급여/건강 기록
+          </button>
 
-        <button
-          onClick={() => onReport(cat)}
-          className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 text-sm font-bold"
-        >
-          제보하기
-        </button>
-    </div>
+          <button
+            className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
+          >
+            ✏️<br />
+            위키 편집
+          </button>
+
+          <button
+            className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
+          >
+            📋<br />
+            히스토리 보기
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <button className="flex-1 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold shadow-md shadow-emerald-100">
+            상세 보기
+          </button>
+
+          <button
+            onClick={() => onReport(cat)}
+            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 text-sm font-bold"
+          >
+            제보하기
+          </button>
+        </div>
+      )}
     </div >
   );
 }

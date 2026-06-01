@@ -37,6 +37,7 @@ function AdminPage() {
     try {
       await updateDoc(doc(db, 'users', request.uid), {
         role: 'caregiver',
+        activeMode: 'student',
         caregiverCatIds: request.catIds || []
       });
 

@@ -68,6 +68,7 @@ function Signup({ onSignupSuccess }) {
                 nickname: accountId,
                 department: '',
                 role: 'student',
+                activeMode: 'student',
                 signupType,
                 termsAccepted: false,
                 privacyAccepted: false,
