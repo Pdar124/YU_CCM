@@ -4,13 +4,13 @@ import React from 'react';
 function CatDetail({
   cat,
   user,
-  onClose,
-  onReport,
   isRain,
   predictedLocation,
   reportCount,
   latestReport,
   nearestShelter,
+  onClose,
+  onReport,
   onDietCheck
 }) {
   if (!cat) return null;
@@ -61,14 +61,14 @@ function CatDetail({
                       담당 고양이
                     </span>
                   )}
-                  </span>
+              </span>
 
 
-                {isRain && (
-                  <span className="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
-                    ☔ 대피 가능성
-                  </span>
-                )}
+              {isRain && (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
+                  ☔ 대피 가능성
+                </span>
+              )}
             </div>
 
             <p className="text-xs text-slate-500 mt-1">
@@ -112,8 +112,10 @@ function CatDetail({
         </div>
       )}
 
-      {user?.activeMode === 'caregiver' ? (
+      {user?.activeMode === 'caregiver' && isMyCat ? (
+
         <div className="grid grid-cols-3 gap-2">
+
           <button
             onClick={() => onDietCheck(cat)}
             className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
@@ -135,21 +137,20 @@ function CatDetail({
             📋<br />
             히스토리 보기
           </button>
-        </div>
-      ) : (
-        <div className="flex gap-2">
-          <button className="flex-1 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold shadow-md shadow-emerald-100">
-            상세 보기
-          </button>
 
+        </div>
+
+      ) : user?.activeMode === 'student' ? (
+
+        <div className="flex gap-2">
           <button
-            onClick={() => onReport(cat)}
-            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 text-sm font-bold"
+            className="flex-1 py-3 rounded-2xl bg-emerald-600 text-white"
           >
             제보하기
           </button>
         </div>
-      )}
+
+      ) : null}
     </div >
   );
 }
