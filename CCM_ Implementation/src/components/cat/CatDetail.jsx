@@ -4,6 +4,10 @@ import React from 'react';
 function CatDetail({
   cat,
   user,
+  onClose,
+  onReport,
+  onDietCheck,
+  onWikiEdit,
   isRain,
   predictedLocation,
   reportCount,
@@ -125,6 +129,7 @@ function CatDetail({
           </button>
 
           <button
+            onClick={() => onWikiEdit(cat)}
             className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
           >
             ✏️<br />
