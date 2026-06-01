@@ -17,6 +17,7 @@ import {
     getLatestReport
 } from '../utils/prediction';
 
+import HistoryModal from '../components/modal/HistoryModal';
 import WikiEditModal from '../components/modal/WikiEditModal';
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
@@ -57,6 +58,9 @@ function DashboardPage({ user, setUser }) {
 
     const [wikiModalOpen, setWikiModalOpen] = useState(false);
     const [wikiTargetCat, setWikiTargetCat] = useState(null);
+
+    const [historyModalOpen, setHistoryModalOpen] = useState(false);
+    const [historyTargetCat, setHistoryTargetCat] = useState(null);
 
     const handleDietCheck = (cat) => {
         setDietTargetCat(cat);
@@ -100,6 +104,10 @@ function DashboardPage({ user, setUser }) {
     const handleWikiEdit = (cat) => {
         setWikiTargetCat(cat);
         setWikiModalOpen(true);
+    };
+    const handleHistoryView = (cat) => {
+        setHistoryTargetCat(cat);
+        setHistoryModalOpen(true);
     };
 
     const handleSaveWiki = async (formData) => {
@@ -535,6 +543,7 @@ function DashboardPage({ user, setUser }) {
                         onReport={handleReportClick}
                         onDietCheck={handleDietCheck}
                         onWikiEdit={handleWikiEdit}
+                        onHistoryView={handleHistoryView}
                     />
                 </main>
                 <BottomNavigation />
@@ -564,6 +573,14 @@ function DashboardPage({ user, setUser }) {
                         setDietTargetCat(null);
                     }}
                     onSave={handleSaveDietLog}
+                />
+                <HistoryModal
+                    isOpen={historyModalOpen}
+                    cat={historyTargetCat}
+                    onClose={() => {
+                        setHistoryModalOpen(false);
+                        setHistoryTargetCat(null);
+                    }}
                 />
 
             </div>

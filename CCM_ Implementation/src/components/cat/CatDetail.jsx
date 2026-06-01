@@ -13,7 +13,8 @@ function CatDetail({
   onClose,
   onReport,
   onDietCheck,
-  onWikiEdit
+  onWikiEdit,
+  onHistoryView
 }) {
   const navigate = useNavigate();
 
@@ -137,12 +138,12 @@ function CatDetail({
           </button>
 
           <button
+            onClick={() => onHistoryView(cat)}
             className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
           >
             📋<br />
             히스토리 보기
           </button>
-
         </div>
 
       ) : user?.activeMode === 'student' ? (
