@@ -20,7 +20,8 @@ function Header({
     searchKeyword,
     onSearchChange,
     latestReport,
-    onCatClick
+    onCatClick,
+    caregiverCats
 }) {
     const navigate = useNavigate();
     const { requests } =
@@ -144,7 +145,9 @@ function Header({
                 cats={cats}
                 onCatClick={onCatClick}
                 selectedCatId={selectedCatId}
+                user={user}
             />
+        
 
 
             <StatusFilterBar
@@ -152,6 +155,7 @@ function Header({
                 weatherLoading={weatherLoading}
                 isRain={isRain}
                 latestReport={latestReport}
+                activeMode={user?.activeMode}
             />
         </header>
     );
