@@ -5,13 +5,15 @@ import { signOut } from 'firebase/auth';
 import {
     collection,
     addDoc,
-    serverTimestamp
+    serverTimestamp,
+    doc,
+    updateDoc
 } from 'firebase/firestore';
 import {
     getLatestReport
 } from '../utils/prediction';
 
-
+import WikiEditModal from '../components/modal/WikiEditModal';
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
 import useShelters from '../hooks/useShelters';
@@ -45,10 +47,12 @@ function DashboardPage({ user, setUser }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
-    const [dietModalOpen, setDietModalOpen] =
-        useState(false);
-    const [dietTargetCat, setDietTargetCat] =
-        useState(null);
+
+    const [dietModalOpen, setDietModalOpen] = useState(false);
+    const [dietTargetCat, setDietTargetCat] = useState(null);
+
+    const [wikiModalOpen, setWikiModalOpen] = useState(false);
+    const [wikiTargetCat, setWikiTargetCat] = useState(null);
 
     const handleDietCheck = (cat) => {
         setDietTargetCat(cat);
@@ -64,23 +68,20 @@ function DashboardPage({ user, setUser }) {
         }
 
         try {
-            await addDoc(
-                collection(db, 'dietLogs'),
-                {
-                    catId: dietTargetCat.id,
-                    catName: dietTargetCat.name,
-                    caregiverUid: user.uid,
-                    caregiverName:
-                        user.nickname ||
-                        user.studentId ||
-                        user.id,
-                    foodType: formData.foodType || '',
-                    amount: formData.amount,
-                    symptoms: formData.symptoms || [],
-                    memo: formData.memo || '',
-                    fedAt: serverTimestamp()
-                }
-            );
+            await addDoc(collection(db, 'dietLogs'), {
+                catId: dietTargetCat.id,
+                catName: dietTargetCat.name,
+                caregiverUid: user.uid,
+                caregiverName:
+                    user.nickname ||
+                    user.studentId ||
+                    user.id,
+                foodType: formData.foodType || '',
+                amount: formData.amount,
+                symptoms: formData.symptoms || [],
+                memo: formData.memo || '',
+                fedAt: serverTimestamp()
+            });
 
             alert('급여 및 건강 기록이 저장되었습니다.');
 
@@ -91,6 +92,47 @@ function DashboardPage({ user, setUser }) {
             alert('기록 저장 중 오류가 발생했습니다.');
         }
     };
+
+    const handleWikiEdit = (cat) => {
+        setWikiTargetCat(cat);
+        setWikiModalOpen(true);
+    };
+
+    const handleSaveWiki = async (formData) => {
+        try {
+            const isMyCat =
+                user?.caregiverCatIds?.includes(wikiTargetCat.id);
+
+            if (!isMyCat) {
+                alert('담당 고양이만 수정할 수 있습니다.');
+                return;
+            }
+
+            await updateDoc(doc(db, 'cats', wikiTargetCat.id), {
+                origin: formData.origin,
+                feature: formData.feature,
+                healthStatus: formData.healthStatus,
+                territory: formData.territory
+            });
+
+            await addDoc(collection(db, 'wikiHistories'), {
+                catId: wikiTargetCat.id,
+                editorUid: user.uid,
+                editorName:
+                    user.studentId ||
+                    user.nickname,
+                ...formData,
+                editedAt: serverTimestamp()
+            });
+
+            alert('위키 수정이 저장되었습니다.');
+            setWikiModalOpen(false);
+        } catch (error) {
+            console.error(error);
+            alert('위키 저장 실패');
+        }
+    };
+    
     // 로그아웃
     const handleLogout = async () => {
         await signOut(auth);
@@ -468,6 +510,7 @@ function DashboardPage({ user, setUser }) {
                         onClose={() => setSelectedCatId(null)}
                         onReport={handleReportClick}
                         onDietCheck={handleDietCheck}
+                        onWikiEdit={handleWikiEdit}
                     />
                 </main>
                 <BottomNavigation />
@@ -479,6 +522,14 @@ function DashboardPage({ user, setUser }) {
                     clickedCoords={clickedCoords}
                     selectedCatId={selectedCatId}
                     onSubmit={handleAddReport}
+                />
+                <WikiEditModal
+                    isOpen={wikiModalOpen}
+                    cat={wikiTargetCat}
+                    onClose={() =>
+                        setWikiModalOpen(false)
+                    }
+                    onSave={handleSaveWiki}
                 />
 
                 <DietHealthModal
