@@ -58,14 +58,6 @@ function DashboardPage({ user, setUser }) {
     const handleSaveDietLog = async (formData) => {
         if (!dietTargetCat) return;
 
-        const isMyCat =
-            user?.caregiverCatIds?.includes(dietTargetCat.id);
-
-        if (!isMyCat) {
-            alert('담당 고양이가 아닙니다. 돌보미 신청을 먼저 해주세요.');
-            return;
-        }
-
         if (!formData.amount) {
             alert('급여량을 선택해주세요.');
             return;
