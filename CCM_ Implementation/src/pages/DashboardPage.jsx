@@ -17,15 +17,16 @@ import {
     getLatestReport
 } from '../utils/prediction';
 
-import HistoryModal from '../components/modal/HistoryModal';
-import WikiEditModal from '../components/modal/WikiEditModal';
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
 import useShelters from '../hooks/useShelters';
 import useWeather from '../hooks/useWeather';
 import useCatPrediction from '../hooks/useCatPrediction';
+import useCatModals from '../hooks/useCatModals';
 
-import DietHealthModal from '../components/modal/DietHealthModal';
+
+import HistoryModal from '../components/modal/HistoryModal';
+import WikiEditModal from '../components/modal/WikiEditModal';
 import Header from '../components/Header';
 import MapContainer from '../components/map/MapContainer';
 import ReportModal from '../components/modal/ReportModal';
@@ -53,62 +54,19 @@ function DashboardPage({ user, setUser }) {
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
 
-    const [dietModalOpen, setDietModalOpen] = useState(false);
-    const [dietTargetCat, setDietTargetCat] = useState(null);
 
-    const [wikiModalOpen, setWikiModalOpen] = useState(false);
-    const [wikiTargetCat, setWikiTargetCat] = useState(null);
+    const {
+        wikiModalOpen,
+        wikiTargetCat,
+        openWikiModal,
+        closeWikiModal,
+        historyModalOpen,
+        historyTargetCat,
+        openHistoryModal,
+        closeHistoryModal
+    } = useCatModals();
 
-    const [historyModalOpen, setHistoryModalOpen] = useState(false);
-    const [historyTargetCat, setHistoryTargetCat] = useState(null);
 
-    const handleDietCheck = (cat) => {
-        setDietTargetCat(cat);
-        setDietModalOpen(true);
-    };
-
-    const handleSaveDietLog = async (formData) => {
-        if (!dietTargetCat) return;
-
-        if (!formData.amount) {
-            alert('급여량을 선택해주세요.');
-            return;
-        }
-
-        try {
-            await addDoc(collection(db, 'dietLogs'), {
-                catId: dietTargetCat.id,
-                catName: dietTargetCat.name,
-                caregiverUid: user.uid,
-                caregiverName:
-                    user.nickname ||
-                    user.studentId ||
-                    user.id,
-                foodType: formData.foodType || '',
-                amount: formData.amount,
-                symptoms: formData.symptoms || [],
-                memo: formData.memo || '',
-                fedAt: serverTimestamp()
-            });
-
-            alert('급여 및 건강 기록이 저장되었습니다.');
-
-            setDietModalOpen(false);
-            setDietTargetCat(null);
-        } catch (error) {
-            console.error('급여/건강 기록 저장 실패:', error);
-            alert('기록 저장 중 오류가 발생했습니다.');
-        }
-    };
-
-    const handleWikiEdit = (cat) => {
-        setWikiTargetCat(cat);
-        setWikiModalOpen(true);
-    };
-    const handleHistoryView = (cat) => {
-        setHistoryTargetCat(cat);
-        setHistoryModalOpen(true);
-    };
 
     const handleSaveWiki = async (formData) => {
         try {
@@ -138,7 +96,7 @@ function DashboardPage({ user, setUser }) {
             });
 
             alert('위키 수정이 저장되었습니다.');
-            setWikiModalOpen(false);
+            closeWikiModal();
         } catch (error) {
             console.error(error);
             alert('위키 저장 실패');
@@ -541,9 +499,8 @@ function DashboardPage({ user, setUser }) {
                         nearestShelter={nearestShelter}
                         onClose={() => setSelectedCatId(null)}
                         onReport={handleReportClick}
-                        onDietCheck={handleDietCheck}
-                        onWikiEdit={handleWikiEdit}
-                        onHistoryView={handleHistoryView}
+                        onWikiEdit={openWikiModal}
+                        onHistoryView={openHistoryModal}
                     />
                 </main>
                 <BottomNavigation />
@@ -559,28 +516,13 @@ function DashboardPage({ user, setUser }) {
                 <WikiEditModal
                     isOpen={wikiModalOpen}
                     cat={wikiTargetCat}
-                    onClose={() =>
-                        setWikiModalOpen(false)
-                    }
+                    onClose={closeWikiModal}
                     onSave={handleSaveWiki}
-                />
-
-                <DietHealthModal
-                    isOpen={dietModalOpen}
-                    cat={dietTargetCat}
-                    onClose={() => {
-                        setDietModalOpen(false);
-                        setDietTargetCat(null);
-                    }}
-                    onSave={handleSaveDietLog}
                 />
                 <HistoryModal
                     isOpen={historyModalOpen}
                     cat={historyTargetCat}
-                    onClose={() => {
-                        setHistoryModalOpen(false);
-                        setHistoryTargetCat(null);
-                    }}
+                    onClose={closeHistoryModal}
                 />
 
             </div>

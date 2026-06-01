@@ -1,6 +1,8 @@
 // src/components/cat/CatDetail.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import CatCaregiverActions from './CatCaregiverActions';
+import CatStudentActions from './CatStudentActions';
 
 function CatDetail({
   cat,
@@ -12,7 +14,6 @@ function CatDetail({
   nearestShelter,
   onClose,
   onReport,
-  onDietCheck,
   onWikiEdit,
   onHistoryView
 }) {
@@ -42,10 +43,14 @@ function CatDetail({
     user?.caregiverCatIds?.includes(cat.id);
 
   return (
-    <div className="absolute left-4 right-4 bottom-20 z-30 bg-white rounded-3xl p-4 shadow-2xl border border-slate-100">
+    <div
+      className="absolute left-4 right-4 bottom-20 z-30 rounded-3xl p-4 shadow-2xl border bg-white border-slate-100"
+    >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-3xl shadow-sm">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm bg-emerald-50"
+          >
             {cat.icon || '🐈'}
           </div>
 
@@ -54,19 +59,11 @@ function CatDetail({
               <h2 className="text-lg font-black text-slate-900">
                 {cat.name}
               </h2>
-              <span
-                className={`text-[10px] px-2 py-1 rounded-full font-bold ${user?.activeMode === 'caregiver'
-                  ? 'bg-orange-50 text-orange-600'
-                  : 'bg-emerald-50 text-emerald-600'
-                  }`}
-              >
-                {user?.activeMode === 'caregiver' &&
-                  isMyCat && (
-                    <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-orange-50 text-orange-600">
-                      담당 고양이
-                    </span>
-                  )}
-              </span>
+              {user?.activeMode === 'caregiver' && isMyCat && (
+                <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-orange-100 text-orange-600">
+                  담당 고양이
+                </span>
+              )}
 
 
               {isRain && (
@@ -90,7 +87,8 @@ function CatDetail({
         </button>
       </div>
       {predictedLocation && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 mb-3">
+        <div
+          className="rounded-2xl p-3 mb-3 border bg-indigo-50 border-indigo-100">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-black text-indigo-700">
               📍 AI 예측 위치
@@ -116,47 +114,25 @@ function CatDetail({
           ☔ 비 오는 날이에요. {nearestShelter.name} 근처에 있을 가능성이 높아요.
         </div>
       )}
+      {user?.activeMode === 'caregiver' &&
+        isMyCat && (
+          <CatCaregiverActions
+            cat={cat}
+            navigate={navigate}
+            onWikiEdit={onWikiEdit}
+            onHistoryView={onHistoryView}
+          />
+        )}
 
-      {user?.activeMode === 'caregiver' && isMyCat ? (
+      {user?.activeMode === 'student' && (
+        <CatStudentActions
+          cat={cat}
+          onReport={onReport}
+        />
+      )}
 
-        <div className="grid grid-cols-3 gap-2">
 
-          <button
-            onClick={() => navigate(`/diet-health/${cat.id}`)}
-            className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
-          >
-            🍽️<br />
-            급여 기록 작성
-          </button>
 
-          <button
-            onClick={() => onWikiEdit(cat)}
-            className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
-          >
-            ✏️<br />
-            위키 편집
-          </button>
-
-          <button
-            onClick={() => onHistoryView(cat)}
-            className="py-3 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700"
-          >
-            📋<br />
-            히스토리 보기
-          </button>
-        </div>
-
-      ) : user?.activeMode === 'student' ? (
-
-        <div className="flex gap-2">
-          <button
-            className="flex-1 py-3 rounded-2xl bg-emerald-600 text-white"
-          >
-            제보하기
-          </button>
-        </div>
-
-      ) : null}
     </div >
   );
 }
