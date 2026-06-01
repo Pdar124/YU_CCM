@@ -7,6 +7,7 @@ import ModeSelector from './header/ModeSelector';
 import StatusFilterBar from './header/StatusFilterBar';
 import CatList from './cat/CatList';
 import useCaregiverRequests from '../hooks/useCaregiverRequests';
+import { getTimeAgo } from '../utils/time';
 
 function Header({
     user,
@@ -21,7 +22,8 @@ function Header({
     onSearchChange,
     latestReport,
     onCatClick,
-    caregiverCats
+    caregiverCats,
+    latestDietLog
 }) {
     const navigate = useNavigate();
     const { requests } =
@@ -68,7 +70,10 @@ function Header({
                     onChange={onSearchChange}
                 />
 
-                <button className="text-xl text-slate-700">
+                <button
+                    onClick={() => navigate('/profile')}
+                    className="text-xl text-slate-700"
+                >
                     ⚙️
                 </button>
             </div>
@@ -147,7 +152,25 @@ function Header({
                 selectedCatId={selectedCatId}
                 user={user}
             />
-        
+
+            {user?.activeMode === 'caregiver' &&
+                latestDietLog && (
+                    <div className="mt-2 px-4">
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2">
+                            ⚠️
+                            <span>
+                                {latestDietLog.catName}
+                                {' '}
+                                {getTimeAgo(
+                                    latestDietLog.fedAt
+                                )}
+                                {' '}
+                                급여 기록이 있어요.
+                            </span>
+                        </div>
+                    </div>
+                )}
+
 
 
             <StatusFilterBar

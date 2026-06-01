@@ -4,6 +4,10 @@ import { signOut } from 'firebase/auth';
 
 import {
     collection,
+    query,
+    orderBy,
+    limit,
+    onSnapshot,
     addDoc,
     serverTimestamp,
     doc,
@@ -13,6 +17,7 @@ import {
     getLatestReport
 } from '../utils/prediction';
 
+import HistoryModal from '../components/modal/HistoryModal';
 import WikiEditModal from '../components/modal/WikiEditModal';
 import useCats from '../hooks/useCats';
 import useReports from '../hooks/useReports';
@@ -41,7 +46,7 @@ function DashboardPage({ user, setUser }) {
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const polylineRef = useRef(null); // 동선 참조 추가
-
+    const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,6 +58,9 @@ function DashboardPage({ user, setUser }) {
 
     const [wikiModalOpen, setWikiModalOpen] = useState(false);
     const [wikiTargetCat, setWikiTargetCat] = useState(null);
+
+    const [historyModalOpen, setHistoryModalOpen] = useState(false);
+    const [historyTargetCat, setHistoryTargetCat] = useState(null);
 
     const handleDietCheck = (cat) => {
         setDietTargetCat(cat);
@@ -97,6 +105,10 @@ function DashboardPage({ user, setUser }) {
         setWikiTargetCat(cat);
         setWikiModalOpen(true);
     };
+    const handleHistoryView = (cat) => {
+        setHistoryTargetCat(cat);
+        setHistoryModalOpen(true);
+    };
 
     const handleSaveWiki = async (formData) => {
         try {
@@ -132,7 +144,7 @@ function DashboardPage({ user, setUser }) {
             alert('위키 저장 실패');
         }
     };
-    
+
     // 로그아웃
     const handleLogout = async () => {
         await signOut(auth);
@@ -464,6 +476,25 @@ function DashboardPage({ user, setUser }) {
 
     }, [shelters, isRain, mapReady]);
 
+    useEffect(() => {
+        const q = query(
+            collection(db, 'dietLogs'),
+            orderBy('fedAt', 'desc'),
+            limit(1)
+        );
+
+        const unsub = onSnapshot(q, (snapshot) => {
+            if (!snapshot.empty) {
+                setLatestDietLog({
+                    id: snapshot.docs[0].id,
+                    ...snapshot.docs[0].data()
+                });
+            }
+        });
+
+        return () => unsub();
+    }, []);
+
 
 
     return (
@@ -484,6 +515,7 @@ function DashboardPage({ user, setUser }) {
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
                     caregiverCats={caregiverCats}
+                    latestDietLog={latestDietLog}
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);
 
@@ -511,6 +543,7 @@ function DashboardPage({ user, setUser }) {
                         onReport={handleReportClick}
                         onDietCheck={handleDietCheck}
                         onWikiEdit={handleWikiEdit}
+                        onHistoryView={handleHistoryView}
                     />
                 </main>
                 <BottomNavigation />
@@ -540,6 +573,14 @@ function DashboardPage({ user, setUser }) {
                         setDietTargetCat(null);
                     }}
                     onSave={handleSaveDietLog}
+                />
+                <HistoryModal
+                    isOpen={historyModalOpen}
+                    cat={historyTargetCat}
+                    onClose={() => {
+                        setHistoryModalOpen(false);
+                        setHistoryTargetCat(null);
+                    }}
                 />
 
             </div>
