@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 import SearchBar from './header/SearchBar';
 import ModeSelector from './header/ModeSelector';
@@ -8,6 +10,7 @@ import useCaregiverRequests from '../hooks/useCaregiverRequests';
 
 function Header({
     user,
+    setUser,
     onLogout,
     weather,
     weatherLoading,
@@ -27,9 +30,33 @@ function Header({
             (b.createdAt?.seconds || 0) -
             (a.createdAt?.seconds || 0)
         )[0];
+    const canUseCaregiverMode =
+        user?.role === 'caregiver' &&
+        user?.caregiverCatIds?.length > 0;
+
+    const handleModeSwitch = async (nextMode) => {
+        if (!canUseCaregiverMode) {
+            alert('돌보미 승인 후 사용할 수 있습니다.');
+            return;
+        }
+
+        try {
+            await updateDoc(doc(db, 'users', user.uid), {
+                activeMode: nextMode
+            });
+
+            setUser({
+                ...user,
+                activeMode: nextMode
+            });
+        } catch (error) {
+            console.error('모드 전환 실패:', error);
+            alert('모드 전환 중 오류가 발생했습니다.');
+        }
+    };
 
     return (
-        <header className="relative z-50 bg-white/95 backdrop-blur-md px-4 pt-3 pb-2 border-b border-slate-100">
+        <header className="relative z-40 bg-white/95 backdrop-blur-md px-4 pt-3 pb-2 border-b border-slate-100">
             <div className="flex items-center gap-3">
                 <button className="text-2xl text-slate-700">
                     ☰
@@ -46,7 +73,10 @@ function Header({
             </div>
 
             <div className="flex items-center justify-between mt-2">
-                <ModeSelector />
+                <ModeSelector
+                    user={user}
+                    onModeSwitch={handleModeSwitch}
+                />
 
                 <div className="flex items-center gap-2">
                     {user?.role === 'student' && (

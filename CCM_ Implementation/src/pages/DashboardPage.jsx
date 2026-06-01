@@ -378,6 +378,7 @@ function DashboardPage({ user, setUser }) {
                 {/* 💡 Header에 weather와 loading 상태를 props로 전달합니다 */}
                 <Header
                     user={user}
+                    setUser={setUser}
                     onLogout={handleLogout}
                     weather={weather}
                     weatherLoading={weatherLoading}
