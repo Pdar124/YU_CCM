@@ -1,31 +1,59 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../config/firebase';
 
+import AdminPage from '../pages/AdminPage';
+import CaregiverApplicationPage from '../pages/CaregiverApplicationPage';
 import SignupCompletePage from '../pages/SignupCompletePage';
-import SignupTermsPage from '../pages/SignupTermsPages';
+import SignupTermsPage from '../pages/SignupTermsPage';
 import SignupProfilePage from '../pages/SignupProfilePage';
 import SignupPage from '../pages/SignupPage';
 import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
-
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser({
-          id: firebaseUser.email.split('@')[0],
-          uid: firebaseUser.uid,
-          role: 'member',
-        });
+        try {
+          const userDoc = await getDoc(
+            doc(db, 'users', firebaseUser.uid)
+          );
+
+          if (userDoc.exists()) {
+            setUser({
+              uid: firebaseUser.uid,
+              id: firebaseUser.email.split('@')[0],
+              email: firebaseUser.email,
+              ...userDoc.data()
+            });
+          } else {
+            setUser({
+              uid: firebaseUser.uid,
+              id: firebaseUser.email.split('@')[0],
+              email: firebaseUser.email,
+              role: 'student'
+            });
+          }
+        } catch (error) {
+          console.error('사용자 정보 조회 실패:', error);
+
+          setUser({
+            uid: firebaseUser.uid,
+            id: firebaseUser.email.split('@')[0],
+            email: firebaseUser.email,
+            role: 'student'
+          });
+        }
       } else {
         setUser(null);
       }
+
       setLoading(false);
     });
 
@@ -42,13 +70,13 @@ function AppRoutes() {
           user ? <Navigate to="/" /> : <LoginPage setUser={setUser} />
         }
       />
+
       <Route
         path="/signup"
         element={
           user ? <Navigate to="/" /> : <SignupPage setUser={setUser} />
         }
       />
-      <Route path="/signup" element={<SignupPage />} />
 
       <Route
         path="/signup/profile"
@@ -66,12 +94,33 @@ function AppRoutes() {
       />
 
       <Route
+        path="/caregiver/apply"
+        element={
+          user ? (
+            <CaregiverApplicationPage user={user} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+
+      <Route
         path="/"
         element={
           user ? (
             <DashboardPage user={user} setUser={setUser} />
           ) : (
             <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          user?.role === 'admin' ? (
+            <AdminPage />
+          ) : (
+            <Navigate to="/" />
           )
         }
       />
