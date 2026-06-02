@@ -252,15 +252,20 @@ function AdminPage() {
 
 
         {/* 돌보미 승인 대기 */}
-        <div className="px-5 mt-8">
+        <div className="px-5 mt-5">
           <div className="bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-black text-slate-900">
                 돌보미 승인 대기
-              </h2>
-              <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
+                <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
                 {requests.length}건
               </span>
+              </h2>
+
+            <button className="text-xs text-violet-600 font-bold">
+              전체 보기 〉
+            </button>
+              
             </div>
             {requests.length === 0 ? (
               <div className="text-center text-slate-400 py-10 bg-white border border-violet-100 rounded-3xl">
@@ -326,23 +331,25 @@ function AdminPage() {
               </div>
             )}
 
-            <button className="text-xs text-violet-600 font-bold">
-              전체 보기 〉
-            </button>
           </div>
 
 
         </div>
         {/* 신규 고양이 등록 승인 */}
-        <div className="px-5 mt-8">
+        <div className="px-5 mt-5">
           <div className="bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-black text-slate-900">
                 새로운 고양이 등록 승인
-              </h2>
+
               <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
                 {catRequests.length}건
               </span>
+              </h2>
+            
+                 <button className="text-xs text-violet-600 font-bold">
+              전체 보기 〉
+            </button>
             </div>
             {catRequests.length === 0 ? (
               <div className="text-center text-slate-400 py-8 bg-slate-50 rounded-3xl">
@@ -353,10 +360,10 @@ function AdminPage() {
                 {catRequests.slice(0, 2).map((request) => (
                   <div
                     key={request.id}
-                    className="border border-slate-200 rounded-3xl p-4 bg-white shadow-sm"
+                    className="border border-slate-200 rounded-3xl p-5 bg-white shadow-sm"
                   >
                     <div className="flex gap-3">
-                      <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center text-3xl overflow-hidden">
+                      <div className="w-30 h-30 rounded-2xl bg-slate-100 flex items-center justify-center text-3xl overflow-hidden">
                         {request.imageUrl ? (
                           <img
                             src={request.imageUrl}
@@ -410,9 +417,7 @@ function AdminPage() {
               </div>
             )}
 
-            <button className="text-xs text-violet-600 font-bold">
-              전체 보기 〉
-            </button>
+           
 
           </div>
 
