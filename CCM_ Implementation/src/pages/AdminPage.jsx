@@ -430,7 +430,7 @@ function AdminPage() {
               빠른 관리 메뉴
             </h2>
 
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => navigate('/admin/users')}
                 className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2"
@@ -439,11 +439,7 @@ function AdminPage() {
                 <div className="text-xs font-bold">사용자 관리</div>
               </button>
 
-              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
-                <ShieldCheck size={28} />
-                <div className="text-xs font-bold">권한 관리</div>
-              </button>
-
+    
               <button
                 onClick={() => navigate('/admin/cats')}
                 className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2"
@@ -452,11 +448,6 @@ function AdminPage() {
                 <div className="text-xs font-bold">
                   고양이 관리
                 </div>
-              </button>
-
-              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
-                <Megaphone size={28} />
-                <div className="text-xs font-bold">공지 관리</div>
               </button>
             </div>
           </div>
