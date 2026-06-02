@@ -444,9 +444,14 @@ function AdminPage() {
                 <div className="text-xs font-bold">권한 관리</div>
               </button>
 
-              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
+              <button
+                onClick={() => navigate('/admin/cats')}
+                className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2"
+              >
                 <Cat size={28} />
-                <div className="text-xs font-bold">고양이 관리</div>
+                <div className="text-xs font-bold">
+                  고양이 관리
+                </div>
               </button>
 
               <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">

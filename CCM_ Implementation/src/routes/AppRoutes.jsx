@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 
+import AdminCatManagementPage from '../pages/AdminCatManagementPage';
 import AdminUserManagementPage from '../pages/AdminUserManagementPage';
 import DietHealthRecordPage from '../pages/DietHealthRecordPage';
 import ProfilePage from '../pages/ProfilePage';
@@ -149,6 +150,10 @@ function AppRoutes() {
             <Navigate to="/" replace />
           )
         }
+      />
+      <Route
+        path="/admin/cats"
+        element={<AdminCatManagementPage />}
       />
 
       <Route path="*" element={<Navigate to="/" />} />
