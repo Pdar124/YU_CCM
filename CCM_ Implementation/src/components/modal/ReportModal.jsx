@@ -1,6 +1,12 @@
 // src/components/modal/ReportModal.jsx
 
 import React, { useState, useEffect } from 'react';
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from '../../config/firebase';
 
 function ReportModal({
   isOpen,
@@ -8,8 +14,16 @@ function ReportModal({
   onSubmit,
   cats,
   clickedCoords,
-  selectedCatId
+  selectedCatId,
+  user
 }) {
+  const [showNewCatForm, setShowNewCatForm] = useState(false);
+
+  const [tempName, setTempName] = useState('');
+  const [gender, setGender] = useState('unknown');
+  const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+
   const [selectedReportCatId, setSelectedReportCatId] = useState('');
   const [memo, setMemo] = useState('');
 
@@ -36,9 +50,51 @@ function ReportModal({
     setMemo('');
   };
 
+  const handleRequestCatRegistration = async () => {
+    if (!description.trim()) {
+      alert('외형 특징을 입력해 주세요.');
+      return;
+    }
+
+    try {
+      await addDoc(
+        collection(db, 'catRegistrationRequests'),
+        {
+          tempName: tempName.trim() || '이름 미정',
+          gender,
+          description: description.trim(),
+          imageUrl: imageUrl || '',
+          requesterUid: user?.uid || '',
+          requesterName:
+            user?.nickname ||
+            user?.studentId ||
+            user?.id ||
+            '익명 사용자',
+          lat: clickedCoords?.lat,
+          lng: clickedCoords?.lng,
+          status: 'pending',
+          createdAt: serverTimestamp()
+        }
+      );
+
+      alert('신규 고양이 등록 요청이 접수되었습니다.');
+
+      setShowNewCatForm(false);
+      setTempName('');
+      setGender('unknown');
+      setDescription('');
+      setImageUrl('');
+
+      onClose();
+    } catch (error) {
+      console.error(error);
+      alert('신규 고양이 등록 요청에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 animate-slide-up fade-in zoom-in-95 duration-150">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-slate-900">
             🐾 고양이 조우 기록 제보
@@ -59,7 +115,7 @@ function ReportModal({
 
             <select
               value={selectedReportCatId}
-              onChange={(e)=> setSelectedReportCatId(e.target.value)}
+              onChange={(e) => setSelectedReportCatId(e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
             >
               <option value="">고양이를 선택해 주세요</option>
@@ -95,6 +151,67 @@ function ReportModal({
             </div>
           </div>
 
+          <button
+            type="button"
+            onClick={() => setShowNewCatForm(!showNewCatForm)}
+            className="w-full py-3 rounded-2xl border-2 border-dashed border-violet-300 text-violet-700 font-bold text-sm"
+          >
+            🐱 새로운 고양이인가요?
+          </button>
+
+          <div
+            className={`grid transition-all duration-300 ease-out ${showNewCatForm
+                ? 'grid-rows-[1fr] opacity-100 mt-3'
+                : 'grid-rows-[0fr] opacity-0 mt-0'
+              }`}
+          >
+            <div className="overflow-hidden">
+              <div className="p-4 bg-violet-50 rounded-3xl border border-violet-100">
+                <div className="font-black text-slate-900 mb-3">
+                  신규 고양이 등록 요청
+                </div>
+
+                <input
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  placeholder="이름 (선택)"
+                  className="w-full px-4 py-3 rounded-2xl border border-violet-100 mb-3 text-sm"
+                />
+
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl border border-violet-100 mb-3 text-sm bg-white"
+                >
+                  <option value="male">수컷</option>
+                  <option value="female">암컷</option>
+                  <option value="unknown">모름</option>
+                </select>
+
+                <input
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="사진 URL (임시)"
+                  className="w-full px-4 py-3 rounded-2xl border border-violet-100 mb-3 text-sm"
+                />
+
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="외형 특징을 입력해 주세요"
+                  className="w-full px-4 py-3 rounded-2xl border border-violet-100 mb-3 text-sm resize-none"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleRequestCatRegistration}
+                  className="w-full py-3 rounded-2xl bg-violet-600 text-white font-bold text-sm"
+                >
+                  등록 요청
+                </button>
+              </div>
+            </div>
+          </div>
           <div className="flex gap-3 pt-2">
             <button
               type="button"

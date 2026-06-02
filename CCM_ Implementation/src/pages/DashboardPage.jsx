@@ -512,6 +512,7 @@ function DashboardPage({ user, setUser }) {
                     clickedCoords={clickedCoords}
                     selectedCatId={selectedCatId}
                     onSubmit={handleAddReport}
+                    user={user}
                 />
                 <WikiEditModal
                     isOpen={wikiModalOpen}
