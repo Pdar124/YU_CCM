@@ -127,71 +127,63 @@ function AdminPage() {
   const pendingCount = requests.length;
 
   return (
-    <div className="min-h-screen bg-violet-50 flex justify-center">
-      <div className="w-full max-w-md min-h-screen bg-violet-50 px-6 py-6 pb-24">
-        <div className="flex items-center justify-between mb-6">
-          <button
+    <div className="min-h-screen bg-white flex justify-center">
+      <div className="w-full max-w-md min-h-screen bg-white pb-24 border-x border-violet-200">
+        <div className="bg-gradient-to-r from-violet-500 via-purple-400 to-fuchsia-400 rounded-t-[28px] px-5 pt-5 pb-10 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <button
             onClick={() => navigate('/')}
             className="text-3xl text-slate-700"
-          >
-            ‹
-          </button>
-
-          <h1 className="text-lg font-black text-slate-900">
-            관리자 대시보드
-          </h1>
-
-
-          <button
-            onClick={handleLogout}
-            className="text-xs bg-white px-3 py-2 rounded-xl shadow-sm border border-violet-100 text-violet-700 font-bold"
-          >
-            로그아웃
-          </button>
-        </div>
-
-        <p className="text-sm text-slate-500 mb-6">
-          승인 대기 중인 돌보미 신청을 확인하고 처리할 수 있습니다.
-        </p>
-        <div className="bg-gradient-to-r from-violet-700 via-purple-600 to-fuchsia-500 rounded-3xl p-6 text-white mb-6 shadow-lg shadow-violet-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-black">CCM Admin</div>
-              <div className="text-sm opacity-90 mt-1">
-                Campus Cat Mate 관리자 시스템
-              </div>
+            >‹</button>
+            </div>
+            <div className="font-sans flex flex-items text-xl">
+              관리자 대시보드
             </div>
 
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">
-              🛡️
+            <div className="flex items-center gap-3 text-2xl">
+              <button>⚙️</button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 mb-6">
-          <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
-            <div className="text-[10px] text-slate-500">고양이</div>
-            <div className="text-lg font-black">{cats.length}</div>
+        <div className="-mt-7 bg-white rounded-3xl p-5 shadow-sm border border-violet-100 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-black text-slate-900">
+              통계 요약
+            </h2>
+
+            <button className="text-xs border border-slate-200 rounded-xl px-3 py-2 text-slate-600">
+              2026.05.07 기준⌄
+            </button>
           </div>
 
-          <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
-            <div className="text-[10px] text-slate-500">제보</div>
-            <div className="text-lg font-black">{reports.length}</div>
-          </div>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
+              <div className="text-[10px] text-violet-600 font-bold">총 고양이 수</div>
+              <div className="text-xl font-black mt-2">{cats.length}</div>
+            </div>
 
-          <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
-            <div className="text-[10px] text-slate-500">돌보미</div>
-            <div className="text-lg font-black">{caregiverCount}</div>
-          </div>
+            <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
+              <div className="text-[10px] text-violet-600 font-bold">총 제보 수</div>
+              <div className="text-xl font-black mt-2">{reports.length}</div>
+            </div>
 
-          <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
-            <div className="text-[10px] text-slate-500">대기</div>
-            <div className="text-lg font-black">{pendingCount}</div>
+            <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
+              <div className="text-[10px] text-violet-600 font-bold">돌보미 수</div>
+              <div className="text-xl font-black mt-2">{caregiverCount}</div>
+            </div>
+
+            <div className="bg-white border border-violet-100 rounded-2xl p-3 text-center shadow-sm">
+              <div className="text-[10px] text-violet-600 font-bold">승인 대기 수</div>
+              <div className="text-xl font-black mt-2">{pendingCount}</div>
+            </div>
           </div>
         </div>
+
 
         {/* 돌보미 승인 대기 */}
-        <div className="mt-6">
+        <div className="px-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-black text-slate-900">
               돌보미 승인 대기
@@ -262,7 +254,7 @@ function AdminPage() {
         </div>
 
         {/* 신규 고양이 등록 승인 */}
-        <div className="mt-8">
+        <div className="px-5 mt-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-black text-slate-900">
               새로운 고양이 등록 승인
@@ -330,7 +322,7 @@ function AdminPage() {
             </div>
           )}
         </div>
-        <div className="mt-8">
+        <div className="px-5 mt-8">
           <h2 className="font-black text-slate-900 mb-3">
             빠른 관리 메뉴
           </h2>
