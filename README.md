@@ -11,6 +11,12 @@
 <img width="600" height="600" alt="Architecture_Image" src="https://github.com/user-attachments/assets/1d738ef7-c306-4779-8f04-340c7b8924b6" />
 
 ---
+
+# 📍ERD
+
+<img width="5932" height="3284" alt="Image" src="https://github.com/user-attachments/assets/cfdc3263-3054-4502-8dcc-e4e7e1811e1e" />
+
+---
 ## 📝 Commit Message Convention
 
 본 프로젝트는 일관된 커밋 기록을 위해 **Conventional Commits** 스타일을 따릅니다.
@@ -28,6 +34,7 @@
 | init     | 초기 설정                                       |
 
 ---
+
 ## 👤 Author
 
 * **Name:** 박다래 (Darae Park)

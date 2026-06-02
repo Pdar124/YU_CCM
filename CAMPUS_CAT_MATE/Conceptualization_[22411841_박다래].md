@@ -19,6 +19,7 @@
 | :--- | :--- | :--- | :--- |
 | 03/27/2026 | **1.00** | First Draft | 박다래 |
 | 05/08/2026 | **1.01** | Draft Revise (add use case) | 박다래 |
+| 06/03/2026 | **1.02** | Draft Revise (add use case) | 박다래 |
 
 ---
 
@@ -129,6 +130,7 @@ graph LR
 | 10 | **Permission Management** | Admin | 돌보미 신청 내역 검토 및 권한 부여/승인|
 | 11 | **Caregiver Mode Switch**| Caregiver| 학생 모드와 돌보미 전용 UI 모드 간 전환|
 | 12 |	**Caregiver Application** | Student, Caregiver |일반 학생이 고양이 돌봄 활동에 참여하기 위해 돌보미 권한을 관리자에게 신청하거나 돌보미가 고양이 추가를 위해 신청한다. |
+| 13 | **Profile Management** |Caregiver| 담당 고양이 조회, 모드 전환, 신청 상태 확인 등 개인 프로필 정보를 관리한다.
 ---
 
 ## 4. Concept of operation
