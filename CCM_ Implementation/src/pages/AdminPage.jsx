@@ -7,6 +7,7 @@ import {
   onSnapshot,
   doc,
   updateDoc,
+  addDoc,
   serverTimestamp
 } from 'firebase/firestore';
 import { db, auth } from '../config/firebase';
@@ -59,8 +60,12 @@ function AdminPage() {
         ...doc.data()
       })));
     });
-    const unsubCatRequests = onSnapshot(
+    const catRequestQuery = query(
       collection(db, 'catRegistrationRequests'),
+      where('status', '==', 'pending')
+    );
+    const unsubCatRequests = onSnapshot(
+      catRequestQuery,
       (snapshot) => {
         setCatRequests(
           snapshot.docs.map(doc => ({
@@ -112,6 +117,52 @@ function AdminPage() {
       alert('반려 처리 중 오류가 발생했습니다.');
     }
   };
+  const handleApproveCat = async (request) => {
+    try {
+      await addDoc(collection(db, 'cats'), {
+        name: request.tempName || '이름 미정',
+        gender: request.gender || 'unknown',
+        description: request.description || '',
+        feature: request.description || '',
+        imageUrl: request.imageUrl || '',
+        lat: request.lat || null,
+        lng: request.lng || null,
+        location: request.location || '',
+        status: 'active',
+        createdAt: serverTimestamp()
+      });
+
+      await updateDoc(
+        doc(db, 'catRegistrationRequests', request.id),
+        {
+          status: 'approved',
+          approvedAt: serverTimestamp()
+        }
+      );
+
+      alert('신규 고양이 등록을 승인했습니다.');
+    } catch (error) {
+      console.error(error);
+      alert('고양이 등록 승인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleRejectCat = async (request) => {
+    try {
+      await updateDoc(
+        doc(db, 'catRegistrationRequests', request.id),
+        {
+          status: 'rejected',
+          rejectedAt: serverTimestamp()
+        }
+      );
+
+      alert('신규 고양이 등록 요청을 반려했습니다.');
+    } catch (error) {
+      console.error(error);
+      alert('고양이 등록 반려 중 오류가 발생했습니다.');
+    }
+  };
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -133,9 +184,9 @@ function AdminPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <button
-            onClick={() => navigate('/')}
-            className="text-3xl text-slate-700"
-            >‹</button>
+                onClick={() => navigate('/')}
+                className="text-3xl text-slate-700"
+              >‹</button>
             </div>
             <div className="font-sans flex flex-items text-xl">
               관리자 대시보드
@@ -305,11 +356,17 @@ function AdminPage() {
                   </div>
 
                   <div className="flex gap-2 mt-4">
-                    <button className="flex-1 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold">
+                    <button
+                      onClick={() => handleApproveCat(request)}
+                      className="flex-1 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold"
+                    >
                       승인
                     </button>
 
-                    <button className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">
+                    <button
+                      onClick={() => handleRejectCat(request)}
+                      className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold"
+                    >
                       반려
                     </button>
 
