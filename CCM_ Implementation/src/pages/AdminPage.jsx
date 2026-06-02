@@ -10,6 +10,12 @@ import {
   addDoc,
   serverTimestamp
 } from 'firebase/firestore';
+import {
+  Users,
+  ShieldCheck,
+  Cat,
+  Megaphone
+} from 'lucide-react';
 import { db, auth } from '../config/firebase';
 import { useNavigate } from 'react-router-dom';
 
@@ -258,14 +264,14 @@ function AdminPage() {
               <h2 className="font-black text-slate-900">
                 돌보미 승인 대기
                 <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
-                {requests.length}건
-              </span>
+                  {requests.length}건
+                </span>
               </h2>
 
-            <button className="text-xs text-violet-600 font-bold">
-              전체 보기 〉
-            </button>
-              
+              <button className="text-xs text-violet-600 font-bold">
+                전체 보기 〉
+              </button>
+
             </div>
             {requests.length === 0 ? (
               <div className="text-center text-slate-400 py-10 bg-white border border-violet-100 rounded-3xl">
@@ -307,20 +313,14 @@ function AdminPage() {
 
                     <div className="flex gap-2 mt-6">
                       <button
-                        onClick={async () => {
-                          await handleApproveCat(selectedRequest);
-                          setSelectedRequest(null);
-                        }}
+                        onClick={() => handleApprove(request)}
                         className="flex-1 py-3 rounded-2xl bg-violet-600 text-white font-bold"
                       >
                         승인
                       </button>
 
                       <button
-                        onClick={async () => {
-                          await handleRejectCat(selectedRequest);
-                          setSelectedRequest(null);
-                        }}
+                        onClick={() => handleReject(request)}
                         className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold"
                       >
                         반려
@@ -342,14 +342,14 @@ function AdminPage() {
               <h2 className="font-black text-slate-900">
                 새로운 고양이 등록 승인
 
-              <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
-                {catRequests.length}건
-              </span>
+                <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
+                  {catRequests.length}건
+                </span>
               </h2>
-            
-                 <button className="text-xs text-violet-600 font-bold">
-              전체 보기 〉
-            </button>
+
+              <button className="text-xs text-violet-600 font-bold">
+                전체 보기 〉
+              </button>
             </div>
             {catRequests.length === 0 ? (
               <div className="text-center text-slate-400 py-8 bg-slate-50 rounded-3xl">
@@ -417,37 +417,40 @@ function AdminPage() {
               </div>
             )}
 
-           
+
 
           </div>
 
         </div>
 
         {/* 빠른 관리 메뉴 */}
-        <div className="px-5 mt-8">
-          <h2 className="font-black text-slate-900 mb-3">
-            빠른 관리 메뉴
-          </h2>
-          <div className="grid grid-cols-4 gap-3">
-            <button className="bg-violet-50 rounded-2xl p-4">
-              <div className="text-2xl mb-2">👤</div>
-              <div className="text-xs font-bold">사용자 관리</div>
-            </button>
+        <div className="px-5 mt-5">
+          <div className="bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
+            <h2 className="font-black text-slate-900 mb-3">
+              빠른 관리 메뉴
+            </h2>
 
-            <button className="bg-violet-50 rounded-2xl p-4">
-              <div className="text-2xl mb-2">🛡️</div>
-              <div className="text-xs font-bold">권한 관리</div>
-            </button>
+            <div className="grid grid-cols-4 gap-3">
+              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
+                <Users size={28} />
+                <div className="text-xs font-bold">사용자 관리</div>
+              </button>
 
-            <button className="bg-violet-50 rounded-2xl p-4">
-              <div className="text-2xl mb-2">🐱</div>
-              <div className="text-xs font-bold">고양이 관리</div>
-            </button>
+              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
+                <ShieldCheck size={28} />
+                <div className="text-xs font-bold">권한 관리</div>
+              </button>
 
-            <button className="bg-violet-50 rounded-2xl p-4">
-              <div className="text-2xl mb-2">📢</div>
-              <div className="text-xs font-bold">공지 관리</div>
-            </button>
+              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
+                <Cat size={28} />
+                <div className="text-xs font-bold">고양이 관리</div>
+              </button>
+
+              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
+                <Megaphone size={28} />
+                <div className="text-xs font-bold">공지 관리</div>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -505,6 +508,27 @@ function AdminPage() {
                 </div>
               </div>
 
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={async () => {
+                    await handleApproveCat(selectedRequest);
+                    setSelectedRequest(null);
+                  }}
+                  className="flex-1 py-3 rounded-2xl bg-violet-600 text-white font-bold"
+                >
+                  승인
+                </button>
+
+                <button
+                  onClick={async () => {
+                    await handleRejectCat(selectedRequest);
+                    setSelectedRequest(null);
+                  }}
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold"
+                >
+                  반려
+                </button>
+              </div>
             </div>
           </div>
         )}
