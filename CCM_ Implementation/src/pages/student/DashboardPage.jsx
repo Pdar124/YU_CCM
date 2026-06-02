@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { db, auth } from '../config/firebase';
+import { db, auth } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
 
 import {
@@ -15,23 +15,23 @@ import {
 } from 'firebase/firestore';
 import {
     getLatestReport
-} from '../utils/prediction';
+} from '../../utils/prediction';
 
-import useCats from '../hooks/useCats';
-import useReports from '../hooks/useReports';
-import useShelters from '../hooks/useShelters';
-import useWeather from '../hooks/useWeather';
-import useCatPrediction from '../hooks/useCatPrediction';
-import useCatModals from '../hooks/useCatModals';
+import useCats from '../../hooks/useCats';
+import useReports from '../../hooks/useReports';
+import useShelters from '../../hooks/useShelters';
+import useWeather from '../../hooks/useWeather';
+import useCatPrediction from '../../hooks/useCatPrediction';
+import useCatModals from '../../hooks/useCatModals';
 
 
-import HistoryModal from '../components/modal/HistoryModal';
-import WikiEditModal from '../components/modal/WikiEditModal';
-import Header from '../components/Header';
-import MapContainer from '../components/map/MapContainer';
-import ReportModal from '../components/modal/ReportModal';
-import CatDetail from '../components/cat/CatDetail';
-import BottomNavigation from '../components/navigation/BottomNavigation';
+import HistoryModal from '../../components/modal/HistoryModal';
+import WikiEditModal from '../../components/modal/WikiEditModal';
+import Header from '../../components/Header';
+import MapContainer from '../../components/map/MapContainer';
+import ReportModal from '../../components/modal/ReportModal';
+import CatDetail from '../../components/cat/CatDetail';
+import BottomNavigation from '../../components/navigation/BottomNavigation';
 
 function DashboardPage({ user, setUser }) {
     const { cats } = useCats();

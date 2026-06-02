@@ -16,7 +16,7 @@ import {
   Cat,
   Megaphone
 } from 'lucide-react';
-import { db, auth } from '../config/firebase';
+import { db, auth } from '../../config/firebase';
 import { useNavigate } from 'react-router-dom';
 
 function AdminPage() {

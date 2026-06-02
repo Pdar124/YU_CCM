@@ -5,8 +5,8 @@ import {
   addDoc,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
-import useCats from '../hooks/useCats';
+import { db } from '../../config/firebase';
+import useCats from '../../hooks/useCats';
 
 function CaregiverApplicationPage({ user }) {
   const navigate = useNavigate();

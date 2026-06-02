@@ -4,18 +4,18 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 
-import AdminCatManagementPage from '../pages/AdminCatManagementPage';
-import AdminUserManagementPage from '../pages/AdminUserManagementPage';
-import DietHealthRecordPage from '../pages/DietHealthRecordPage';
-import ProfilePage from '../pages/ProfilePage';
-import AdminPage from '../pages/AdminPage';
-import CaregiverApplicationPage from '../pages/CaregiverApplicationPage';
-import SignupCompletePage from '../pages/SignupCompletePage';
-import SignupTermsPage from '../pages/SignupTermsPage';
-import SignupProfilePage from '../pages/SignupProfilePage';
-import SignupPage from '../pages/SignupPage';
-import LoginPage from '../pages/LoginPage';
-import DashboardPage from '../pages/DashboardPage';
+import AdminCatManagementPage from '../pages/admin/AdminCatManagementPage';
+import AdminUserManagementPage from '../pages/admin/AdminUserManagementPage';
+import DietHealthRecordPage from '../pages/caregiver/DietHealthRecordPage';
+import ProfilePage from '../pages/caregiver/ProfilePage';
+import AdminPage from '../pages/admin/AdminPage';
+import CaregiverApplicationPage from '../pages/caregiver/CaregiverApplicationPage';
+import SignupCompletePage from '../pages/auth/SignupCompletePage';
+import SignupTermsPage from '../pages/auth/SignupTermsPage';
+import SignupProfilePage from '../pages/auth/SignupProfilePage';
+import SignupPage from '../pages/common/SignupPage';
+import LoginPage from '../pages/common/LoginPage';
+import DashboardPage from '../pages/student/DashboardPage';
 
 function AppRoutes() {
   const [user, setUser] = useState(null);

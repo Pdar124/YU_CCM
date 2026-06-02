@@ -7,7 +7,7 @@ import {
   addDoc,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../../config/firebase';
 
 function DietHealthRecordPage({ user }) {
   const navigate = useNavigate();
