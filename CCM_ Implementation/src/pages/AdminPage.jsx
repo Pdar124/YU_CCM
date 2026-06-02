@@ -193,27 +193,26 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-white flex justify-center">
       <div className="w-full max-w-md min-h-screen bg-white pb-24 border-x border-violet-200">
-        <div className="bg-gradient-to-r from-violet-500 via-purple-400 to-fuchsia-400 rounded-t-[28px] px-5 pt-5 pb-10 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate('/')}
-                className="text-3xl text-white"
-              >
-                ‹
-              </button>
+        <div className="bg-gradient-to-r from-violet-500 via-purple-400 to-fuchsia-400 px-5 pt-5 pb-12 text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate('/')}
+              className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-2xl"
+            >
+              ‹
+            </button>
 
-              <div className="text-xl font-black">
-                관리자 대시보드
-              </div>
-
-              <button
-                onClick={handleLogout}
-                className="text-xs bg-white/20 px-3 py-2 rounded-xl text-white font-bold"
-              >
-                로그아웃
-              </button>
+            <div className="text-center">
+              <div className="text-lg font-black">관리자 대시보드</div>
+              <div className="text-[11px] opacity-80">CCM Admin Mode</div>
             </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold"
+            >
+              ⏻
+            </button>
           </div>
         </div>
 
@@ -253,158 +252,170 @@ function AdminPage() {
 
 
         {/* 돌보미 승인 대기 */}
-        <div className="px-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-black text-slate-900">
-              돌보미 승인 대기
-            </h2>
+        <div className="px-5 mt-8">
+          <div className="bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-black text-slate-900">
+                돌보미 승인 대기
+              </h2>
+              <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
+                {requests.length}건
+              </span>
+            </div>
+            {requests.length === 0 ? (
+              <div className="text-center text-slate-400 py-10 bg-white border border-violet-100 rounded-3xl">
+                승인 대기 중인 신청이 없습니다.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {requests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="border border-slate-200 rounded-3xl p-4 bg-white shadow-sm"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <div className="font-black text-slate-900">
+                          {request.nickname || request.studentId}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          학번: {request.studentId || '정보 없음'}
+                        </div>
+                      </div>
+
+                      <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">
+                        승인 대기
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-2xl p-3 text-sm text-slate-600 mb-3">
+                      <div className="font-bold text-slate-800 mb-1">
+                        신청 사유
+                      </div>
+                      {request.reason}
+                    </div>
+
+                    <div className="text-xs text-slate-500 mb-4">
+                      신청 고양이 ID:{' '}
+                      {(request.catIds || []).join(', ') || '없음'}
+                    </div>
+
+                    <div className="flex gap-2 mt-6">
+                      <button
+                        onClick={async () => {
+                          await handleApproveCat(selectedRequest);
+                          setSelectedRequest(null);
+                        }}
+                        className="flex-1 py-3 rounded-2xl bg-violet-600 text-white font-bold"
+                      >
+                        승인
+                      </button>
+
+                      <button
+                        onClick={async () => {
+                          await handleRejectCat(selectedRequest);
+                          setSelectedRequest(null);
+                        }}
+                        className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold"
+                      >
+                        반려
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button className="text-xs text-violet-600 font-bold">
               전체 보기 〉
             </button>
           </div>
 
-          {requests.length === 0 ? (
-            <div className="text-center text-slate-400 py-10 bg-white border border-violet-100 rounded-3xl">
-              승인 대기 중인 신청이 없습니다.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {requests.map((request) => (
-                <div
-                  key={request.id}
-                  className="border border-slate-200 rounded-3xl p-4 bg-white shadow-sm"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <div className="font-black text-slate-900">
-                        {request.nickname || request.studentId}
-                      </div>
-                      <div className="text-xs text-slate-400">
-                        학번: {request.studentId || '정보 없음'}
-                      </div>
-                    </div>
 
-                    <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">
-                      승인 대기
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-2xl p-3 text-sm text-slate-600 mb-3">
-                    <div className="font-bold text-slate-800 mb-1">
-                      신청 사유
-                    </div>
-                    {request.reason}
-                  </div>
-
-                  <div className="text-xs text-slate-500 mb-4">
-                    신청 고양이 ID:{' '}
-                    {(request.catIds || []).join(', ') || '없음'}
-                  </div>
-
-                  <div className="flex gap-2 mt-6">
-                    <button
-                      onClick={async () => {
-                        await handleApproveCat(selectedRequest);
-                        setSelectedRequest(null);
-                      }}
-                      className="flex-1 py-3 rounded-2xl bg-violet-600 text-white font-bold"
-                    >
-                      승인
-                    </button>
-
-                    <button
-                      onClick={async () => {
-                        await handleRejectCat(selectedRequest);
-                        setSelectedRequest(null);
-                      }}
-                      className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold"
-                    >
-                      반려
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
         {/* 신규 고양이 등록 승인 */}
         <div className="px-5 mt-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-black text-slate-900">
-              새로운 고양이 등록 승인
-            </h2>
+          <div className="bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-black text-slate-900">
+                새로운 고양이 등록 승인
+              </h2>
+              <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
+                {catRequests.length}건
+              </span>
+            </div>
+            {catRequests.length === 0 ? (
+              <div className="text-center text-slate-400 py-8 bg-slate-50 rounded-3xl">
+                신규 고양이 등록 요청이 없습니다.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {catRequests.slice(0, 2).map((request) => (
+                  <div
+                    key={request.id}
+                    className="border border-slate-200 rounded-3xl p-4 bg-white shadow-sm"
+                  >
+                    <div className="flex gap-3">
+                      <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center text-3xl overflow-hidden">
+                        {request.imageUrl ? (
+                          <img
+                            src={request.imageUrl}
+                            alt="신규 고양이"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          '🐈'
+                        )}
+                      </div>
+
+                      <div className="flex-1">
+                        <div className="font-black text-slate-900">
+                          {request.tempName || '새로운 고양이'}
+                        </div>
+
+                        <div className="text-xs text-slate-500 mt-1">
+                          제보자: {request.requesterName || '정보 없음'}
+                        </div>
+
+                        <div className="text-xs text-slate-500">
+                          특징: {request.description || '정보 없음'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={() => handleApproveCat(request)}
+                        className="flex-1 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold"
+                      >
+                        승인
+                      </button>
+
+                      <button
+                        onClick={() => handleRejectCat(request)}
+                        className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold"
+                      >
+                        반려
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedRequest(request)}
+                        className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold"
+                      >
+                        자세히 보기
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button className="text-xs text-violet-600 font-bold">
               전체 보기 〉
             </button>
+
           </div>
 
-          {catRequests.length === 0 ? (
-            <div className="text-center text-slate-400 py-8 bg-slate-50 rounded-3xl">
-              신규 고양이 등록 요청이 없습니다.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {catRequests.slice(0, 2).map((request) => (
-                <div
-                  key={request.id}
-                  className="border border-slate-200 rounded-3xl p-4 bg-white shadow-sm"
-                >
-                  <div className="flex gap-3">
-                    <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center text-3xl overflow-hidden">
-                      {request.imageUrl ? (
-                        <img
-                          src={request.imageUrl}
-                          alt="신규 고양이"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        '🐈'
-                      )}
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="font-black text-slate-900">
-                        {request.tempName || '새로운 고양이'}
-                      </div>
-
-                      <div className="text-xs text-slate-500 mt-1">
-                        제보자: {request.requesterName || '정보 없음'}
-                      </div>
-
-                      <div className="text-xs text-slate-500">
-                        특징: {request.description || '정보 없음'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={() => handleApproveCat(request)}
-                      className="flex-1 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold"
-                    >
-                      승인
-                    </button>
-
-                    <button
-                      onClick={() => handleRejectCat(request)}
-                      className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold"
-                    >
-                      반려
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedRequest(request)}
-                      className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold"
-                    >
-                      자세히 보기
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* 빠른 관리 메뉴 */}
@@ -412,7 +423,6 @@ function AdminPage() {
           <h2 className="font-black text-slate-900 mb-3">
             빠른 관리 메뉴
           </h2>
-
           <div className="grid grid-cols-4 gap-3">
             <button className="bg-violet-50 rounded-2xl p-4">
               <div className="text-2xl mb-2">👤</div>
