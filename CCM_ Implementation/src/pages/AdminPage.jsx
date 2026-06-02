@@ -20,6 +20,7 @@ function AdminPage() {
   const [users, setUsers] = useState([]);
   const [requests, setRequests] = useState([]);
   const [catRequests, setCatRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
   useEffect(() => {
     const q = query(
@@ -85,6 +86,10 @@ function AdminPage() {
   }, []);
 
   const handleApprove = async (request) => {
+    if (request.status && request.status !== 'pending') {
+      alert('이미 처리된 요청입니다.');
+      return;
+    }
     try {
       await updateDoc(doc(db, 'users', request.uid), {
         role: 'caregiver',
@@ -118,6 +123,10 @@ function AdminPage() {
     }
   };
   const handleApproveCat = async (request) => {
+    if (request.status && request.status !== 'pending') {
+      alert('이미 처리된 요청입니다.');
+      return;
+    }
     try {
       await addDoc(collection(db, 'cats'), {
         name: request.tempName || '이름 미정',
@@ -148,6 +157,10 @@ function AdminPage() {
   };
 
   const handleRejectCat = async (request) => {
+    if (request.status && request.status !== 'pending') {
+      alert('이미 처리된 요청입니다.');
+      return;
+    }
     try {
       await updateDoc(
         doc(db, 'catRegistrationRequests', request.id),
@@ -175,7 +188,7 @@ function AdminPage() {
   const caregiverCount =
     users.filter(user => user.role === 'caregiver').length;
 
-  const pendingCount = requests.length;
+  const pendingCount = requests.length + catRequests.length;
 
   return (
     <div className="min-h-screen bg-white flex justify-center">
@@ -185,15 +198,21 @@ function AdminPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => navigate('/')}
-                className="text-3xl text-slate-700"
-              >‹</button>
-            </div>
-            <div className="font-sans flex flex-items text-xl">
-              관리자 대시보드
-            </div>
+                className="text-3xl text-white"
+              >
+                ‹
+              </button>
 
-            <div className="flex items-center gap-3 text-2xl">
-              <button>⚙️</button>
+              <div className="text-xl font-black">
+                관리자 대시보드
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="text-xs bg-white/20 px-3 py-2 rounded-xl text-white font-bold"
+              >
+                로그아웃
+              </button>
             </div>
           </div>
         </div>
@@ -283,17 +302,23 @@ function AdminPage() {
                     {(request.catIds || []).join(', ') || '없음'}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-6">
                     <button
-                      onClick={() => handleApprove(request)}
-                      className="flex-1 py-3 rounded-2xl bg-violet-600 text-white text-sm font-bold"
+                      onClick={async () => {
+                        await handleApproveCat(selectedRequest);
+                        setSelectedRequest(null);
+                      }}
+                      className="flex-1 py-3 rounded-2xl bg-violet-600 text-white font-bold"
                     >
                       승인
                     </button>
 
                     <button
-                      onClick={() => handleReject(request)}
-                      className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 text-sm font-bold"
+                      onClick={async () => {
+                        await handleRejectCat(selectedRequest);
+                        setSelectedRequest(null);
+                      }}
+                      className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold"
                     >
                       반려
                     </button>
@@ -303,7 +328,6 @@ function AdminPage() {
             </div>
           )}
         </div>
-
         {/* 신규 고양이 등록 승인 */}
         <div className="px-5 mt-8">
           <div className="flex items-center justify-between mb-3">
@@ -370,7 +394,10 @@ function AdminPage() {
                       반려
                     </button>
 
-                    <button className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold">
+                    <button
+                      onClick={() => setSelectedRequest(request)}
+                      className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold"
+                    >
                       자세히 보기
                     </button>
                   </div>
@@ -379,6 +406,8 @@ function AdminPage() {
             </div>
           )}
         </div>
+
+        {/* 빠른 관리 메뉴 */}
         <div className="px-5 mt-8">
           <h2 className="font-black text-slate-900 mb-3">
             빠른 관리 메뉴
@@ -406,6 +435,65 @@ function AdminPage() {
             </button>
           </div>
         </div>
+
+        {/* 신규 고양이 상세 모달 */}
+        {selectedRequest && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-black text-lg">
+                  신규 고양이 등록 요청
+                </h2>
+
+                <button
+                  onClick={() => setSelectedRequest(null)}
+                  className="text-slate-400 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {selectedRequest.imageUrl && (
+                <img
+                  src={selectedRequest.imageUrl}
+                  alt="cat"
+                  className="w-full h-56 object-cover rounded-2xl mb-4"
+                />
+              )}
+
+              <div className="space-y-3 text-sm">
+                <div>
+                  <span className="font-bold">이름</span>
+                  <div>{selectedRequest.tempName || '미입력'}</div>
+                </div>
+
+                <div>
+                  <span className="font-bold">성별</span>
+                  <div>{selectedRequest.gender || '모름'}</div>
+                </div>
+
+                <div>
+                  <span className="font-bold">특징</span>
+                  <div>{selectedRequest.description || '정보 없음'}</div>
+                </div>
+
+                <div>
+                  <span className="font-bold">제보자</span>
+                  <div>{selectedRequest.requesterName || '정보 없음'}</div>
+                </div>
+
+                <div>
+                  <span className="font-bold">위치</span>
+                  <div>
+                    {selectedRequest.lat}, {selectedRequest.lng}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
