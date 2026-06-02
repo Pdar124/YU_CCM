@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 
+import AdminUserManagementPage from '../pages/AdminUserManagementPage';
 import DietHealthRecordPage from '../pages/DietHealthRecordPage';
 import ProfilePage from '../pages/ProfilePage';
 import AdminPage from '../pages/AdminPage';
@@ -137,6 +138,16 @@ function AppRoutes() {
         path="/profile"
         element={
           user ? <ProfilePage user={user} setUser={setUser} /> : <Navigate to="/login" />
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          user?.role === 'admin' ? (
+            <AdminUserManagementPage />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 

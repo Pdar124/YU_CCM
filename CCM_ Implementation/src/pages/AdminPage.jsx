@@ -431,7 +431,10 @@ function AdminPage() {
             </h2>
 
             <div className="grid grid-cols-4 gap-3">
-              <button className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2">
+              <button
+                onClick={() => navigate('/admin/users')}
+                className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2"
+              >
                 <Users size={28} />
                 <div className="text-xs font-bold">사용자 관리</div>
               </button>
