@@ -21,6 +21,7 @@ function CatDetail({
 
   const isMyCat =
     user?.caregiverCatIds?.includes(cat.id);
+  const isGuest = user?.role === 'guest';
 
   return (
     <div
@@ -104,7 +105,27 @@ function CatDetail({
           />
         )}
 
-      {user?.activeMode === 'student' && (
+      {isGuest && (
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="py-3 rounded-2xl bg-emerald-600 text-white text-xs font-bold"
+          >
+            로그인 후 제보하기
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/signup')}
+            className="py-3 rounded-2xl bg-white border border-emerald-100 text-emerald-700 text-xs font-bold"
+          >
+            돌봄 참여하기
+          </button>
+        </div>
+      )}
+
+      {!isGuest && user?.activeMode !== 'caregiver' && (
         <CatStudentActions
           cat={cat}
           onReport={onReport}

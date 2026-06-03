@@ -25,6 +25,7 @@ function Header({
     latestDietLog
 }) {
     const navigate = useNavigate();
+    const isGuest = user?.role === 'guest';
     const { requests } =
         useCaregiverRequests(user?.uid);
     const latestRequest =
@@ -60,8 +61,20 @@ function Header({
     return (
         <header className="relative z-40 bg-white/95 backdrop-blur-md px-4 pt-3 pb-2 border-b border-slate-100">
             <div className="flex items-center gap-3">
-                <button className="text-2xl text-slate-700">
-                    ☰
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (isGuest) {
+                            navigate('/login');
+                            return;
+                        }
+
+                        navigate('/profile');
+                    }}
+                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-lg font-bold"
+                    aria-label={isGuest ? '로그인으로 이동' : '프로필 보기'}
+                >
+                    👤
                 </button>
 
                 <SearchBar
@@ -70,12 +83,37 @@ function Header({
                 />
 
                 <button
-                    onClick={() => navigate('/profile')}
-                    className="text-xl text-slate-700"
+                    type="button"
+                    onClick={() => {
+                        if (isGuest) {
+                            navigate('/login');
+                            return;
+                        }
+
+                        onLogout();
+                    }}
+                    className={`h-10 px-3 rounded-full text-xs font-bold ${
+                        isGuest
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-900 text-white'
+                    }`}
                 >
-                    ⚙️
+                    {isGuest ? '로그인' : '로그아웃'}
                 </button>
             </div>
+
+            {isGuest && (
+                <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+                    <div>
+                        <div className="text-sm font-black text-emerald-800">
+                            조회 전용으로 둘러보는 중
+                        </div>
+                        <div className="text-xs text-emerald-700 mt-0.5">
+                            제보와 돌봄 기록은 로그인 후 이용할 수 있습니다.
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex items-center justify-between mt-2">
                 <ModeSelector
@@ -124,14 +162,6 @@ function Header({
                                 </span>
                             )}
                         </div>
-                    )}
-                    {user && (
-                        <button
-                            onClick={onLogout}
-                            className="mt-3 text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full"
-                        >
-                            로그아웃
-                        </button>
                     )}
                 </div>
             </div>

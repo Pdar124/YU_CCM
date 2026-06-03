@@ -5,7 +5,12 @@ function LoginPage({ setUser }) {
     <Login
       onLoginSuccess={(userData) => setUser(userData)}
       onGuestLogin={() =>
-        setUser({ id: 'guest', role: 'guest', uid: null })
+        setUser({
+          id: 'guest',
+          role: 'guest',
+          activeMode: 'guest',
+          uid: null
+        })
       }
     />
   );

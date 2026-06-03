@@ -54,6 +54,7 @@ function DashboardPage({ user, setUser }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
+    const isGuest = user?.role === 'guest';
 
 
     const {
@@ -111,6 +112,11 @@ function DashboardPage({ user, setUser }) {
     };
     // 신고 등록 함수
     const handleAddReport = async (reportData) => {
+        if (isGuest) {
+            alert('로그인 후 제보할 수 있습니다.');
+            return;
+        }
+
         try {
             await addDoc(collection(db, 'reports'), {
                 catId: reportData.catId,
@@ -138,6 +144,11 @@ function DashboardPage({ user, setUser }) {
 
 
     const handleReportClick = (cat) => {
+        if (isGuest) {
+            alert('로그인 후 제보할 수 있습니다.');
+            return;
+        }
+
         setSelectedCatId(cat.id);
 
         const latestReport = getLatestReport(cat.id, reports);
@@ -169,6 +180,11 @@ function DashboardPage({ user, setUser }) {
                 map,
                 'click',
                 (mouseEvent) => {
+                    if (isGuest) {
+                        alert('로그인 후 제보할 수 있습니다.');
+                        return;
+                    }
+
                     const latlng = mouseEvent.latLng;
 
                     setClickedCoords({
@@ -182,22 +198,34 @@ function DashboardPage({ user, setUser }) {
         };
 
         if (window.kakao && window.kakao.maps) {
-            initMap();
+            window.kakao.maps.load(initMap);
+            return;
+        }
+
+        const existingScript = document.getElementById('kakao-map-sdk');
+        const loadKakaoMap = () => {
+            if (window.kakao?.maps) {
+                window.kakao.maps.load(initMap);
+            }
+        };
+
+        if (existingScript) {
+            existingScript.addEventListener('load', loadKakaoMap, { once: true });
+            loadKakaoMap();
             return;
         }
 
         const script = document.createElement('script');
+        script.id = 'kakao-map-sdk';
         script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=8309e0e8095058bb527deb1918011c3c&autoload=false';
         script.async = true;
-
-        script.onload = () => {
-            window.kakao.maps.load(() => {
-                initMap();
-            });
+        script.onload = loadKakaoMap;
+        script.onerror = () => {
+            console.warn('카카오 지도 스크립트를 불러오지 못해 기본 지도 배경을 표시합니다.');
         };
 
         document.head.appendChild(script);
-    }, []);
+    }, [isGuest]);
 
     const filteredCats = cats.filter((cat) =>
         cat.name
@@ -489,6 +517,8 @@ function DashboardPage({ user, setUser }) {
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);
 
+                        if (!window.kakao?.maps || !mapRef.current) return;
+
                         const latestReport = getLatestReport(cat.id, reports);
 
                         const position = latestReport
@@ -499,7 +529,7 @@ function DashboardPage({ user, setUser }) {
                     }}
                 />
                 <main className="relative flex-1 overflow-hidden">
-                    <MapContainer ref={mapContainer} />
+                    <MapContainer ref={mapContainer} isReady={mapReady} />
 
                     <CatDetail
                         cat={currentSelectedCat}
@@ -518,7 +548,7 @@ function DashboardPage({ user, setUser }) {
                 <BottomNavigation />
 
                 <ReportModal
-                    isOpen={isModalOpen}
+                    isOpen={isModalOpen && !isGuest}
                     onClose={() => setIsModalOpen(false)}
                     cats={cats}
                     clickedCoords={clickedCoords}
