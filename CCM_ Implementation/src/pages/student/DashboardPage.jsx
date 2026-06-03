@@ -359,7 +359,16 @@ function DashboardPage({ user, setUser }) {
                 return;
             }
 
-            moveMapToCat(currentSelectedCat);
+            if (predictedLocation && window.kakao?.maps && mapRef.current) {
+                mapRef.current.panTo(
+                    new window.kakao.maps.LatLng(
+                        predictedLocation.lat,
+                        predictedLocation.lng
+                    )
+                );
+            } else {
+                moveMapToCat(currentSelectedCat);
+            }
             return;
         }
 
@@ -512,14 +521,18 @@ function DashboardPage({ user, setUser }) {
         console.log("predictedLocation:", predictedLocation);
 
         if (!mapRef.current) return;
-        if (!predictedLocation) return;
 
         if (predictedMarkerRef.current) {
             predictedMarkerRef.current.setMap(null);
+            predictedMarkerRef.current = null;
         }
         if (predictedCircleRef.current) {
             predictedCircleRef.current.setMap(null);
+            predictedCircleRef.current = null;
         }
+
+        if (activeNavigation !== 'analysis') return;
+        if (!predictedLocation) return;
 
         const position =
             new window.kakao.maps.LatLng(
@@ -575,7 +588,7 @@ function DashboardPage({ user, setUser }) {
         predictedMarkerRef.current = marker;
         predictedCircleRef.current = circle;
 
-    }, [predictedLocation, mapReady]);
+    }, [activeNavigation, predictedLocation, mapReady]);
 
     // 🛣️ 고양이 이동 경로(Polyline) 표시
     useEffect(() => {
