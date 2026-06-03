@@ -61,22 +61,6 @@ function Header({
     return (
         <header className="relative z-40 bg-white/95 backdrop-blur-md px-4 pt-3 pb-2 border-b border-slate-100">
             <div className="flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={() => {
-                        if (isGuest) {
-                            navigate('/login');
-                            return;
-                        }
-
-                        navigate('/profile');
-                    }}
-                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-lg font-bold"
-                    aria-label={isGuest ? '로그인으로 이동' : '프로필 보기'}
-                >
-                    👤
-                </button>
-
                 <SearchBar
                     value={searchKeyword}
                     onChange={onSearchChange}

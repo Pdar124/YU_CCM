@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
 
@@ -35,6 +36,7 @@ import CatDetail from '../../components/cat/CatDetail';
 import BottomNavigation from '../../components/navigation/BottomNavigation';
 
 function DashboardPage({ user, setUser }) {
+    const navigate = useNavigate();
     const { cats } = useCats();
     const { reports } = useReports();
     const { shelters } = useShelters();
@@ -54,6 +56,7 @@ function DashboardPage({ user, setUser }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
+    const [activeNavigation, setActiveNavigation] = useState('map');
     const isGuest = user?.role === 'guest';
 
 
@@ -159,6 +162,53 @@ function DashboardPage({ user, setUser }) {
         });
 
         setIsModalOpen(true);
+    };
+
+    const moveMapToCat = (cat) => {
+        if (!cat || !window.kakao?.maps || !mapRef.current) return;
+
+        const latestReport = getLatestReport(cat.id, reports);
+        const position = latestReport
+            ? new window.kakao.maps.LatLng(latestReport.lat, latestReport.lng)
+            : new window.kakao.maps.LatLng(cat.lat, cat.lng);
+
+        mapRef.current.panTo(position);
+    };
+
+    const handleNavigationSelect = (itemId) => {
+        setActiveNavigation(itemId);
+
+        if (itemId === 'map') {
+            setSelectedCatId(null);
+            closeHistoryModal();
+            return;
+        }
+
+        if (itemId === 'history') {
+            if (!currentSelectedCat) {
+                alert('히스토리를 볼 고양이를 먼저 선택해 주세요.');
+                setActiveNavigation('map');
+                return;
+            }
+
+            openHistoryModal(currentSelectedCat);
+            return;
+        }
+
+        if (itemId === 'analysis') {
+            if (!currentSelectedCat) {
+                alert('동선을 볼 고양이를 먼저 선택해 주세요.');
+                setActiveNavigation('map');
+                return;
+            }
+
+            moveMapToCat(currentSelectedCat);
+            return;
+        }
+
+        if (itemId === 'profile') {
+            navigate(isGuest ? '/login' : '/profile');
+        }
     };
 
     // 🗺️ 카카오 지도 초기화
@@ -516,16 +566,9 @@ function DashboardPage({ user, setUser }) {
                     latestDietLog={latestDietLog}
                     onCatClick={(cat) => {
                         setSelectedCatId(cat.id);
+                        setActiveNavigation('map');
 
-                        if (!window.kakao?.maps || !mapRef.current) return;
-
-                        const latestReport = getLatestReport(cat.id, reports);
-
-                        const position = latestReport
-                            ? new window.kakao.maps.LatLng(latestReport.lat, latestReport.lng)
-                            : new window.kakao.maps.LatLng(cat.lat, cat.lng);
-
-                        mapRef.current?.panTo(position);
+                        moveMapToCat(cat);
                     }}
                 />
                 <main className="relative flex-1 overflow-hidden">
@@ -545,7 +588,10 @@ function DashboardPage({ user, setUser }) {
                         onHistoryView={openHistoryModal}
                     />
                 </main>
-                <BottomNavigation />
+                <BottomNavigation
+                    activeItem={activeNavigation}
+                    onSelect={handleNavigationSelect}
+                />
 
                 <ReportModal
                     isOpen={isModalOpen && !isGuest}
