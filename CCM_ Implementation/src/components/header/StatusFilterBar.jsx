@@ -19,33 +19,29 @@ function StatusFilterBar({
     const latestTimeText = formatReportTime(latestReport?.createdAt);
 
     return (
-        <div className="mt-3 ml-0 flex items-center gap-3 overflow-x-auto text-xs text-slate-600 pb-1">
-            <div className="flex ml-0 items-center">
-                {activeMode === 'caregiver' ? (
-                    <>
-                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                            🎯 최근 급여
-                        </div>
+        <div className="mt-3 flex gap-3 text-xs text-slate-600">
+            {activeMode === 'caregiver' ? (
+                <>
+                    <div className="flex-1 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
+                        🎯 최근 급여
+                    </div>
 
-                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                            📍 나의 담당 고양이
-                        </div>
+                    <div className="flex-1 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
+                        📍 나의 담당 고양이
+                    </div>
+                </>
+            ) : (
+                <>
+                    <div className="basis-3/5 min-w-0 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
+                        <span className="shrink-0">🎯</span>
+                        <span className="truncate">최근 제보 {latestTimeText || '없음'}</span>
+                    </div>
 
-    
-                    </>
-                ) : (
-                    <>
-                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                            🎯 최근 제보 {latestTimeText || '없음'}
-                        </div>
-
-                        <div className="shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                            📍 인기 제보 구역
-                        </div>
-                    </>
-                )}
-            </div>
-            {/* Weather widget moved to Header next to ModeSelector */}
+                    <div className="basis-2/5 min-w-0 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
+                        <span className="truncate">📍 인기 제보 구역</span>
+                    </div>
+                </>
+            )}
         </div>
     );
 }
