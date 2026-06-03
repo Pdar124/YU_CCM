@@ -1,7 +1,6 @@
+import { Cat, MapPin, Target, Utensils } from 'lucide-react';
+
 function StatusFilterBar({
-  weather,
-  weatherLoading,
-  isRain,
   latestReport,
   activeMode
 }) {
@@ -23,22 +22,25 @@ function StatusFilterBar({
             {activeMode === 'caregiver' ? (
                 <>
                     <div className="flex-1 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
-                        🎯 최근 급여
+                        <Utensils size={14} strokeWidth={2.5} className="shrink-0 text-amber-500" />
+                        <span className="truncate">최근 급여</span>
                     </div>
 
                     <div className="flex-1 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
-                        📍 나의 담당 고양이
+                        <Cat size={14} strokeWidth={2.5} className="shrink-0 text-orange-500" />
+                        <span className="truncate">나의 담당 고양이</span>
                     </div>
                 </>
             ) : (
                 <>
                     <div className="basis-3/5 min-w-0 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
-                        <span className="shrink-0">🎯</span>
+                        <Target size={14} strokeWidth={2.5} className="shrink-0 text-emerald-500" />
                         <span className="truncate">최근 제보 {latestTimeText || '없음'}</span>
                     </div>
 
                     <div className="basis-2/5 min-w-0 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
-                        <span className="truncate">📍 인기 제보 구역</span>
+                        <MapPin size={14} strokeWidth={2.5} className="shrink-0 text-indigo-500" />
+                        <span className="truncate">인기 제보 구역</span>
                     </div>
                 </>
             )}

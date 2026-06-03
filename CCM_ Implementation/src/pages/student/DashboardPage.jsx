@@ -18,6 +18,13 @@ import {
 import {
     getLatestReport
 } from '../../utils/prediction';
+import {
+    AlertTriangle,
+    LocateFixed,
+    Route,
+    Sparkles,
+    X
+} from 'lucide-react';
 
 import { getTimeAgo } from '../../utils/time';
 import useCats from '../../hooks/useCats';
@@ -59,7 +66,110 @@ function DashboardPage({ user, setUser }) {
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
     const [activeNavigation, setActiveNavigation] = useState('map');
+
     const isGuest = user?.role === 'guest';
+
+    // Custom marker image generator
+    const createMarkerImage = ({ emoji, bgColor, borderColor, size = 48 }) => {
+        if (!window.kakao?.maps) return null;
+
+        const svg = `
+            <svg width="${size}" height="${size + 10}" viewBox="0 0 ${size} ${size + 10}" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <filter id="shadow" x="0" y="0" width="${size}" height="${size + 10}" filterUnits="userSpaceOnUse">
+                    <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.18"/>
+                </filter>
+                <g filter="url(#shadow)">
+                    <path d="M${size / 2} ${size + 6}C${size / 2} ${size + 6} ${size / 2 - 7} ${size - 2} ${size / 2 - 13} ${size - 10}C${size / 2 - 19} ${size - 18} ${size / 2 - 22} ${size - 24} ${size / 2 - 22} ${size / 2}C${size / 2 - 22} ${size / 2 - 12} ${size / 2 - 12} 2 ${size / 2} 2C${size / 2 + 12} 2 ${size / 2 + 22} ${size / 2 - 12} ${size / 2 + 22} ${size / 2}C${size / 2 + 22} ${size - 24} ${size / 2 + 19} ${size - 18} ${size / 2 + 13} ${size - 10}C${size / 2 + 7} ${size - 2} ${size / 2} ${size + 6} ${size / 2} ${size + 6}Z" fill="${bgColor}" stroke="${borderColor}" stroke-width="3"/>
+                    <circle cx="${size / 2}" cy="${size / 2}" r="17" fill="white" fill-opacity="0.92"/>
+                    <text x="50%" y="${size / 2 + 7}" text-anchor="middle" font-size="22" font-family="Apple Color Emoji, Segoe UI Emoji, sans-serif">${emoji}</text>
+                </g>
+            </svg>
+        `;
+
+        const imageSrc = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+        const imageSize = new window.kakao.maps.Size(size, size + 10);
+        const imageOption = {
+            offset: new window.kakao.maps.Point(size / 2, size + 6)
+        };
+
+        return new window.kakao.maps.MarkerImage(
+            imageSrc,
+            imageSize,
+            imageOption
+        );
+    };
+
+    // 🐱 Custom cat marker element for CustomOverlay
+    const createCatMarkerElement = ({ cat, isSelected, onClick }) => {
+        const markerButton = document.createElement('button');
+        markerButton.type = 'button';
+        markerButton.setAttribute('aria-label', `${cat.name} 마커`);
+        markerButton.style.width = isSelected ? '44px' : '40px';
+        markerButton.style.height = isSelected ? '50px' : '46px';
+        markerButton.style.position = 'relative';
+        markerButton.style.border = '0';
+        markerButton.style.padding = '0';
+        markerButton.style.background = 'transparent';
+        markerButton.style.cursor = 'pointer';
+        markerButton.style.transform = 'translateY(-4px)';
+
+        const pin = document.createElement('div');
+        pin.style.width = isSelected ? '42px' : '38px';
+        pin.style.height = isSelected ? '42px' : '38px';
+        pin.style.borderRadius = '999px';
+        pin.style.background = isSelected ? '#fb923c' : '#10b981';
+        pin.style.border = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
+        pin.style.boxShadow = '0 4px 10px rgba(15, 23, 42, 0.18)';
+        pin.style.display = 'flex';
+        pin.style.alignItems = 'center';
+        pin.style.justifyContent = 'center';
+        pin.style.position = 'relative';
+
+        const inner = document.createElement('div');
+        inner.style.width = isSelected ? '30px' : '27px';
+        inner.style.height = isSelected ? '30px' : '27px';
+        inner.style.borderRadius = '999px';
+        inner.style.background = '#ffffff';
+        inner.style.overflow = 'hidden';
+        inner.style.display = 'flex';
+        inner.style.alignItems = 'center';
+        inner.style.justifyContent = 'center';
+        inner.style.fontSize = isSelected ? '18px' : '16px';
+        inner.style.lineHeight = '1';
+
+        const catImageUrl = cat.imageUrl || cat.photoUrl || cat.profileImageUrl || '';
+
+        if (catImageUrl) {
+            const img = document.createElement('img');
+            img.src = catImageUrl;
+            img.alt = cat.name || '고양이';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            inner.appendChild(img);
+        } else {
+            inner.textContent = cat.icon || '🐱';
+        }
+
+        const tail = document.createElement('div');
+        tail.style.position = 'absolute';
+        tail.style.left = '50%';
+        tail.style.bottom = '-4px';
+        tail.style.width = '10px';
+        tail.style.height = '10px';
+        tail.style.background = isSelected ? '#fb923c' : '#10b981';
+        tail.style.borderRight = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
+        tail.style.borderBottom = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
+        tail.style.transform = 'translateX(-50%) rotate(45deg)';
+        tail.style.borderRadius = '2px';
+
+        pin.appendChild(inner);
+        pin.appendChild(tail);
+        markerButton.appendChild(pin);
+        markerButton.addEventListener('click', onClick);
+
+        return markerButton;
+    };
 
 
     const {
@@ -316,9 +426,8 @@ function DashboardPage({ user, setUser }) {
     useEffect(() => {
         if (!mapRef.current) return;
 
-
         // 기존 마커 삭제
-        markersRef.current.forEach(marker => marker.setMap(null));
+        markersRef.current.forEach(marker => marker.setMap && marker.setMap(null));
         markersRef.current = [];
 
         // 새 마커 생성
@@ -337,19 +446,26 @@ function DashboardPage({ user, setUser }) {
                         cat.lng
                     );
 
-            const marker = new window.kakao.maps.Marker({
-                map: mapRef.current,
-                position,
+            const isSelected = selectedCatId === cat.id;
+            const content = createCatMarkerElement({
+                cat,
+                isSelected,
+                onClick: () => {
+                    setSelectedCatId(cat.id);
+                    mapRef.current.panTo(position);
+                }
             });
 
-            window.kakao.maps.event.addListener(marker, 'click', () => {
-                setSelectedCatId(cat.id);
-                mapRef.current.panTo(position);
+            const marker = new window.kakao.maps.CustomOverlay({
+                map: mapRef.current,
+                position,
+                content,
+                yAnchor: 1
             });
 
             markersRef.current.push(marker);
         });
-    }, [cats, reports, mapReady]);
+    }, [cats, reports, mapReady, selectedCatId]);
 
 
     // 📍 예측 위치 마커 업데이트
@@ -374,18 +490,12 @@ function DashboardPage({ user, setUser }) {
                 predictedLocation.lng
             );
 
-        // 예측 위치 마커는 고양이 마커와는 다른 아이콘으로 표시
-        const imageSrc =
-            'https://cdn-icons-png.flaticon.com/512/1828/1828884.png';
-
-        const imageSize =
-            new window.kakao.maps.Size(32, 32);
-
-        const markerImage =
-            new window.kakao.maps.MarkerImage(
-                imageSrc,
-                imageSize
-            );
+        const markerImage = createMarkerImage({
+            emoji: '📍',
+            bgColor: '#6366f1',
+            borderColor: '#c7d2fe',
+            size: 50
+        });
 
         const marker = new window.kakao.maps.Marker({
             map: mapRef.current,
@@ -396,9 +506,11 @@ function DashboardPage({ user, setUser }) {
         const circle = new window.kakao.maps.Circle({
             center: position,
             radius: 50,
-            strokeWeight: 2,
-            strokeOpacity: 0.8,
-            fillOpacity: 0.2,
+            strokeWeight: 3,
+            strokeColor: '#6366f1',
+            strokeOpacity: 0.75,
+            fillColor: '#818cf8',
+            fillOpacity: 0.18,
             map: mapRef.current
         });
         mapRef.current.panTo(position);
@@ -406,8 +518,8 @@ function DashboardPage({ user, setUser }) {
         const infowindow =
             new window.kakao.maps.InfoWindow({
                 content: `
-            <div style="padding:8px;">
-                📍 Recency Weight 예측 위치
+            <div style="padding:10px 12px; font-size:12px; font-weight:800; color:#4338ca; border-radius:14px;">
+                Recency Weight 예측 위치
             </div>
         `
             });
@@ -422,7 +534,6 @@ function DashboardPage({ user, setUser }) {
                 );
             }
         );
-
 
         predictedMarkerRef.current = marker;
         predictedCircleRef.current = circle;
@@ -489,17 +600,12 @@ function DashboardPage({ user, setUser }) {
 
         if (!isRain) return;
 
-        const imageSrc =
-            'https://cdn-icons-png.flaticon.com/512/3313/3313888.png';
-
-        const imageSize =
-            new window.kakao.maps.Size(36, 36);
-
-        const markerImage =
-            new window.kakao.maps.MarkerImage(
-                imageSrc,
-                imageSize
-            );
+        const markerImage = createMarkerImage({
+            emoji: '☔',
+            bgColor: '#38bdf8',
+            borderColor: '#bae6fd',
+            size: 46
+        });
 
         shelters.forEach((shelter) => {
             const marker = new window.kakao.maps.Marker({
@@ -515,7 +621,7 @@ function DashboardPage({ user, setUser }) {
                 new window.kakao.maps.InfoWindow({
                     content: `
                 <div style="padding:8px;">
-                    ☔ ${shelter.name}
+                    ${shelter.name}
                 </div>
             `
                 });
@@ -614,30 +720,41 @@ function DashboardPage({ user, setUser }) {
                     {activeNavigation === 'analysis' && currentSelectedCat && (
                         <div className="absolute left-4 right-4 bottom-24 z-50 rounded-3xl bg-white p-4 shadow-2xl border border-indigo-100">
                             <div className="flex items-start justify-between mb-3">
-                                <div>
-                                    <h2 className="text-lg font-black text-slate-900">
-                                        📍 동선 분석
-                                    </h2>
-                                    <p className="text-xs text-slate-500 mt-1">
-                                        {currentSelectedCat.name}의 최근 제보 기반 예측 위치입니다.
-                                    </p>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                        <Route size={20} strokeWidth={2.5} />
+                                    </div>
+
+                                    <div>
+                                        <h2 className="text-lg font-black text-slate-900">
+                                            동선 분석
+                                        </h2>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            {currentSelectedCat.name}의 최근 제보 기반 예측 위치입니다.
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <button
+                                    type="button"
                                     onClick={() => setActiveNavigation('map')}
-                                    className="text-slate-400 hover:text-slate-600 font-bold"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                    aria-label="동선 분석 닫기"
                                 >
-                                    ✕
+                                    <X size={18} strokeWidth={2.5} />
                                 </button>
                             </div>
 
                             {predictedLocation ? (
                                 <div className="rounded-2xl p-3 border bg-indigo-50 border-indigo-100">
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-black text-indigo-700">
-                                            📍 AI 예측 위치
+                                        <span className="flex items-center gap-1.5 text-sm font-black text-indigo-700">
+                                            <LocateFixed size={16} strokeWidth={2.5} />
+                                            AI 예측 위치
                                         </span>
-                                        <span className="text-[10px] text-indigo-500 font-semibold">
+
+                                        <span className="flex items-center gap-1 text-[10px] text-indigo-500 font-semibold">
+                                            <Sparkles size={12} strokeWidth={2.5} />
                                             Recency Weight
                                         </span>
                                     </div>
@@ -658,12 +775,15 @@ function DashboardPage({ user, setUser }) {
                             )}
                         </div>
                     )}
-
                 </main>
                 {user?.activeMode === 'caregiver' && latestDietLog && (
                     <div className="absolute left-4 right-4 bottom-20 z-30">
                         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
-                            ⚠️
+                            <AlertTriangle
+                                size={18}
+                                strokeWidth={2.5}
+                                className="shrink-0 text-amber-600"
+                            />
                             <span>
                                 {latestDietLog.catName}{' '}
                                 {getTimeAgo(latestDietLog.fedAt)}{' '}

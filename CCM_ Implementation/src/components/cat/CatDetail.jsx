@@ -1,5 +1,5 @@
 // src/components/cat/CatDetail.jsx
-import { useState } from 'react';
+import { Cat, CloudRain, MapPin, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CatCaregiverActions from './CatCaregiverActions';
 import CatStudentActions from './CatStudentActions';
@@ -19,7 +19,6 @@ function CatDetail({
     onHistoryView
 }) {
   const navigate = useNavigate();
-  const [showPrediction, setShowPrediction] = useState(false);
 
   if (!cat) return null;
 
@@ -36,48 +35,59 @@ function CatDetail({
     <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm bg-emerald-50"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm bg-emerald-50 text-emerald-600"
           >
-            {cat.icon || '🐈'}
+            {cat.icon ? (
+              <span className="text-3xl">{cat.icon}</span>
+            ) : (
+              <Cat size={28} strokeWidth={2.5} />
+            )}
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900">
                 {cat.name}
               </h2>
               {user?.activeMode === 'caregiver' && isMyCat && (
-                <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-orange-100 text-orange-600">
+                <span className="text-[10px] px-2 py-1 rounded-full font-semibold bg-orange-100 text-orange-600">
                   담당 고양이
                 </span>
               )}
 
 
               {isRain && (
-                <span className="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
-                  ☔ 대피 가능성
+                <span className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">
+                  <CloudRain size={12} strokeWidth={2.5} />
+                  대피 가능성
                 </span>
               )}
             </div>
 
-            <p className="text-xs text-slate-500 mt-1">
-              📍 {cat.location || '위치 정보 없음'}
+            <p className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+              <MapPin size={12} strokeWidth={2.5} className="shrink-0" />
+              <span>{cat.location || '위치 정보 없음'}</span>
             </p>
           </div>
         </div>
 
         <button
+          type="button"
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-600 font-bold"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          aria-label="고양이 상세 닫기"
         >
-          ✕
+          <X size={18} strokeWidth={2.5} />
         </button>
       </div>
 
 
       {isRain && nearestShelter && (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 mb-3 text-xs text-blue-700 font-semibold">
-          ☔ 비 오는 날이에요. {nearestShelter.name} 근처에 있을 가능성이 높아요.
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 mb-3 text-xs text-blue-700 font-semibold flex items-start gap-2">
+          <CloudRain size={16} strokeWidth={2.5} className="shrink-0 mt-0.5" />
+          <span>
+            비 오는 날이에요. {nearestShelter.name} 근처에 있을 가능성이 높아요.
+          </span>
         </div>
       )}
       {user?.activeMode === 'caregiver' &&

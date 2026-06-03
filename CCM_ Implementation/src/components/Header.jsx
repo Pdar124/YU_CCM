@@ -59,7 +59,7 @@ function Header({
     };
 
     return (
-        <header className="relative z-40 bg-white/95 backdrop-blur-md px-4 pt-3 pb-2 border-b border-slate-100">
+        <header className="relative z-40 bg-white/95 backdrop-blur-md px-4 pt-4 pb-2 border-b border-slate-100">
             <div className="flex items-center gap-3">
                 <SearchBar
                     value={searchKeyword}
@@ -76,7 +76,7 @@ function Header({
 
                         onLogout();
                     }}
-                    className={`h-10 px-3 rounded-full text-xs font-bold ${isGuest
+                    className={`h-8 px-3 rounded-full text-xs font-bold ${isGuest
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-900 text-white'
                         }`}
@@ -97,7 +97,7 @@ function Header({
                 </div>
             )}
 
-            <div className="flex items-center justify-between gap-2 mt-2">
+            <div className="flex items-center justify-between gap-2">
                 <ModeSelector
                     user={user}
                     onModeSwitch={handleModeSwitch}
