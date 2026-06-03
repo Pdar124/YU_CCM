@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { auth, db } from '../../config/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
-function Signup({ onSignupSuccess }) {
+function Signup() {
     const navigate = useNavigate();
 
     const [signupType, setSignupType] = useState('student');

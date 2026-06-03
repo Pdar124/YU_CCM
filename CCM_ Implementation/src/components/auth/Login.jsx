@@ -1,5 +1,5 @@
 // src/components/auth/Login.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { auth } from '../../config/firebase.js';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
