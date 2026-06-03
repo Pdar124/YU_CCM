@@ -45,41 +45,7 @@ function StatusFilterBar({
                     </>
                 )}
             </div>
-            <div className="shrink-0 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                {weatherLoading ? (
-                    <span>날씨 불러오는 중...</span>
-                ) : weather ? (
-                    <>
-                        <img
-                            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}.png`}
-                            alt={weather.weather[0].description}
-                            className="w-5 h-5 object-contain"
-                        />
-
-                        <span className="font-semibold text-slate-800">
-                            {weather.main.temp.toFixed(1)}°C
-                        </span>
-
-                        <span className="text-slate-400">|</span>
-
-                        <span className="text-slate-600">
-                            {weather.name === "Gyeongsan-si" && <span>영남대학교</span>}
-                        </span>
-
-                        {isRain && (
-                            <>
-                                <span className="text-slate-400">|</span>
-
-                                <span className="text-amber-600 font-bold">
-                                    비 오는 날 🌧️
-                                </span>
-                            </>
-                        )}
-                    </>
-                ) : (
-                    <span>날씨 정보 없음</span>
-                )}
-            </div>
+            {/* Weather widget moved to Header next to ModeSelector */}
         </div>
     );
 }

@@ -76,16 +76,14 @@ function Header({
 
                         onLogout();
                     }}
-                    className={`h-10 px-3 rounded-full text-xs font-bold ${
-                        isGuest
+                    className={`h-10 px-3 rounded-full text-xs font-bold ${isGuest
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-900 text-white'
-                    }`}
+                        }`}
                 >
                     {isGuest ? '로그인' : '로그아웃'}
                 </button>
             </div>
-
             {isGuest && (
                 <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
                     <div>
@@ -99,53 +97,47 @@ function Header({
                 </div>
             )}
 
-            <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center justify-between gap-2 mt-2">
                 <ModeSelector
                     user={user}
                     onModeSwitch={handleModeSwitch}
                 />
 
-                <div className="flex items-center gap-2">
-                    {user?.role === 'student' && (
-                        <button
-                            onClick={() => navigate('/caregiver/apply')}
-                            className="mt-3 text-xs text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full font-bold"
-                        >
-                            돌보미 신청
-                        </button>
-                    )}
+                <div className="shrink-0 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm text-xs">
+                    {weatherLoading ? (
+                        <span>날씨 불러오는 중...</span>
+                    ) : weather ? (
+                        <>
+                            <img
+                                src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}.png`}
+                                alt={weather.weather[0].description}
+                                className="w-5 h-5 object-contain"
+                            />
 
-                    {user?.role === 'caregiver' && (
-                        <span className="mt-3 text-xs text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full font-bold">
-                            돌보미 인증 완료
-                        </span>
-                    )}
-                    {latestRequest && (
-                        <div className="mt-3 text-xs font-bold">
-                            {latestRequest.status === 'pending' && (
-                                <span className="px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700">
-                                    승인 대기 중
-                                </span>
-                            )}
+                            <span className="font-semibold text-slate-800">
+                                {weather.main.temp.toFixed(1)}°C
+                            </span>
 
-                            {latestRequest.status === 'reviewing' && (
-                                <span className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-700">
-                                    검토 중
-                                </span>
-                            )}
+                            <span className="text-slate-400">|</span>
 
-                            {latestRequest.status === 'approved' && (
-                                <span className="px-3 py-1.5 rounded-full bg-green-100 text-green-700">
-                                    승인 완료
-                                </span>
-                            )}
+                            <span className="text-slate-600">
+                                {weather.name === 'Gyeongsan-si'
+                                    ? '영남대학교'
+                                    : weather.name}
+                            </span>
 
-                            {latestRequest.status === 'rejected' && (
-                                <span className="px-3 py-1.5 rounded-full bg-red-100 text-red-700">
-                                    반려됨
-                                </span>
+                            {isRain && (
+                                <>
+                                    <span className="text-slate-400">|</span>
+
+                                    <span className="text-amber-600 font-bold">
+                                        비 오는 날 🌧️
+                                    </span>
+                                </>
                             )}
-                        </div>
+                        </>
+                    ) : (
+                        <span>날씨 정보 없음</span>
                     )}
                 </div>
             </div>
@@ -177,13 +169,15 @@ function Header({
 
 
 
-            <StatusFilterBar
-                weather={weather}
-                weatherLoading={weatherLoading}
-                isRain={isRain}
-                latestReport={latestReport}
-                activeMode={user?.activeMode}
-            />
+            {!isGuest && (
+                <StatusFilterBar
+                    weather={weather}
+                    weatherLoading={weatherLoading}
+                    isRain={isRain}
+                    latestReport={latestReport}
+                    activeMode={user?.activeMode}
+                />
+            )}
         </header>
     );
 }
