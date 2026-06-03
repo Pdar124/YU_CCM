@@ -4,7 +4,7 @@ import { auth } from '../../config/firebase.js';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
-import loginHeroSrc from '../../assests/ccm_login_hero.png';
+import loginHeroSrc from '../../assets/ccm_login_hero.png';
 
 function Login({ onLoginSuccess, onGuestLogin }) {
   const [studentId, setStudentId] = useState(''); // 💡 이메일 대신 학번 상태 사용

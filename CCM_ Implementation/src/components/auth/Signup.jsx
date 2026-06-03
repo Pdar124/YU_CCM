@@ -14,7 +14,7 @@ import {
     Phone,
     ShieldCheck
 } from 'lucide-react';
-import signupHeroSrc from '../../assests/ccm_signup_hero.png';
+import signupHeroSrc from '../../assets/ccm_signup_hero.png';
 
 function Signup() {
     const navigate = useNavigate();
