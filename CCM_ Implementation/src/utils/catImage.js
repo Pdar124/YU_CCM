@@ -1,42 +1,27 @@
+import catDummyOrange from '../assests/cat_dummy_01_orange.jpg';
+import catDummyTabby from '../assests/cat_dummy_02_tabby.jpg';
+import catDummyTuxedo from '../assests/cat_dummy_03_tuxedo.jpg';
+import catDummyCalico from '../assests/cat_dummy_04_calico.jpg';
+import catDummyGrayWhite from '../assests/cat_dummy_05_gray_white.jpg';
+
 const localCatImagesByName = {
-  나비: '/cat_dummy_05_gray_white.jpg',
-  카오스: '/cat_dummy_02_tabby.jpg',
-  치즈: '/cat_dummy_01_orange.jpg',
-  까미: '/cat_dummy_03_tuxedo.jpg',
-  공주: '/cat_dummy_04_calico.jpg'
+  나비: catDummyGrayWhite,
+  카오스: catDummyTabby,
+  치즈: catDummyOrange,
+  까미: catDummyTuxedo,
+  공주: catDummyCalico
 };
-
-const publicImageAliases = {
-  '/cat_dummy_01_orange.png': '/cat_dummy_01_orange.jpg',
-  '/cat_dummy_02_tabby.png': '/cat_dummy_02_tabby.jpg',
-  '/cat_dummy_03_tuxedo.png': '/cat_dummy_03_tuxedo.jpg',
-  '/cat_dummy_04_calico.png': '/cat_dummy_04_calico.jpg',
-  '/cat_dummy_05_gray_white.png': '/cat_dummy_05_gray_white.jpg'
-};
-
-function normalizePublicPath(path) {
-  if (!path) return '';
-  if (/^(https?:|data:|blob:)/.test(path)) return path;
-
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-
-  return publicImageAliases[normalizedPath] || normalizedPath;
-}
 
 export function getCatImageUrl(cat) {
-  const localImage =
-    cat?.publicImageUrl ||
-    cat?.localImageUrl ||
-    cat?.publicImagePath ||
-    localCatImagesByName[cat?.name];
+  const localImage = localCatImagesByName[cat?.name];
 
-  if (localImage) return normalizePublicPath(localImage);
+  if (localImage) return localImage;
 
-  return normalizePublicPath(
+  return (
     cat?.imageUrl ||
-      cat?.photoUrl ||
-      cat?.profileImageUrl ||
-      cat?.thumbnailUrl ||
-      ''
+    cat?.photoUrl ||
+    cat?.profileImageUrl ||
+    cat?.thumbnailUrl ||
+    ''
   );
 }

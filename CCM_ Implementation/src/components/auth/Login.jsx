@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { auth } from '../../config/firebase.js';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import src from '../../../public/ccm_login_hero.png';
+
+import loginHeroSrc from '../../assests/ccm_login_hero.png';
+
 function Login({ onLoginSuccess, onGuestLogin }) {
   const [studentId, setStudentId] = useState(''); // 💡 이메일 대신 학번 상태 사용
   const [password, setPassword] = useState('');
@@ -51,7 +53,7 @@ function Login({ onLoginSuccess, onGuestLogin }) {
         {/* 서비스 로고 및 타이틀 */}
         <div className="text-center mb-8">
           <img
-            src={src}
+            src={loginHeroSrc}
             alt="Campus Cat Mate 로고"
             className="mx-auto w-full max-w-[340px] object-contain"
           />
