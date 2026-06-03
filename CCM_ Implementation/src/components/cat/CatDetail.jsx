@@ -29,8 +29,8 @@ function CatDetail({
 
  return (
   <div
-    className={`absolute left-4 right-4 z-40 rounded-3xl p-4 shadow-2xl border bg-white border-slate-100 ${
-      hasLatestDietLog ? 'bottom-35' : 'bottom-20'
+    className={`absolute left-4 right-4 z-40 rounded-3xl p-4 shadow-sm border bg-white border-slate-100 ${
+      hasLatestDietLog ? 'bottom-[130px]' : 'bottom-20'
     }`}
   >
     <div className="flex items-start justify-between mb-3">
@@ -73,37 +73,7 @@ function CatDetail({
           ✕
         </button>
       </div>
-      {predictedLocation && (
-        <button
-          type="button"
-          onClick={() => setShowPrediction((prev) => !prev)}
-          className="w-full mb-3 py-3 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-black"
-        >
-          📍 동선 분석 {showPrediction ? '접기' : '보기'}
-        </button>
-      )}
 
-      {showPrediction && predictedLocation && (
-        <div className="rounded-2xl p-3 mb-3 border bg-indigo-50 border-indigo-100">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-sm font-black text-indigo-700">
-              📍 AI 예측 위치
-            </span>
-            <span className="text-[10px] text-indigo-500 font-semibold">
-              Recency Weight
-            </span>
-          </div>
-
-          <div className="text-xs text-slate-600">
-            위도 {predictedLocation.lat.toFixed(5)} · 경도{' '}
-            {predictedLocation.lng.toFixed(5)}
-          </div>
-
-          <div className="text-[11px] text-slate-500 mt-1">
-            최근 {reportCount || 0}건의 제보를 기반으로 예측했습니다.
-          </div>
-        </div>
-      )}
 
       {isRain && nearestShelter && (
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 mb-3 text-xs text-blue-700 font-semibold">

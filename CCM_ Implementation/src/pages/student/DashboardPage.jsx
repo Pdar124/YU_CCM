@@ -593,36 +593,85 @@ function DashboardPage({ user, setUser }) {
                 <main className="relative flex-1 overflow-hidden">
                     <MapContainer ref={mapContainer} isReady={mapReady} />
 
-                    <CatDetail
-    cat={currentSelectedCat}
-    user={user}
-    isRain={isRain}
-    predictedLocation={predictedLocation}
-    reportCount={reportCount}
-    latestReport={latestReport}
-    nearestShelter={nearestShelter}
-    hasLatestDietLog={
-        user?.activeMode === 'caregiver' && !!latestDietLog
-    }
-    onClose={() => setSelectedCatId(null)}
-    onReport={handleReportClick}
-    onWikiEdit={openWikiModal}
-    onHistoryView={openHistoryModal}
-/>
+                    {activeNavigation !== 'analysis' && (
+                        <CatDetail
+                            cat={currentSelectedCat}
+                            user={user}
+                            isRain={isRain}
+                            predictedLocation={predictedLocation}
+                            reportCount={reportCount}
+                            latestReport={latestReport}
+                            nearestShelter={nearestShelter}
+                            hasLatestDietLog={
+                                user?.activeMode === 'caregiver' && !!latestDietLog
+                            }
+                            onClose={() => setSelectedCatId(null)}
+                            onReport={handleReportClick}
+                            onWikiEdit={openWikiModal}
+                            onHistoryView={openHistoryModal}
+                        />
+                    )}
+                    {activeNavigation === 'analysis' && currentSelectedCat && (
+                        <div className="absolute left-4 right-4 bottom-24 z-50 rounded-3xl bg-white p-4 shadow-2xl border border-indigo-100">
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <h2 className="text-lg font-black text-slate-900">
+                                        📍 동선 분석
+                                    </h2>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {currentSelectedCat.name}의 최근 제보 기반 예측 위치입니다.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => setActiveNavigation('map')}
+                                    className="text-slate-400 hover:text-slate-600 font-bold"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {predictedLocation ? (
+                                <div className="rounded-2xl p-3 border bg-indigo-50 border-indigo-100">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-sm font-black text-indigo-700">
+                                            📍 AI 예측 위치
+                                        </span>
+                                        <span className="text-[10px] text-indigo-500 font-semibold">
+                                            Recency Weight
+                                        </span>
+                                    </div>
+
+                                    <div className="text-xs text-slate-600">
+                                        위도 {predictedLocation.lat.toFixed(5)} · 경도{' '}
+                                        {predictedLocation.lng.toFixed(5)}
+                                    </div>
+
+                                    <div className="text-[11px] text-slate-500 mt-1">
+                                        최근 {reportCount || 0}건의 제보를 기반으로 예측했습니다.
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="rounded-2xl p-4 bg-slate-50 text-sm text-slate-500 text-center">
+                                    예측 위치 데이터가 아직 없습니다.
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                 </main>
-               {user?.activeMode === 'caregiver' && latestDietLog && (
-    <div className="absolute left-4 right-4 bottom-20 z-30">
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
-            ⚠️
-            <span>
-                {latestDietLog.catName}{' '}
-                {getTimeAgo(latestDietLog.fedAt)}{' '}
-                급여 기록이 있어요.
-            </span>
-        </div>
-    </div>
-)}
+                {user?.activeMode === 'caregiver' && latestDietLog && (
+                    <div className="absolute left-4 right-4 bottom-20 z-30">
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
+                            ⚠️
+                            <span>
+                                {latestDietLog.catName}{' '}
+                                {getTimeAgo(latestDietLog.fedAt)}{' '}
+                                급여 기록이 있어요.
+                            </span>
+                        </div>
+                    </div>
+                )}
                 <BottomNavigation
                     activeItem={activeNavigation}
                     onSelect={handleNavigationSelect}
