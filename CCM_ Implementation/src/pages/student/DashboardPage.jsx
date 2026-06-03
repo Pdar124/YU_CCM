@@ -50,6 +50,7 @@ function DashboardPage({ user, setUser }) {
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const polylineRef = useRef(null); // 동선 참조 추가
+    const guestDefaultSelectedRef = useRef(false);
     const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -290,6 +291,18 @@ function DashboardPage({ user, setUser }) {
                 user.caregiverCatIds.includes(cat.id)
             )
             : [];
+
+    useEffect(() => {
+        if (
+            !isGuest ||
+            guestDefaultSelectedRef.current ||
+            selectedCatId ||
+            cats.length === 0
+        ) return;
+
+        guestDefaultSelectedRef.current = true;
+        setSelectedCatId(cats[0].id);
+    }, [cats, isGuest, selectedCatId]);
 
     // 디버깅용 로그
     useEffect(() => {
@@ -565,6 +578,12 @@ function DashboardPage({ user, setUser }) {
                     caregiverCats={caregiverCats}
                     latestDietLog={latestDietLog}
                     onCatClick={(cat) => {
+                        if (!cat) {
+                            setSelectedCatId(null);
+                            setActiveNavigation('map');
+                            return;
+                        }
+
                         setSelectedCatId(cat.id);
                         setActiveNavigation('map');
 
@@ -611,6 +630,7 @@ function DashboardPage({ user, setUser }) {
                 <HistoryModal
                     isOpen={historyModalOpen}
                     cat={historyTargetCat}
+                    user={user}
                     onClose={closeHistoryModal}
                 />
 

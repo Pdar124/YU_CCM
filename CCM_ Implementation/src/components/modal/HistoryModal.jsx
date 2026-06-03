@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   collection,
   onSnapshot,
@@ -7,7 +8,8 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 
-function HistoryModal({ isOpen, cat, onClose }) {
+function HistoryModal({ isOpen, cat, user, onClose }) {
+  const navigate = useNavigate();
   const [histories, setHistories] = useState([]);
 
   useEffect(() => {
@@ -121,6 +123,19 @@ function HistoryModal({ isOpen, cat, onClose }) {
             ✕
           </button>
         </div>
+
+        {user?.role === 'student' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate('/caregiver/apply');
+            }}
+            className="mb-4 w-full rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 border border-emerald-100"
+          >
+            돌보미 신청
+          </button>
+        )}
 
         {histories.length === 0 ? (
           <div className="text-center text-slate-400 py-10">
