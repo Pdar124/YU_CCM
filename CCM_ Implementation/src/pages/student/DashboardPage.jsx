@@ -145,18 +145,86 @@ function DashboardPage({ user, setUser }) {
     };
 
     // 🐱 Custom cat marker element for CustomOverlay
-    const createCatMarkerElement = ({ cat, isSelected, onClick }) => {
+    const createCatMarkerElement = ({ cat, isSelected, lastSeenText, onClick }) => {
         const markerButton = document.createElement('button');
         markerButton.type = 'button';
         markerButton.setAttribute('aria-label', `${cat.name} 마커`);
-        markerButton.style.width = isSelected ? '64px' : '56px';
-        markerButton.style.height = isSelected ? '72px' : '64px';
+        markerButton.style.width = isSelected ? '150px' : '56px';
+        markerButton.style.height = isSelected ? '112px' : '64px';
         markerButton.style.position = 'relative';
         markerButton.style.border = '0';
         markerButton.style.padding = '0';
         markerButton.style.background = 'transparent';
         markerButton.style.cursor = 'pointer';
         markerButton.style.transform = 'translateY(-6px)';
+        markerButton.style.display = 'flex';
+        markerButton.style.alignItems = 'flex-end';
+        markerButton.style.justifyContent = 'center';
+
+        if (isSelected) {
+            const bubble = document.createElement('div');
+            bubble.style.position = 'absolute';
+            bubble.style.left = '50%';
+            bubble.style.top = '0';
+            bubble.style.transform = 'translateX(-50%)';
+            bubble.style.display = 'flex';
+            bubble.style.alignItems = 'center';
+            bubble.style.gap = '6px';
+            bubble.style.padding = '8px 11px';
+            bubble.style.borderRadius = '16px';
+            bubble.style.background = 'rgba(255, 255, 255, 0.96)';
+            bubble.style.border = '1px solid rgba(16, 185, 129, 0.18)';
+            bubble.style.color = '#334155';
+            bubble.style.fontSize = '11px';
+            bubble.style.fontWeight = '800';
+            bubble.style.lineHeight = '1';
+            bubble.style.whiteSpace = 'nowrap';
+            bubble.style.boxShadow = '0 12px 28px rgba(15, 23, 42, 0.16)';
+            bubble.style.backdropFilter = 'blur(10px)';
+            bubble.style.pointerEvents = 'none';
+
+            const bubbleIcon = document.createElement('span');
+            bubbleIcon.textContent = '📍';
+            bubbleIcon.style.display = 'flex';
+            bubbleIcon.style.width = '22px';
+            bubbleIcon.style.height = '22px';
+            bubbleIcon.style.borderRadius = '999px';
+            bubbleIcon.style.alignItems = 'center';
+            bubbleIcon.style.justifyContent = 'center';
+            bubbleIcon.style.background = '#ecfdf5';
+            bubbleIcon.style.color = '#059669';
+            bubbleIcon.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                    <circle cx="12" cy="10" r="3" />
+                </svg>
+            `;
+
+            const bubbleText = document.createElement('span');
+            bubbleText.textContent = '최근 위치';
+            bubbleText.style.color = '#64748b';
+
+            const bubbleTime = document.createElement('span');
+            bubbleTime.textContent = lastSeenText || '정보 없음';
+            bubbleTime.style.color = '#059669';
+
+            const bubbleTail = document.createElement('div');
+            bubbleTail.style.position = 'absolute';
+            bubbleTail.style.left = '50%';
+            bubbleTail.style.bottom = '-5px';
+            bubbleTail.style.width = '10px';
+            bubbleTail.style.height = '10px';
+            bubbleTail.style.background = 'rgba(255, 255, 255, 0.96)';
+            bubbleTail.style.borderRight = '1px solid rgba(16, 185, 129, 0.18)';
+            bubbleTail.style.borderBottom = '1px solid rgba(16, 185, 129, 0.18)';
+            bubbleTail.style.transform = 'translateX(-50%) rotate(45deg)';
+
+            bubble.appendChild(bubbleIcon);
+            bubble.appendChild(bubbleText);
+            bubble.appendChild(bubbleTime);
+            bubble.appendChild(bubbleTail);
+            markerButton.appendChild(bubble);
+        }
 
         const pin = document.createElement('div');
         pin.style.width = isSelected ? '60px' : '52px';
@@ -493,9 +561,15 @@ function DashboardPage({ user, setUser }) {
                     );
 
             const isSelected = selectedCatId === cat.id;
+            const latestReportTime =
+                latestReport?.observedAt ||
+                latestReport?.createdAt;
             const content = createCatMarkerElement({
                 cat,
                 isSelected,
+                lastSeenText: latestReportTime
+                    ? getTimeAgo(latestReportTime)
+                    : '기본 위치',
                 onClick: () => {
                     setSelectedCatId(cat.id);
                     mapRef.current.panTo(position);
