@@ -7,6 +7,15 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
+import {
+  ClipboardList,
+  FileText,
+  MapPin,
+  Pencil,
+  UserPlus,
+  Utensils,
+  X
+} from 'lucide-react';
 
 function HistoryModal({ isOpen, cat, user, onClose }) {
   const navigate = useNavigate();
@@ -110,17 +119,30 @@ function HistoryModal({ isOpen, cat, user, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl p-5 w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <div className="bg-white rounded-[2rem] p-5 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl border border-slate-100">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-black text-lg">
-            📋 {cat.name} 히스토리
-          </h2>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <ClipboardList size={20} strokeWidth={2.5} />
+            </div>
+
+            <div>
+              <h2 className="font-black text-lg text-slate-900">
+                {cat.name} 히스토리
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                급여, 위키, 제보 기록을 모아봤어요.
+              </p>
+            </div>
+          </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="text-slate-400 font-bold"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            aria-label="히스토리 닫기"
           >
-            ✕
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
 
@@ -131,22 +153,30 @@ function HistoryModal({ isOpen, cat, user, onClose }) {
               onClose();
               navigate('/caregiver/apply');
             }}
-            className="mb-4 w-full rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 border border-emerald-100"
+            className="mb-4 w-full rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 border border-emerald-100 flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all"
           >
+            <UserPlus size={17} strokeWidth={2.5} />
             돌보미 신청
           </button>
         )}
 
         {histories.length === 0 ? (
-          <div className="text-center text-slate-400 py-10">
-            아직 기록이 없습니다.
+          <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 text-center text-slate-400 py-10">
+            <ClipboardList
+              size={32}
+              strokeWidth={2.5}
+              className="mx-auto mb-2 text-slate-300"
+            />
+            <div className="text-sm font-bold">
+              아직 기록이 없습니다.
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
             {histories.map((item, index) => (
               <div
                 key={`${item.type}-${item.id}-${index}`}
-                className="border border-slate-100 rounded-2xl p-4 bg-slate-50"
+                className="border border-slate-100 rounded-3xl p-4 bg-slate-50/80"
               >
                 <div className="text-xs text-slate-400 mb-1">
                   {formatTime(item.createdAt)}
@@ -154,8 +184,9 @@ function HistoryModal({ isOpen, cat, user, onClose }) {
 
                 {item.type === 'diet' && (
                   <>
-                    <div className="font-bold text-orange-600">
-                      🍽 급여/건강 기록
+                    <div className="flex items-center gap-2 font-bold text-orange-600">
+                      <Utensils size={17} strokeWidth={2.5} />
+                      급여/건강 기록
                     </div>
                     <div className="text-sm text-slate-600 mt-1">
                       사료: {item.foodType || '정보 없음'} · 급여량: {item.amount}
@@ -173,8 +204,9 @@ function HistoryModal({ isOpen, cat, user, onClose }) {
 
                 {item.type === 'wiki' && (
                   <>
-                    <div className="font-bold text-indigo-600">
-                      ✏️ 위키 수정
+                    <div className="flex items-center gap-2 font-bold text-indigo-600">
+                      <Pencil size={17} strokeWidth={2.5} />
+                      위키 수정
                     </div>
                     <div className="text-sm text-slate-600 mt-1">
                       특징: {item.feature || '정보 없음'}
@@ -190,18 +222,25 @@ function HistoryModal({ isOpen, cat, user, onClose }) {
 
                 {item.type === 'report' && (
                   <>
-                    <div className="font-bold text-emerald-600">
-                      📍 제보 기록
+                    <div className="flex items-center gap-2 font-bold text-emerald-600">
+                      <MapPin size={17} strokeWidth={2.5} />
+                      제보 기록
                     </div>
                     <div className="text-sm text-slate-600 mt-1">
                       위도 {item.lat?.toFixed?.(5)} · 경도 {item.lng?.toFixed?.(5)}
                     </div>
                     {item.imageUrl && (
-                      <img
-                        src={item.imageUrl}
-                        alt="제보 사진"
-                        className="w-full h-36 object-cover rounded-2xl mt-3"
-                      />
+                      <div className="relative mt-3 overflow-hidden rounded-2xl">
+                        <img
+                          src={item.imageUrl}
+                          alt="제보 사진"
+                          className="w-full h-36 object-cover"
+                        />
+                        <div className="absolute left-3 top-3 rounded-full bg-black/40 px-2 py-1 text-[10px] font-bold text-white flex items-center gap-1">
+                          <FileText size={11} strokeWidth={2.5} />
+                          제보 사진
+                        </div>
+                      </div>
                     )}
                     {item.memo && (
                       <div className="text-sm text-slate-500 mt-2">

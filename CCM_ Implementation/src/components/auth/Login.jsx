@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { auth } from '../../config/firebase.js';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-
+import src from '../../../public/ccm_login_hero.png';
 function Login({ onLoginSuccess, onGuestLogin }) {
   const [studentId, setStudentId] = useState(''); // 💡 이메일 대신 학번 상태 사용
   const [password, setPassword] = useState('');
@@ -45,14 +45,23 @@ function Login({ onLoginSuccess, onGuestLogin }) {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md border border-slate-200">
+      <div className="bg-white p-7 rounded-[2rem] shadow-md w-full max-w-md border border-slate-100">
 
         {/* 서비스 로고 및 타이틀 */}
+        {/* 서비스 로고 및 타이틀 */}
         <div className="text-center mb-8">
-          <div className="text-4xl mb-2">🐾</div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Campus Cat Mate</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            우리 캠퍼스 고양이들을 함께 돌봐요
+          <img
+            src={src}
+            alt="Campus Cat Mate 로고"
+            className="mx-auto w-full max-w-[340px] object-contain"
+          />
+
+          <h2 className="mt-5 text-xl font-semibold text-slate-900">
+            캠퍼스 냥이와 함께하는 따뜻한 공존
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-500">
+            기록하고, 돌보고, 함께 지켜요.
           </p>
         </div>
 
