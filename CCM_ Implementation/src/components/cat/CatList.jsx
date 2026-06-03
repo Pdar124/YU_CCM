@@ -5,8 +5,8 @@ function CatList({
   user
 }) {
   return (
-    <section className="mt-3 relative z-50 -mx-4 px-4 overflow-visible">
-      <div className="pl-3 flex gap-4 overflow-x-auto overflow-y-visible py-2 pb-3">
+    <section className="mt-1 relative z-50 -mx-4 px-4 overflow-visible">
+      <div className="pl-3 flex gap-4 overflow-x-auto overflow-y-visible py-2 pb-1">
         <button
           type="button"
           onClick={() => onCatClick(null)}

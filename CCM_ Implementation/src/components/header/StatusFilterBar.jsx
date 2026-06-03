@@ -19,7 +19,7 @@ function StatusFilterBar({
     const latestTimeText = formatReportTime(latestReport?.createdAt);
 
     return (
-        <div className="mt-3 flex gap-3 text-xs text-slate-600">
+        <div className="mt-1 flex gap-3 text-xs text-slate-600">
             {activeMode === 'caregiver' ? (
                 <>
                     <div className="flex-1 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">

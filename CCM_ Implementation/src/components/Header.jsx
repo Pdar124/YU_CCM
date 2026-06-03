@@ -7,7 +7,6 @@ import ModeSelector from './header/ModeSelector';
 import StatusFilterBar from './header/StatusFilterBar';
 import CatList from './cat/CatList';
 import useCaregiverRequests from '../hooks/useCaregiverRequests';
-import { getTimeAgo } from '../utils/time';
 
 function Header({
     user,
@@ -21,8 +20,9 @@ function Header({
     searchKeyword,
     onSearchChange,
     latestReport,
-    onCatClick,
-    latestDietLog
+    latestDietLog,
+    caregiverCats,
+    onCatClick
 }) {
     const navigate = useNavigate();
     const isGuest = user?.role === 'guest';
@@ -103,7 +103,7 @@ function Header({
                     onModeSwitch={handleModeSwitch}
                 />
 
-                <div className="shrink-0 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm text-xs">
+                <div className="shrink-0 flex items-center gap-2 bg-white mt-4 px-3 py-1 rounded-full border border-slate-100 shadow-sm text-xs">
                     {weatherLoading ? (
                         <span>날씨 불러오는 중...</span>
                     ) : weather ? (
@@ -148,24 +148,6 @@ function Header({
                 selectedCatId={selectedCatId}
                 user={user}
             />
-
-            {user?.activeMode === 'caregiver' &&
-                latestDietLog && (
-                    <div className="mt-2 px-4">
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2">
-                            ⚠️
-                            <span>
-                                {latestDietLog.catName}
-                                {' '}
-                                {getTimeAgo(
-                                    latestDietLog.fedAt
-                                )}
-                                {' '}
-                                급여 기록이 있어요.
-                            </span>
-                        </div>
-                    </div>
-                )}
 
 
 

@@ -19,6 +19,7 @@ import {
     getLatestReport
 } from '../../utils/prediction';
 
+import { getTimeAgo } from '../../utils/time';
 import useCats from '../../hooks/useCats';
 import useReports from '../../hooks/useReports';
 import useShelters from '../../hooks/useShelters';
@@ -562,7 +563,6 @@ function DashboardPage({ user, setUser }) {
         <div className="min-h-screen bg-slate-100 flex justify-center">
             <div className="w-full max-w-md min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
 
-                {/* 💡 Header에 weather와 loading 상태를 props로 전달합니다 */}
                 <Header
                     user={user}
                     setUser={setUser}
@@ -575,8 +575,8 @@ function DashboardPage({ user, setUser }) {
                     searchKeyword={searchKeyword}
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
-                    caregiverCats={caregiverCats}
                     latestDietLog={latestDietLog}
+                    caregiverCats={caregiverCats}
                     onCatClick={(cat) => {
                         if (!cat) {
                             setSelectedCatId(null);
@@ -594,19 +594,35 @@ function DashboardPage({ user, setUser }) {
                     <MapContainer ref={mapContainer} isReady={mapReady} />
 
                     <CatDetail
-                        cat={currentSelectedCat}
-                        user={user}
-                        isRain={isRain}
-                        predictedLocation={predictedLocation}
-                        reportCount={reportCount}
-                        latestReport={latestReport}
-                        nearestShelter={nearestShelter}
-                        onClose={() => setSelectedCatId(null)}
-                        onReport={handleReportClick}
-                        onWikiEdit={openWikiModal}
-                        onHistoryView={openHistoryModal}
-                    />
+    cat={currentSelectedCat}
+    user={user}
+    isRain={isRain}
+    predictedLocation={predictedLocation}
+    reportCount={reportCount}
+    latestReport={latestReport}
+    nearestShelter={nearestShelter}
+    hasLatestDietLog={
+        user?.activeMode === 'caregiver' && !!latestDietLog
+    }
+    onClose={() => setSelectedCatId(null)}
+    onReport={handleReportClick}
+    onWikiEdit={openWikiModal}
+    onHistoryView={openHistoryModal}
+/>
+
                 </main>
+               {user?.activeMode === 'caregiver' && latestDietLog && (
+    <div className="absolute left-4 right-4 bottom-20 z-30">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
+            ⚠️
+            <span>
+                {latestDietLog.catName}{' '}
+                {getTimeAgo(latestDietLog.fedAt)}{' '}
+                급여 기록이 있어요.
+            </span>
+        </div>
+    </div>
+)}
                 <BottomNavigation
                     activeItem={activeNavigation}
                     onSelect={handleNavigationSelect}
