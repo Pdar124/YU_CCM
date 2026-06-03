@@ -12,9 +12,7 @@ import {
 } from 'firebase/firestore';
 import {
   Users,
-  ShieldCheck,
-  Cat,
-  Megaphone
+  Cat
 } from 'lucide-react';
 import { db, auth } from '../../config/firebase';
 import { useNavigate } from 'react-router-dom';
@@ -139,11 +137,17 @@ function AdminPage() {
         gender: request.gender || 'unknown',
         description: request.description || '',
         feature: request.description || '',
+        origin: '사용자 신규 등록 요청',
+        healthStatus: '정보 없음',
+        territory: request.location || '',
         imageUrl: request.imageUrl || '',
         lat: request.lat || null,
         lng: request.lng || null,
         location: request.location || '',
         status: 'active',
+        registeredByRequestId: request.id,
+        requesterUid: request.requesterUid || '',
+        requesterName: request.requesterName || '',
         createdAt: serverTimestamp()
       });
 

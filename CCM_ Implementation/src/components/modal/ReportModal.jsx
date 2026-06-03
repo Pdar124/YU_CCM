@@ -1,6 +1,6 @@
 // src/components/modal/ReportModal.jsx
 
-import React, { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import {
   collection,
   addDoc,
@@ -17,6 +17,8 @@ function ReportModal({
   selectedCatId,
   user
 }) {
+  const getCurrentInputTime = () => new Date().toISOString().slice(0, 16);
+
   const [showNewCatForm, setShowNewCatForm] = useState(false);
 
   const [tempName, setTempName] = useState('');
@@ -24,33 +26,60 @@ function ReportModal({
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
 
-  const [selectedReportCatId, setSelectedReportCatId] = useState('');
+  const [selectedReportCatId, setSelectedReportCatId] = useState(selectedCatId || '');
   const [memo, setMemo] = useState('');
+  const [reportImageUrl, setReportImageUrl] = useState('');
+  const [observedAt, setObservedAt] = useState(getCurrentInputTime);
 
-  useEffect(() => {
-    setSelectedReportCatId(selectedCatId || '');
-  }, [selectedCatId, isOpen]);
+  const recommendedCats = useMemo(() => {
+    if (!clickedCoords?.lat || !clickedCoords?.lng) return cats.slice(0, 3);
+
+    return [...cats]
+      .map((cat) => {
+        const latDiff = Number(cat.lat || 0) - clickedCoords.lat;
+        const lngDiff = Number(cat.lng || 0) - clickedCoords.lng;
+        const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+
+        return {
+          ...cat,
+          matchScore: Math.max(0, Math.round((1 - distance * 1000) * 100))
+        };
+      })
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, 3);
+  }, [cats, clickedCoords]);
 
   if (!isOpen) return null;
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    if (!selectedReportCatId) {
+    const reportCatId = selectedReportCatId || selectedCatId;
+
+    if (!reportCatId) {
       alert('제보할 고양이를 선택해 주세요!');
       return;
     }
 
     onSubmit({
-      catId: selectedReportCatId,
-      memo
+      catId: reportCatId,
+      memo,
+      imageUrl: reportImageUrl.trim(),
+      observedAt: observedAt ? new Date(observedAt) : new Date()
     });
 
     setSelectedReportCatId('');
     setMemo('');
+    setReportImageUrl('');
+    setObservedAt(getCurrentInputTime());
   };
 
   const handleRequestCatRegistration = async () => {
+    if (!imageUrl.trim()) {
+      alert('사진 URL을 입력해 주세요.');
+      return;
+    }
+
     if (!description.trim()) {
       alert('외형 특징을 입력해 주세요.');
       return;
@@ -63,7 +92,7 @@ function ReportModal({
           tempName: tempName.trim() || '이름 미정',
           gender,
           description: description.trim(),
-          imageUrl: imageUrl || '',
+          imageUrl: imageUrl.trim(),
           requesterUid: user?.uid || '',
           requesterName:
             user?.nickname ||
@@ -72,6 +101,7 @@ function ReportModal({
             '익명 사용자',
           lat: clickedCoords?.lat,
           lng: clickedCoords?.lng,
+          observedAt: observedAt ? new Date(observedAt) : new Date(),
           status: 'pending',
           createdAt: serverTimestamp()
         }
@@ -97,7 +127,7 @@ function ReportModal({
       <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 animate-slide-up fade-in zoom-in-95 duration-150">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-slate-900">
-            🐾 고양이 조우 기록 제보
+            고양이 조우 기록 제보
           </h2>
           <button
             onClick={onClose}
@@ -108,13 +138,42 @@ function ReportModal({
         </div>
 
         <form onSubmit={handleFormSubmit} className="space-y-4">
+          {recommendedCats.length > 0 && (
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                활동 영역 기반 추천 후보
+              </label>
+
+              <div className="grid grid-cols-3 gap-2">
+                {recommendedCats.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedReportCatId(cat.id)}
+                    className={`min-h-20 rounded-2xl border px-2 py-3 text-center text-xs transition-colors ${
+                      selectedReportCatId === cat.id
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-bold'
+                        : 'border-slate-200 bg-white text-slate-600'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{cat.icon || '🐈'}</div>
+                    <div className="truncate">{cat.name}</div>
+                    <div className="text-[10px] text-slate-400">
+                      영역 매칭도 {cat.matchScore || 0}%
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
               제보할 고양이
             </label>
 
             <select
-              value={selectedReportCatId}
+              value={selectedReportCatId || selectedCatId || ''}
               onChange={(e) => setSelectedReportCatId(e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
             >
@@ -125,6 +184,31 @@ function ReportModal({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+              발견 시간
+            </label>
+            <input
+              type="datetime-local"
+              value={observedAt}
+              onChange={(e) => setObservedAt(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+              사진 URL
+            </label>
+            <input
+              type="url"
+              value={reportImageUrl}
+              onChange={(e) => setReportImageUrl(e.target.value)}
+              placeholder="예: https://..."
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            />
           </div>
 
           <div>
@@ -156,7 +240,7 @@ function ReportModal({
             onClick={() => setShowNewCatForm(!showNewCatForm)}
             className="w-full py-3 rounded-2xl border-2 border-dashed border-violet-300 text-violet-700 font-bold text-sm"
           >
-            🐱 새로운 고양이인가요?
+            새로운 고양이인가요?
           </button>
 
           <div

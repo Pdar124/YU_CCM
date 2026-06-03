@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   collection,
   onSnapshot,
@@ -14,10 +14,18 @@ function HistoryModal({ isOpen, cat, onClose }) {
     if (!isOpen || !cat) return;
 
     const unsubscribes = [];
-    const allLogs = [];
+    const logsByType = {
+      diet: [],
+      wiki: [],
+      report: []
+    };
 
     const updateHistories = () => {
-      const sorted = [...allLogs].sort((a, b) => {
+      const sorted = [
+        ...logsByType.diet,
+        ...logsByType.wiki,
+        ...logsByType.report
+      ].sort((a, b) => {
         const aTime = a.createdAt?.toMillis?.() || 0;
         const bTime = b.createdAt?.toMillis?.() || 0;
         return bTime - aTime;
@@ -43,16 +51,12 @@ function HistoryModal({ isOpen, cat, onClose }) {
 
     unsubscribes.push(
       onSnapshot(dietQuery, (snapshot) => {
-        allLogs.length = allLogs.filter(log => log.type !== 'diet').length;
-
-        snapshot.docs.forEach(doc => {
-          allLogs.push({
+        logsByType.diet = snapshot.docs.map(doc => ({
             id: doc.id,
             type: 'diet',
             createdAt: doc.data().fedAt,
             ...doc.data()
-          });
-        });
+          }));
 
         updateHistories();
       })
@@ -60,14 +64,12 @@ function HistoryModal({ isOpen, cat, onClose }) {
 
     unsubscribes.push(
       onSnapshot(wikiQuery, (snapshot) => {
-        snapshot.docs.forEach(doc => {
-          allLogs.push({
+        logsByType.wiki = snapshot.docs.map(doc => ({
             id: doc.id,
             type: 'wiki',
             createdAt: doc.data().editedAt,
             ...doc.data()
-          });
-        });
+          }));
 
         updateHistories();
       })
@@ -75,14 +77,12 @@ function HistoryModal({ isOpen, cat, onClose }) {
 
     unsubscribes.push(
       onSnapshot(reportQuery, (snapshot) => {
-        snapshot.docs.forEach(doc => {
-          allLogs.push({
+        logsByType.report = snapshot.docs.map(doc => ({
             id: doc.id,
             type: 'report',
-            createdAt: doc.data().createdAt,
+            createdAt: doc.data().observedAt || doc.data().createdAt,
             ...doc.data()
-          });
-        });
+          }));
 
         updateHistories();
       })
@@ -180,6 +180,21 @@ function HistoryModal({ isOpen, cat, onClose }) {
                     </div>
                     <div className="text-sm text-slate-600 mt-1">
                       위도 {item.lat?.toFixed?.(5)} · 경도 {item.lng?.toFixed?.(5)}
+                    </div>
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt="제보 사진"
+                        className="w-full h-36 object-cover rounded-2xl mt-3"
+                      />
+                    )}
+                    {item.memo && (
+                      <div className="text-sm text-slate-500 mt-2">
+                        메모: {item.memo}
+                      </div>
+                    )}
+                    <div className="text-xs text-slate-400 mt-1">
+                      제보자: {item.reporterName || '정보 없음'}
                     </div>
                   </>
                 )}

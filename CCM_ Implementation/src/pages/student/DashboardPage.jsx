@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { db, auth } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
 
@@ -11,7 +11,8 @@ import {
     addDoc,
     serverTimestamp,
     doc,
-    updateDoc
+    updateDoc,
+    Timestamp
 } from 'firebase/firestore';
 import {
     getLatestReport
@@ -115,6 +116,17 @@ function DashboardPage({ user, setUser }) {
                 catId: reportData.catId,
                 lat: clickedCoords.lat,
                 lng: clickedCoords.lng,
+                memo: reportData.memo || '',
+                imageUrl: reportData.imageUrl || '',
+                reporterUid: user?.uid || '',
+                reporterName:
+                    user?.nickname ||
+                    user?.studentId ||
+                    user?.id ||
+                    '익명 사용자',
+                observedAt: reportData.observedAt
+                    ? Timestamp.fromDate(reportData.observedAt)
+                    : serverTimestamp(),
                 createdAt: serverTimestamp()
             });
 
