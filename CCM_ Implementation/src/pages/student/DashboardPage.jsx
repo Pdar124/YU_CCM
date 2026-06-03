@@ -33,6 +33,7 @@ import useShelters from '../../hooks/useShelters';
 import useWeather from '../../hooks/useWeather';
 import useCatPrediction from '../../hooks/useCatPrediction';
 import useCatModals from '../../hooks/useCatModals';
+import { getCatImageUrl } from '../../utils/catImage';
 
 
 import HistoryModal from '../../components/modal/HistoryModal';
@@ -58,7 +59,6 @@ function DashboardPage({ user, setUser }) {
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const polylineRef = useRef(null); // 동선 참조 추가
-    const guestDefaultSelectedRef = useRef(false);
     const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -137,7 +137,7 @@ function DashboardPage({ user, setUser }) {
         inner.style.fontSize = isSelected ? '18px' : '16px';
         inner.style.lineHeight = '1';
 
-        const catImageUrl = cat.imageUrl || cat.photoUrl || cat.profileImageUrl || '';
+        const catImageUrl = getCatImageUrl(cat);
 
         if (catImageUrl) {
             const img = document.createElement('img');
@@ -402,18 +402,6 @@ function DashboardPage({ user, setUser }) {
                 user.caregiverCatIds.includes(cat.id)
             )
             : [];
-
-    useEffect(() => {
-        if (
-            !isGuest ||
-            guestDefaultSelectedRef.current ||
-            selectedCatId ||
-            cats.length === 0
-        ) return;
-
-        guestDefaultSelectedRef.current = true;
-        setSelectedCatId(cats[0].id);
-    }, [cats, isGuest, selectedCatId]);
 
     // 디버깅용 로그
     useEffect(() => {

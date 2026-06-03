@@ -1,4 +1,5 @@
 import { Cat, CheckCircle2, List } from 'lucide-react';
+import { getCatImageUrl } from '../../utils/catImage';
 
 function CatList({
   cats,
@@ -7,6 +8,8 @@ function CatList({
   user
 }) {
   const isCaregiverMode = user?.activeMode === 'caregiver';
+  const selectedRingColor = isCaregiverMode ? 'ring-orange-400' : 'ring-emerald-400';
+  const selectedTextColor = isCaregiverMode ? 'text-orange-500' : 'text-emerald-600';
 
   return (
     <section className="relative z-50 -mx-10 px-4 overflow-visible">
@@ -18,20 +21,17 @@ function CatList({
         >
           <div
             className={`
-              w-[72px] h-[72px] rounded-3xl bg-white shadow-sm border
+              w-[72px] h-[72px] rounded-3xl bg-white shadow-sm border border-slate-100
               flex flex-col items-center justify-center gap-1.5
-              transition-all duration-200
-              ${
-                !selectedCatId
-                  ? 'border-emerald-400 scale-105 shadow-emerald-100 text-emerald-600 bg-emerald-50'
-                  : 'border-slate-100 text-slate-500 hover:border-emerald-200 hover:bg-emerald-50/60'
-              }
+              transition-all duration-200 hover:bg-emerald-50/60
+              ${!selectedCatId ? 'scale-105' : 'text-slate-500'}
             `}
           >
             <div
               className={`
-                w-10 h-10 rounded-2xl flex items-center justify-center
-                ${!selectedCatId ? 'bg-white' : 'bg-slate-50'}
+                w-11 h-11 rounded-full flex items-center justify-center bg-slate-50
+                transition-all duration-200
+                ${!selectedCatId ? `ring-2 ring-offset-2 ${selectedRingColor} bg-white` : ''}
               `}
             >
               <List size={22} strokeWidth={2.5} />
@@ -39,7 +39,7 @@ function CatList({
 
             <span
               className={`text-[11px] font-black ${
-                !selectedCatId ? 'text-emerald-600' : 'text-slate-600'
+                !selectedCatId ? selectedTextColor : 'text-slate-600'
               }`}
             >
               전체
@@ -53,6 +53,7 @@ function CatList({
 
           const isSelected = selectedCatId === cat.id;
           const isDimmed = isCaregiverMode && !isMyCat;
+          const catImageUrl = getCatImageUrl(cat);
 
           return (
             <button
@@ -65,15 +66,15 @@ function CatList({
             >
               <div
                 className={`
-                  relative w-[72px] h-[72px] rounded-3xl bg-white shadow-sm border
+                  relative w-[72px] h-[72px] rounded-3xl bg-white shadow-sm border border-slate-100
                   flex flex-col items-center justify-center gap-1.5
                   transition-all duration-200
                   ${
                     isSelected
-                      ? 'border-orange-400 scale-105 shadow-orange-100 bg-orange-50'
+                      ? 'scale-105'
                       : isCaregiverMode && isMyCat
-                        ? 'border-orange-200 hover:bg-orange-50/70'
-                        : 'border-slate-100 hover:border-orange-200 hover:bg-orange-50/50'
+                        ? 'hover:bg-orange-50/70'
+                        : 'hover:bg-emerald-50/50'
                   }
                 `}
               >
@@ -85,15 +86,18 @@ function CatList({
 
                 <div
                   className={`
-                    w-11 h-11 rounded-2xl flex items-center justify-center
-                    ${
-                      isSelected
-                        ? 'bg-white text-orange-500'
-                        : 'bg-slate-50 text-orange-400 group-hover:bg-white'
-                    }
+                    w-11 h-11 rounded-full flex items-center justify-center overflow-hidden
+                    bg-slate-50 text-orange-400 transition-all duration-200 group-hover:bg-white
+                    ${isSelected ? `ring-2 ring-offset-2 ${selectedRingColor} bg-white` : ''}
                   `}
                 >
-                  {cat.icon ? (
+                  {catImageUrl ? (
+                    <img
+                      src={catImageUrl}
+                      alt={cat.name || '고양이'}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : cat.icon ? (
                     <span className="text-2xl leading-none">{cat.icon}</span>
                   ) : (
                     <Cat size={26} strokeWidth={2.5} />
@@ -102,9 +106,11 @@ function CatList({
 
                 <span
                   className={`max-w-[58px] truncate text-[11px] font-black ${
-                    isSelected || (isCaregiverMode && isMyCat)
-                      ? 'text-orange-500'
-                      : 'text-slate-600'
+                    isSelected
+                      ? selectedTextColor
+                      : isCaregiverMode && isMyCat
+                        ? 'text-orange-500'
+                        : 'text-slate-600'
                   }`}
                 >
                   {cat.name}

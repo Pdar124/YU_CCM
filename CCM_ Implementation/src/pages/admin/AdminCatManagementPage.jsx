@@ -6,6 +6,7 @@ import {
   updateDoc
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
+import { getCatImageUrl } from '../../utils/catImage';
 import { useNavigate } from 'react-router-dom';
 
 function AdminCatManagementPage() {
@@ -69,7 +70,10 @@ function AdminCatManagementPage() {
         />
 
         <div className="space-y-3">
-          {filteredCats.map((cat) => (
+          {filteredCats.map((cat) => {
+            const catImageUrl = getCatImageUrl(cat);
+
+            return (
             <div
               key={cat.id}
               className="border border-violet-100 rounded-3xl p-4"
@@ -77,9 +81,9 @@ function AdminCatManagementPage() {
               <div className="flex gap-3">
 
                 <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100">
-                  {cat.imageUrl ? (
+                  {catImageUrl ? (
                     <img
-                      src={cat.imageUrl}
+                      src={catImageUrl}
                       alt={cat.name}
                       className="w-full h-full object-cover"
                     />
@@ -122,7 +126,8 @@ function AdminCatManagementPage() {
                   : '비활성화'}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

@@ -19,6 +19,7 @@ import {
   Sparkles,
   X
 } from 'lucide-react';
+import { getCatImageUrl } from '../../utils/catImage';
 
 function ReportModal({
   isOpen,
@@ -36,7 +37,6 @@ function ReportModal({
   const [tempName, setTempName] = useState('');
   const [gender, setGender] = useState('unknown');
   const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
 
   const [selectedReportCatId, setSelectedReportCatId] = useState(selectedCatId || '');
   const [memo, setMemo] = useState('');
@@ -87,11 +87,6 @@ function ReportModal({
   };
 
   const handleRequestCatRegistration = async () => {
-    if (!imageUrl.trim()) {
-      alert('사진 URL을 입력해 주세요.');
-      return;
-    }
-
     if (!description.trim()) {
       alert('외형 특징을 입력해 주세요.');
       return;
@@ -104,7 +99,6 @@ function ReportModal({
           tempName: tempName.trim() || '이름 미정',
           gender,
           description: description.trim(),
-          imageUrl: imageUrl.trim(),
           requesterUid: user?.uid || '',
           requesterName:
             user?.nickname ||
@@ -125,7 +119,6 @@ function ReportModal({
       setTempName('');
       setGender('unknown');
       setDescription('');
-      setImageUrl('');
 
       onClose();
     } catch (error) {
@@ -172,7 +165,10 @@ function ReportModal({
               </label>
 
               <div className="grid grid-cols-3 gap-2">
-                {recommendedCats.map((cat) => (
+                {recommendedCats.map((cat) => {
+                  const catImageUrl = getCatImageUrl(cat);
+
+                  return (
                   <button
                     key={cat.id}
                     type="button"
@@ -184,7 +180,13 @@ function ReportModal({
                     }`}
                   >
                     <div className="w-10 h-10 rounded-2xl bg-white mx-auto mb-1 flex items-center justify-center text-orange-500">
-                      {cat.icon ? (
+                      {catImageUrl ? (
+                        <img
+                          src={catImageUrl}
+                          alt={cat.name || '고양이'}
+                          className="h-full w-full rounded-2xl object-cover"
+                        />
+                      ) : cat.icon ? (
                         <span className="text-2xl leading-none">{cat.icon}</span>
                       ) : (
                         <Cat size={23} strokeWidth={2.5} />
@@ -195,7 +197,8 @@ function ReportModal({
                       영역 매칭도 {cat.matchScore || 0}%
                     </div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -215,7 +218,7 @@ function ReportModal({
                 <option value="">고양이를 선택해 주세요</option>
                 {cats.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.icon || '고양이'} {cat.name}
+                    {cat.name}
                   </option>
                 ))}
               </select>
@@ -322,13 +325,6 @@ function ReportModal({
                   <option value="female">암컷</option>
                   <option value="unknown">모름</option>
                 </select>
-
-                <input
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="사진 URL (임시)"
-                  className="w-full px-4 py-3 rounded-2xl border border-violet-100 mb-3 text-sm"
-                />
 
                 <textarea
                   value={description}

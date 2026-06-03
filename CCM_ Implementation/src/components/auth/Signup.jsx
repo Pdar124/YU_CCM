@@ -3,7 +3,6 @@ import { auth, db } from '../../config/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import src from '../../../public/ccm_signup_hero.png';
 import {
     ArrowLeft,
     ArrowRight,
@@ -15,6 +14,7 @@ import {
     Phone,
     ShieldCheck
 } from 'lucide-react';
+import signupHeroSrc from '../../assets/ccm_signup_hero.png';
 
 function Signup() {
     const navigate = useNavigate();
@@ -176,7 +176,7 @@ function Signup() {
 
                 <div className="mb-4 text-center rounded-[2rem] bg-white/80 border border-white shadow-sm px-4 py-5">
                     <img
-                        src={src}
+                        src={signupHeroSrc}
                         alt="Campus Cat Mate 로고"
                         className="mx-auto w-full max-w-[260px] object-contain"
                     />
