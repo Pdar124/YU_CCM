@@ -17,9 +17,9 @@
 
 | Revision date | Version | Description | Author |
 | :--- | :--- | :--- | :--- |
-| 03/27/2026 | **1.00** | First Draft | 박다래 |
-| 05/08/2026 | **1.01** | Draft Revise (add use case) | 박다래 |
-| 06/03/2026 | **1.02** | Draft Revise (add use case) | 박다래 |
+| 03/27/2026 | 1.00| First Draft | 박다래 |
+| 06/04/2026 | 1.01 | 유스케이스 추가 및 문서 수정 | 박다래 |
+| 06/04/2026 | 1.02 | 용어 및 구조 동기화 | 박다래 |
 
 ---
 
@@ -60,9 +60,9 @@
 
 graph LR
     %% Actor Definitions
-    Student["<<Student (Observer)>Student (Observer)">]
-    Caregiver["<<Caregiver (Guardian)>Caregiver (Guardian)">]
-    Admin["<<Administrator>Administrator">]
+    Student["Student (Observer)"]
+    Caregiver["Caregiver (Guardian)"]
+    Admin["Administrator"]
     System(("CampusCatMate<br/>(System)"))
 
     %% Data Inflow (Actors to System)
@@ -107,9 +107,9 @@ graph LR
 #### [ 사용자 (Actors) & 시스템 ]
 | Term | Description |
 | :--- | :--- |
-| **CampusCatMate** | 캠퍼스 고양이의 실시간 위치 분석, 급여 기록, 집단지성 위키 데이터, 지능형 식별 알고리즘를 통합 관리하는 본 프로젝트의 핵심 시스템입니다. |
-| **<font color="blue">Student (Observer)</font>** | 일반 학생 사용자. 시스템에 조우(Encounter)한 고양이 위치 제보 및 신규 등록 요청 데이터를 제공하고, 고양이의 실시간 위치와 정보를 제공받는 사용자층입니다., 추가로 돌보미가 되기 위한 권한 신청(Application)을 수행할 수 있습니다.|
-| **<font color="blue">Caregiver (Guardian)</font>** | 인증된 돌보미 사용자. , 고양이의 식단 기록(Diet Check), 건강 상태 로그 작성을 수행하며 위키 문서의 전문적인 편집 권한과 및 고양이 영역(Territory) 설정 편집 권한을 가집니다. |
+| **CampusCatMate** | 캠퍼스 고양이의 실시간 위치 분석, 급여 기록, 집단지성 위키 데이터, 지능형 식별 알고리즘을 통합 관리하는 본 프로젝트의 핵심 시스템입니다. |
+| **<font color="blue">Student (Observer)</font>** | 일반 학생 사용자. 시스템에 조우(Encounter)한 고양이 위치 제보 및 신규 등록 요청 데이터를 제공하고, 고양이의 실시간 위치와 정보를 제공받는 사용자층입니다. 추가로 돌보미가 되기 위한 권한 신청(Application)을 수행할 수 있습니다.|
+| **<font color="blue">Caregiver (Guardian)</font>** | 인증된 돌보미 사용자. 고양이의 식단 기록(Diet Check), 건강 상태 로그 작성을 수행하며 위키 문서와 고양이 영역(Territory) 정보를 편집할 수 있는 권한을 가집니다. |
 | **Administrator** | 시스템 관리자. 새로운 고양이 프로필 등록을 승인하고, 돌보미 신청을 최종 승인하며, 시스템 전반의 활동 통계를 관리하여 운영 무결성을 유지합니다. |
 
 
@@ -126,11 +126,12 @@ graph LR
 | 6 | **Wiki Edit** | Caregiver, Admin | 고양이의 특징, 건강 상태, 이름 유래 및 **주요 활동 영역(Territory)** 정보를 최신 상태로 업데이트한다. |
 | 7 | **History View** | All | 위키 내용의 과거 수정 이력을 조회하여 데이터의 신뢰성을 확인하고 악의적인 수정을 모니터링한다. |
 | 8 | **Real-time Map View** | All | 최근 제보 데이터와 <font color="blue">최근 제보 가중치(Recency Weight)</font>가 적용된 고양이별 실시간 예상 위치를 지도상에서 확인한다. |
-| 9 | **Path Analysis View** | Student, Caregiver | 시간대별 루틴에 따라 고양이가 이동할 가능성이 높은 <font color="blue">예상 동선(Predicted Path)</font> 분석 결과를 확인한다.
-| 10 | **Permission Management** | Admin | 돌보미 신청 내역 검토 및 권한 부여/승인|
-| 11 | **Caregiver Mode Switch**| Caregiver| 학생 모드와 돌보미 전용 UI 모드 간 전환|
-| 12 |	**Caregiver Application** | Student, Caregiver |일반 학생이 고양이 돌봄 활동에 참여하기 위해 돌보미 권한을 관리자에게 신청하거나 돌보미가 고양이 추가를 위해 신청한다. |
-| 13 | **Profile Management** |Caregiver| 담당 고양이 조회, 모드 전환, 신청 상태 확인 등 개인 프로필 정보를 관리한다.
+| 9 | **Path Analysis View** | Student, Caregiver | 시간대별 루틴에 따라 고양이가 이동할 가능성이 높은 <font color="blue">예상 동선(Predicted Path)</font> 분석 결과를 확인한다. |
+| 10 | **Caregiver Permission Management** | Admin | 돌보미 신청 내역을 검토하고 특정 고양이에 대한 돌보미 권한을 승인 또는 반려한다. |
+| 11 | **Caregiver Mode Switch** | Caregiver | 학생 모드와 돌보미 전용 UI 모드 간 전환을 수행한다. |
+| 12 | **Caregiver Application** | Student, Caregiver | 일반 학생이 고양이 돌봄 활동에 참여하기 위해 돌보미 권한을 관리자에게 신청하거나, 기존 돌보미가 담당 고양이 추가를 신청한다. |
+| 13 | **Profile Management** | Student, Caregiver | 사용자 정보, 담당 고양이, 모드 전환 상태, 돌보미 신청 상태 등 개인 프로필 정보를 관리한다. |
+
 ---
 
 ## 4. Concept of operation
@@ -173,11 +174,11 @@ graph LR
 | **Approach** | 제보가 없는 공백 시간에도 시스템은 고양이별 '영역(Territory)' 중심점과 **루틴 데이터**를 결합하여 현재 확률이 높은 지점을 **예상 위치**로 지도에 표시한다. 또한 시계열 분석을 통해 다음 예상 지점까지의 **예상 동선**을 화살표로 제공한다. |
 | **Goals** | 사용자가 고양이를 마주칠 확률을 높여 즐거움을 제공하고 참여 동기를 유발함. |
 
-### 6. Caregiver Authority & Mode Switch (돌보미 권한 신청 및 모드 전환)
+### 6. Caregiver Permission & Mode Switch (돌보미 권한 신청 및 모드 전환)
 | Item | Description |
 | :--- | :--- |
 | **Purpose** | 신뢰할 수 있는 돌봄 인력을 확보하고 전용 관리 기능을 제공함.|
-| **Approach** | "일반 학생이 돌보미 활동을 희망할 경우 시스템을 통해 **권한 신청(Caregiver Application)**을 한다. (또는 기존의 돌보미가 관리하는 고양이를 추가하기 위해 권한 신청을 한다.) 관리자의 승인이 완료되면 모드 전환(Mode Switch) 기능이 활성화되어, 일반 지도 중심의 UI에서 전문 돌봄 기록 및 위키 편집이 가능한 '돌보미 전용 UI'로 변경하여 사용할 수 있다." |
+| **Approach** | 일반 학생이 돌보미 활동을 희망할 경우 시스템을 통해 **권한 신청(Caregiver Application)**을 한다. 또는 기존 돌보미가 담당 고양이를 추가하기 위해 추가 권한 신청을 할 수 있다. 관리자의 승인이 완료되면 모드 전환(Mode Switch) 기능이 활성화되어, 일반 지도 중심의 UI에서 전문 돌봄 기록 및 위키 편집이 가능한 돌보미 전용 UI로 변경하여 사용할 수 있다. |
 | **Goals** | 검증된 인원에게 관리 권한을 부여하여 데이터 오염을 방지하고 전문적인 돌봄 환경을 조성함. |
 ---
 
@@ -227,7 +228,7 @@ graph LR
 | **Path Analysis**| 루틴 데이터를 기반으로 고양이의 이동 흐름을 화살표나 경로로 예측하여 보여주는 기능. |
 | **Encounter Check (조우 기록)** | 사용자가 캠퍼스 내에서 고양이를 발견한 사진, 위치, 시간을 시스템에 제보하는 행위. 제보 시 영역 기반 식별 알고리즘을 통해 해당 개체와 영역 매칭도를 추천한다. |
 | **Caregiver Application** | 일반 학생 사용자가 돌보미 권한을 얻기 위해 관리자에게 승인을 요청하는 절차.|
-| **Approve Caregivern** | 관리자가 신청자의 신원 및 활동 의지를 검토하여 돌보미(Caregiver) 권한을 최종 부여하는 행위.|
+| **Approve Caregiver** | 관리자가 신청자의 신원 및 활동 의지를 검토하여 돌보미(Caregiver) 권한을 최종 부여하는 행위.|
 | **Mode Switch** | 돌보미 권한자가 일반 모드와 전문 돌봄 기능을 갖춘 '돌보미 전용 UI 모드' 사이를 전환하는 기능.|
 | **Student (Observer)** | 위치 제보 및 신규 고양이 등록 요청이 가능한 일반 사용자. |
 | **Caregiver (Guardian)** | 등록 요청 및 전문 돌봄 기록(식단, 건강) 권한을 가진 인증된 사용자. |
@@ -238,7 +239,7 @@ graph LR
 | **Offline Buffering** | 네트워크 단절 시 데이터를 임시 저장했다가 연결 시 자동 전송하는 기술. |
 | **Optimistic Locking (낙관적 락)** | 여러 사용자가 동시에 데이터를 수정할 때 충돌을 방지하기 위해 버전 정보를 확인하는 관리 기법. |
 | **Recency Weight (최근 제보 가중치)** | 예측 모델에서 과거의 통계 데이터보다 최근(예: 1시간 이내)에 발생한 실제 제보 데이터에 더 높은 우선순위를 두어 실시간 위치를 보정하는 계산 방식. |
-| **Diet Check (급여 기록)** | Caregiver가 고양이에게 제공한 사료의 종류, 양, 시간을 기록하는 행위. 중복 급여를 방지하는 핵심 데이터로 활용됨.에 데이터를 수정할 때 충돌을 방지하기 위해 버전 정보를 확인하는 관리 기법. |
+| **Diet Check (급여 기록)** | Caregiver가 고양이에게 제공한 사료의 종류, 양, 시간을 기록하는 행위. 중복 급여를 방지하는 핵심 데이터로 활용됨. |
 | **Routine Data (루틴 데이터)** | 특정 고양이가 시간대별, 요일별로 반복적으로 머무르는 장소와 활동 패턴을 수치화한 기초 데이터. |
 
 ---
@@ -249,9 +250,9 @@ graph LR
 | :--- | :--- | :--- |
 | **Ref-1** | 에브리타임 (Everytime) | 캠퍼스 커뮤니티 내 고양이 정보 공유 니즈 및 사용자 패턴 분석. |
 | **Ref-2** | 동물권행동 카라 (KARA) | 대학 길고양이 돌봄 가이드라인 : 체계적 모니터링 및 영역 관리 근거. |
-| **Ref-3** | Google Maps API | 캠퍼스 내 정확한 위치 태깅 및 영역 시각화를 위한 기술 문서. |
+| **Ref-3** | Kakao Maps API | 캠퍼스 내 정확한 위치 태깅 및 영역 시각화를 위한 기술 문서. |
 | **Ref-4** | OpenWeatherMap API | 기상 상황에 따른 활동 패턴 및 영역 이동 보정용 데이터 수집. |
 | **Ref-5** | [Home Range of Free-Roaming Cats](https://wildlife.onlinelibrary.wiley.com/journal/19372817)| 고양이의 지리적 영역 점유 및 행동 반경 연구. |
 | **Ref-6** | [Applied Animal Behaviour Science](https://www.sciencedirect.com/journal/applied-animal-behaviour-science) |환경 변화에 따른 고양이의 활동 루틴(Circadian Rhythms) 연구. |
 | **Ref-7** | Firebase Documentation| Append-only Log 및 실시간 데이터 동기화 구현을 위한 기술 참조.|
-| **Ref-8** |	React / Tailwind CSS |	사용자 친화적인 Mode Switch UI 및 반응형 모바일 인터페이스 구현 참조.
+| **Ref-8** | React / Tailwind CSS | 사용자 친화적인 Mode Switch UI 및 반응형 모바일 인터페이스 구현 참조. |
