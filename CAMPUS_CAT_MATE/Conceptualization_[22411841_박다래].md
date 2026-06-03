@@ -88,7 +88,7 @@ graph LR
 #### [ Input Data (Actors → System) ]
 | Term | Description |
 | :--- | :--- |
-| **Encounter Log** | 사용자가 고양이를 목격한 위치와 시간을 시스템에 전송하는 <font color="blue">조우 기록</font> 데이터입니다. |
+| **Encounter Log** | 사용자가 고양이를 목격한 사진, 위치, 시간을 시스템에 전송하는 <font color="blue">조우 기록</font> 데이터입니다. |
 | **Caregiver Application** | 일반 학생이 전문적인 돌봄 활동을 위해 권한 승인을 관리자에게 요청하는 신청 데이터입니다.|
 | **Registration Request** | 미등록 고양이 발견 시 사진과 특징을 첨부하여 관리자에게 보내는 신규 등록 요청 데이터입니다. |
 | **Diet & Health Log** | 돌보미가 기록하는 사료 급여 현황, 건강 특이사항 등 전문적인 케어 로그 데이터입니다. |
@@ -119,7 +119,7 @@ graph LR
 | No | Use Case | Actor | Description |
 | :--- | :--- | :--- | :--- |
 | 1 | **Login** | All | 등록된 계정을 통해 시스템 권한을 획득하고 개인 세션을 유지한다. |
-| 2 | **Encounter Check** | Student, Caregiver | 고양이를 발견한 위치/시간을 제보하며, <font color="blue">영역 기반 식별 알고리즘</font>을 통해 후보 개체를 추천받아 기록을 확정한다. |
+| 2 | **Encounter Check** | Student, Caregiver | 고양이를 발견한 사진, 위치, 시간을 제보하며, <font color="blue">영역 기반 식별 알고리즘</font>을 통해 후보 개체와 영역 매칭도를 확인한 뒤 기록을 확정한다. |
 | 3 | **Request Cat Reg.** | **Student, Caregiver** | 캠퍼스 내 미등록 고양이 발견 시 사진, 특징, 발견 위치를 첨부하여 <font color="blue">관리자 승인 큐(Approval Queue)</font>에 등록을 요청한다.|
 | 4 | **Approve Cat Reg.** | **Admin** | 이용자들의 신규 고양이 등록 요청 건을 검토하여 **공식 데이터로 승인 및 등록**을 완료한다. |
 | 5 | **Diet Check** | Caregiver | 급여한 사료의 종류, 양 및 건강 특이사항을 기록하여 중복 급여 방지 및 건강 모니터링 데이터를 생성한다. |
@@ -147,7 +147,7 @@ graph LR
 | Item | Description |
 | :--- | :--- |
 | **Purpose** | 실시간 목격 위치를 수집하고 제보된 고양이가 누구인지 정확히 판별함. |
-| **Approach** | 사용자가 '제보하기' 버튼을 누르면 GPS 좌표를 인식한다. 해당 좌표가 특정 고양이의 **'영역(Territory)'**에 포함될 경우 **"이 근처에 사는 '치즈'인가요?"**와 같이 후보를 자동 추천(Territory-based ID)하여 오제보를 방지한다 |
+| **Approach** | 사용자가 '제보하기' 버튼을 누르면 사진을 제보 기록 자료로 저장하고 GPS 좌표를 인식한다. 해당 좌표가 특정 고양이의 **'영역(Territory)'**에 포함될 경우 **"이 근처에 사는 '치즈'인가요?"**와 같이 후보와 영역 매칭도를 자동 추천(Territory-based ID)하여 오제보를 방지한다. |
 | **Dynamics** | 사용자가 고양이를 마주쳤으나 정확한 개체를 식별하지 못해 데이터 오염이 우려되는 상황에서 발생. |
 | **Goals** | 영역 동물의 특성을 활용해 오제보를 방지하고, 실시간 위치 정보의 신뢰도를 극대화함. |
 
@@ -199,7 +199,7 @@ graph LR
 ### 5.2-1 Technical Difficulties (기술적 난제 및 해결 방안)
 | Category | Description |
 | :--- | :--- |
-| **<font color="blue">Territory-based ID</font>** | **[Problem]** 사용자가 개체를 혼동하여 잘못 제보할 경우 루틴 데이터가 오염됨. <br>**[Solution]** **'영역 기반 식별(Territory Identification)'** 로직을 구현한다. GPS 좌표와 시간대별 영역 데이터를 대조하여 가장 확률이 높은 개체를 사용자에게 자동 추천함으로써 오제보를 방지한다. |
+| **<font color="blue">Territory-based ID</font>** | **[Problem]** 사용자가 개체를 혼동하여 잘못 제보할 경우 루틴 데이터가 오염됨. <br>**[Solution]** **'영역 기반 식별(Territory Identification)'** 로직을 구현한다. GPS 좌표와 시간대별 영역 데이터를 대조하여 영역 매칭도가 높은 개체를 사용자에게 자동 추천함으로써 오제보를 방지한다. |
 | **<font color="blue">Predictive Mapping</font>** | **[Problem]** 제보가 없는 공백 시간대에 고양이 위치 파악 불가. <br>**[Solution]** **영역(Territory) 데이터와 루틴**을 결합하여 현재 시간대에 가장 확률이 높은 지점을 **예상 위치**로 자동 생성하여 지도에 표시한다. |
 | **<font color="blue">Path Analysis</font>** | **[Problem]** 단순 점 제보만으로는 이동 흐름 파악이 어려워 마주치기 힘듦. <br>**[Solution]** 직전 제보와 다음 루틴 지점을 시계열로 연결하는 '예상 동선 분석 알고리즘'을 통해 이동 방향을 시각화한다. |
 | **Routine Algorithm** | **[Problem]** 환경 변화나 외부 요인으로 고양이가 기존 루틴을 이탈할 시 예측이 실패함. <br>**[Solution]** **'최근 제보 가중치(Recency Weight)'** 알고리즘을 적용한다. 1시간 이내의 실시간 제보 데이터에 가중치를 부여하여 예측 맵을 즉각 보정하고, 기상청 API를 연동하여 상황별 루틴 모델을 구축한다. |
@@ -209,7 +209,7 @@ graph LR
 | Category | Description |
 | :--- | :--- |
 | **Data Integrity** | 모든 급여 및 건강 기록은 학번 ID와 결합되어 저장된다. 서버 측에서 모든 변경 이력을 **<font color="blue">Append-only Log</font>** 형태로 보관하며, 악의적인 조작에 대비해 변경 전후 스냅샷 보존 및 롤백 기능을 지원한다. |
-| **Data Validation** | 모든 이용자의 신규 개체 등록이 가능함에 따라 발생하는 허위/중복 제보를 막기 위해 관리자 승인 시스템을 운영하며, 중복 가능성이 있는 요청은 시스템이 자동 필터링하여 관리자에게 알린다. |
+| **Data Validation** | 모든 이용자의 신규 개체 등록이 가능함에 따라 발생하는 허위/중복 제보를 막기 위해 관리자 승인 시스템을 운영하며, 기존 고양이의 활동 영역과 높은 매칭도를 보이는 요청은 시스템이 중복 가능성으로 표시하여 관리자에게 알린다. |
 
 ### 5.2-3 Reliability & Usability (신뢰성 및 사용성 - NFR)
 | Category | Description |
@@ -225,14 +225,14 @@ graph LR
 | :--- | :--- |
 | **Real-time Map (실시간 지도)**| 최근 수집된 조우 기록을 기반으로 고양이들의 현재 위치와 예상 동선을 지도 인터페이스상에 시각화하여 보여주는 기능. |
 | **Path Analysis**| 루틴 데이터를 기반으로 고양이의 이동 흐름을 화살표나 경로로 예측하여 보여주는 기능. |
-| **Encounter Check (조우 기록)** | 사용자가 캠퍼스 내에서 고양이를 발견한 위치와 시간을 시스템에 제보하는 행위. 제보 시 영역 기반 식별 알고리즘을 통해 해당 개체를 추천한다. |
+| **Encounter Check (조우 기록)** | 사용자가 캠퍼스 내에서 고양이를 발견한 사진, 위치, 시간을 시스템에 제보하는 행위. 제보 시 영역 기반 식별 알고리즘을 통해 해당 개체와 영역 매칭도를 추천한다. |
 | **Caregiver Application** | 일반 학생 사용자가 돌보미 권한을 얻기 위해 관리자에게 승인을 요청하는 절차.|
 | **Approve Caregivern** | 관리자가 신청자의 신원 및 활동 의지를 검토하여 돌보미(Caregiver) 권한을 최종 부여하는 행위.|
 | **Mode Switch** | 돌보미 권한자가 일반 모드와 전문 돌봄 기능을 갖춘 '돌보미 전용 UI 모드' 사이를 전환하는 기능.|
 | **Student (Observer)** | 위치 제보 및 신규 고양이 등록 요청이 가능한 일반 사용자. |
 | **Caregiver (Guardian)** | 등록 요청 및 전문 돌봄 기록(식단, 건강) 권한을 가진 인증된 사용자. |
 | **Territory (영역)** | 특정 고양이가 주로 활동하며 방어하는 캠퍼스 내 지리적 범위. |
-| **Territory-based ID** | 현재 위치와 영역 데이터를 대조하여 개체를 자동 판별 및 추천하는 알고리즘. |
+| **Territory-based ID** | 현재 위치와 영역 데이터를 대조하여 개체를 자동 판별하고 영역 매칭도를 산출해 후보를 추천하는 알고리즘. |
 | **Approval Queue(승인 큐)** | 신규 고양이 등록 요청 및 돌보미 신청 건이 관리자 승인 전까지 머무르는 임시 대기 목록. |
 | **Append-only Log** | 데이터 수정 시 기존 데이터를 지우지 않고 새로운 기록을 덧붙여 모든 변경 이력을 추적할 수 있게 하는 기록 방식. |
 | **Offline Buffering** | 네트워크 단절 시 데이터를 임시 저장했다가 연결 시 자동 전송하는 기술. |

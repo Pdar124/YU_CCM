@@ -1,30 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-function WikiEditModal({
-  isOpen,
+function WikiEditForm({
   cat,
   onClose,
   onSave
 }) {
-  const [origin, setOrigin] = useState('');
-  const [feature, setFeature] = useState('');
+  const [origin, setOrigin] = useState(cat.origin || '');
+  const [feature, setFeature] = useState(cat.feature || '');
   const [healthStatus, setHealthStatus] =
-    useState('');
+    useState(cat.healthStatus || '');
   const [territory, setTerritory] =
-    useState('');
-
-  useEffect(() => {
-    if (!cat) return;
-
-    setOrigin(cat.origin || '');
-    setFeature(cat.feature || '');
-    setHealthStatus(
-      cat.healthStatus || ''
-    );
-    setTerritory(cat.territory || '');
-  }, [cat]);
-
-  if (!isOpen) return null;
+    useState(cat.territory || '');
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/40 flex items-center justify-center p-4">
@@ -95,6 +81,24 @@ function WikiEditModal({
 
       </div>
     </div>
+  );
+}
+
+function WikiEditModal({
+  isOpen,
+  cat,
+  onClose,
+  onSave
+}) {
+  if (!isOpen || !cat) return null;
+
+  return (
+    <WikiEditForm
+      key={cat.id}
+      cat={cat}
+      onClose={onClose}
+      onSave={onSave}
+    />
   );
 }
 

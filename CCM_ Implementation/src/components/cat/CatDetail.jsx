@@ -1,5 +1,4 @@
 // src/components/cat/CatDetail.jsx
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CatCaregiverActions from './CatCaregiverActions';
 import CatStudentActions from './CatStudentActions';
@@ -10,7 +9,6 @@ function CatDetail({
   isRain,
   predictedLocation,
   reportCount,
-  latestReport,
   nearestShelter,
   onClose,
   onReport,
@@ -20,24 +18,6 @@ function CatDetail({
   const navigate = useNavigate();
 
   if (!cat) return null;
-
-  const getMinutesAgo = (timestamp) => {
-    if (!timestamp || !timestamp.toDate) return null;
-
-    const minutes = Math.floor(
-      (Date.now() - timestamp.toDate().getTime()) / (1000 * 60)
-    );
-
-    if (minutes < 60) return `${minutes}분 전`;
-
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}시간 전`;
-
-    const days = Math.floor(hours / 24);
-    return `${days}일 전`;
-  };
-
-  const latestTimeText = getMinutesAgo(latestReport?.createdAt);
 
   const isMyCat =
     user?.caregiverCatIds?.includes(cat.id);

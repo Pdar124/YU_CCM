@@ -22,7 +22,6 @@ function Header({
     onSearchChange,
     latestReport,
     onCatClick,
-    caregiverCats,
     latestDietLog
 }) {
     const navigate = useNavigate();

@@ -5,24 +5,18 @@ function StatusFilterBar({
   latestReport,
   activeMode
 }) {
-    const temp = weather?.main?.temp;
-
-    const getMinutesAgo = (timestamp) => {
+    const formatReportTime = (timestamp) => {
         if (!timestamp || !timestamp.toDate) return null;
 
-        const minutes = Math.floor(
-            (Date.now() - timestamp.toDate().getTime()) / (1000 * 60)
-        );
-
-        if (minutes < 60) return `${minutes}분 전`;
-
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `${hours}시간 전`;
-
-        return `${Math.floor(hours / 24)}일 전`;
+        return timestamp.toDate().toLocaleString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
-    const latestTimeText = getMinutesAgo(latestReport?.createdAt);
+    const latestTimeText = formatReportTime(latestReport?.createdAt);
 
     return (
         <div className="mt-3 ml-0 flex items-center gap-3 overflow-x-auto text-xs text-slate-600 pb-1">
