@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
 
@@ -18,6 +19,7 @@ import {
     getLatestReport
 } from '../../utils/prediction';
 
+import { getTimeAgo } from '../../utils/time';
 import useCats from '../../hooks/useCats';
 import useReports from '../../hooks/useReports';
 import useShelters from '../../hooks/useShelters';
@@ -35,6 +37,7 @@ import CatDetail from '../../components/cat/CatDetail';
 import BottomNavigation from '../../components/navigation/BottomNavigation';
 
 function DashboardPage({ user, setUser }) {
+    const navigate = useNavigate();
     const { cats } = useCats();
     const { reports } = useReports();
     const { shelters } = useShelters();
@@ -48,12 +51,14 @@ function DashboardPage({ user, setUser }) {
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const polylineRef = useRef(null); // 동선 참조 추가
+    const guestDefaultSelectedRef = useRef(false);
     const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [clickedCoords, setClickedCoords] = useState({ lat: 0, lng: 0 });
     const [selectedCatId, setSelectedCatId] = useState(null);
+    const [activeNavigation, setActiveNavigation] = useState('map');
     const isGuest = user?.role === 'guest';
 
 
@@ -161,6 +166,53 @@ function DashboardPage({ user, setUser }) {
         setIsModalOpen(true);
     };
 
+    const moveMapToCat = (cat) => {
+        if (!cat || !window.kakao?.maps || !mapRef.current) return;
+
+        const latestReport = getLatestReport(cat.id, reports);
+        const position = latestReport
+            ? new window.kakao.maps.LatLng(latestReport.lat, latestReport.lng)
+            : new window.kakao.maps.LatLng(cat.lat, cat.lng);
+
+        mapRef.current.panTo(position);
+    };
+
+    const handleNavigationSelect = (itemId) => {
+        setActiveNavigation(itemId);
+
+        if (itemId === 'map') {
+            setSelectedCatId(null);
+            closeHistoryModal();
+            return;
+        }
+
+        if (itemId === 'history') {
+            if (!currentSelectedCat) {
+                alert('히스토리를 볼 고양이를 먼저 선택해 주세요.');
+                setActiveNavigation('map');
+                return;
+            }
+
+            openHistoryModal(currentSelectedCat);
+            return;
+        }
+
+        if (itemId === 'analysis') {
+            if (!currentSelectedCat) {
+                alert('동선을 볼 고양이를 먼저 선택해 주세요.');
+                setActiveNavigation('map');
+                return;
+            }
+
+            moveMapToCat(currentSelectedCat);
+            return;
+        }
+
+        if (itemId === 'profile') {
+            navigate(isGuest ? '/login' : '/profile');
+        }
+    };
+
     // 🗺️ 카카오 지도 초기화
     useEffect(() => {
         const initMap = () => {
@@ -240,6 +292,18 @@ function DashboardPage({ user, setUser }) {
                 user.caregiverCatIds.includes(cat.id)
             )
             : [];
+
+    useEffect(() => {
+        if (
+            !isGuest ||
+            guestDefaultSelectedRef.current ||
+            selectedCatId ||
+            cats.length === 0
+        ) return;
+
+        guestDefaultSelectedRef.current = true;
+        setSelectedCatId(cats[0].id);
+    }, [cats, isGuest, selectedCatId]);
 
     // 디버깅용 로그
     useEffect(() => {
@@ -499,7 +563,6 @@ function DashboardPage({ user, setUser }) {
         <div className="min-h-screen bg-slate-100 flex justify-center">
             <div className="w-full max-w-md min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
 
-                {/* 💡 Header에 weather와 loading 상태를 props로 전달합니다 */}
                 <Header
                     user={user}
                     setUser={setUser}
@@ -512,40 +575,107 @@ function DashboardPage({ user, setUser }) {
                     searchKeyword={searchKeyword}
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
-                    caregiverCats={caregiverCats}
                     latestDietLog={latestDietLog}
+                    caregiverCats={caregiverCats}
                     onCatClick={(cat) => {
+                        if (!cat) {
+                            setSelectedCatId(null);
+                            setActiveNavigation('map');
+                            return;
+                        }
+
                         setSelectedCatId(cat.id);
+                        setActiveNavigation('map');
 
-                        if (!window.kakao?.maps || !mapRef.current) return;
-
-                        const latestReport = getLatestReport(cat.id, reports);
-
-                        const position = latestReport
-                            ? new window.kakao.maps.LatLng(latestReport.lat, latestReport.lng)
-                            : new window.kakao.maps.LatLng(cat.lat, cat.lng);
-
-                        mapRef.current?.panTo(position);
+                        moveMapToCat(cat);
                     }}
                 />
                 <main className="relative flex-1 overflow-hidden">
                     <MapContainer ref={mapContainer} isReady={mapReady} />
 
-                    <CatDetail
-                        cat={currentSelectedCat}
-                        user={user}
-                        isRain={isRain}
-                        predictedLocation={predictedLocation}
-                        reportCount={reportCount}
-                        latestReport={latestReport}
-                        nearestShelter={nearestShelter}
-                        onClose={() => setSelectedCatId(null)}
-                        onReport={handleReportClick}
-                        onWikiEdit={openWikiModal}
-                        onHistoryView={openHistoryModal}
-                    />
+                    {activeNavigation !== 'analysis' && (
+                        <CatDetail
+                            cat={currentSelectedCat}
+                            user={user}
+                            isRain={isRain}
+                            predictedLocation={predictedLocation}
+                            reportCount={reportCount}
+                            latestReport={latestReport}
+                            nearestShelter={nearestShelter}
+                            hasLatestDietLog={
+                                user?.activeMode === 'caregiver' && !!latestDietLog
+                            }
+                            onClose={() => setSelectedCatId(null)}
+                            onReport={handleReportClick}
+                            onWikiEdit={openWikiModal}
+                            onHistoryView={openHistoryModal}
+                        />
+                    )}
+                    {activeNavigation === 'analysis' && currentSelectedCat && (
+                        <div className="absolute left-4 right-4 bottom-24 z-50 rounded-3xl bg-white p-4 shadow-2xl border border-indigo-100">
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <h2 className="text-lg font-black text-slate-900">
+                                        📍 동선 분석
+                                    </h2>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {currentSelectedCat.name}의 최근 제보 기반 예측 위치입니다.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => setActiveNavigation('map')}
+                                    className="text-slate-400 hover:text-slate-600 font-bold"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {predictedLocation ? (
+                                <div className="rounded-2xl p-3 border bg-indigo-50 border-indigo-100">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-sm font-black text-indigo-700">
+                                            📍 AI 예측 위치
+                                        </span>
+                                        <span className="text-[10px] text-indigo-500 font-semibold">
+                                            Recency Weight
+                                        </span>
+                                    </div>
+
+                                    <div className="text-xs text-slate-600">
+                                        위도 {predictedLocation.lat.toFixed(5)} · 경도{' '}
+                                        {predictedLocation.lng.toFixed(5)}
+                                    </div>
+
+                                    <div className="text-[11px] text-slate-500 mt-1">
+                                        최근 {reportCount || 0}건의 제보를 기반으로 예측했습니다.
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="rounded-2xl p-4 bg-slate-50 text-sm text-slate-500 text-center">
+                                    예측 위치 데이터가 아직 없습니다.
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                 </main>
-                <BottomNavigation />
+                {user?.activeMode === 'caregiver' && latestDietLog && (
+                    <div className="absolute left-4 right-4 bottom-20 z-30">
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
+                            ⚠️
+                            <span>
+                                {latestDietLog.catName}{' '}
+                                {getTimeAgo(latestDietLog.fedAt)}{' '}
+                                급여 기록이 있어요.
+                            </span>
+                        </div>
+                    </div>
+                )}
+                <BottomNavigation
+                    activeItem={activeNavigation}
+                    onSelect={handleNavigationSelect}
+                />
 
                 <ReportModal
                     isOpen={isModalOpen && !isGuest}
@@ -565,6 +695,7 @@ function DashboardPage({ user, setUser }) {
                 <HistoryModal
                     isOpen={historyModalOpen}
                     cat={historyTargetCat}
+                    user={user}
                     onClose={closeHistoryModal}
                 />
 

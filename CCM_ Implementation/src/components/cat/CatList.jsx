@@ -5,8 +5,39 @@ function CatList({
   user
 }) {
   return (
-    <section className="mt-3 relative z-50 -mx-4 px-4 overflow-visible">
-      <div className="pl-3 flex gap-4 overflow-x-auto overflow-y-visible py-2 pb-3">
+    <section className="mt-1 relative z-50 -mx-4 px-4 overflow-visible">
+      <div className="pl-3 flex gap-4 overflow-x-auto overflow-y-visible py-2 pb-1">
+        <button
+          type="button"
+          onClick={() => onCatClick(null)}
+          className="shrink-0"
+        >
+          <div
+            className={`
+              w-14 h-14 rounded-full bg-white shadow-lg
+              flex items-center justify-center text-emerald-600
+              transition-all duration-200
+              ${
+                !selectedCatId
+                  ? 'border-2 border-emerald-500 scale-105 shadow-emerald-100'
+                  : 'border border-slate-100'
+              }
+            `}
+          >
+            <span className="text-xl">☷</span>
+          </div>
+
+          <span
+            className={`text-[11px] font-bold ${
+              !selectedCatId
+                ? 'text-emerald-600'
+                : 'text-slate-700'
+            }`}
+          >
+            전체
+          </span>
+        </button>
+
         {cats.map((cat) => {
           const isMyCat =
             user?.caregiverCatIds?.includes(cat.id);

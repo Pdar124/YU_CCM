@@ -37,11 +37,11 @@ function ModeSelector({ user, onModeSwitch }) {
         }}
         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${currentMode === 'caregiver'
           ? 'border-orange-200 bg-orange-50 text-orange-700'
-          : 'border-slate-200 bg-white text-slate-600'
+          : 'border-slate-200 bg-green-100 text-slate-600'
           }`}
       >
         {currentMode === 'caregiver'
-          ? '🟠 돌보미 모드'
+          ? '돌보미 모드'
           : '기본 보기'}
         <span className="text-xs">⌄</span>
       </button>
@@ -54,7 +54,7 @@ function ModeSelector({ user, onModeSwitch }) {
               onModeSwitch('student');
               setIsOpen(false);
             }}
-            className="w-full px-4 py-3 text-left text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            className="w-full px-4 py-3 text-left text-sm font-semibold bg-green-100 text-slate-600 hover:bg-slate-50"
           >
             기본 보기
           </button>
@@ -65,9 +65,9 @@ function ModeSelector({ user, onModeSwitch }) {
               onModeSwitch('caregiver');
               setIsOpen(false);
             }}
-            className="w-full px-4 py-3 text-left text-sm font-semibold text-orange-700 hover:bg-orange-50"
+            className="w-full px-4 py-3 text-left text-sm font-semibold bg-orange-100 text-orange-700 hover:bg-orange-50"
           >
-            🟠 돌보미 모드
+             돌보미 모드
           </button>
         </div>
       )}

@@ -7,7 +7,6 @@ import ModeSelector from './header/ModeSelector';
 import StatusFilterBar from './header/StatusFilterBar';
 import CatList from './cat/CatList';
 import useCaregiverRequests from '../hooks/useCaregiverRequests';
-import { getTimeAgo } from '../utils/time';
 
 function Header({
     user,
@@ -21,8 +20,9 @@ function Header({
     searchKeyword,
     onSearchChange,
     latestReport,
-    onCatClick,
-    latestDietLog
+    latestDietLog,
+    caregiverCats,
+    onCatClick
 }) {
     const navigate = useNavigate();
     const isGuest = user?.role === 'guest';
@@ -61,22 +61,6 @@ function Header({
     return (
         <header className="relative z-40 bg-white/95 backdrop-blur-md px-4 pt-3 pb-2 border-b border-slate-100">
             <div className="flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={() => {
-                        if (isGuest) {
-                            navigate('/login');
-                            return;
-                        }
-
-                        navigate('/profile');
-                    }}
-                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-lg font-bold"
-                    aria-label={isGuest ? '로그인으로 이동' : '프로필 보기'}
-                >
-                    👤
-                </button>
-
                 <SearchBar
                     value={searchKeyword}
                     onChange={onSearchChange}
@@ -92,16 +76,14 @@ function Header({
 
                         onLogout();
                     }}
-                    className={`h-10 px-3 rounded-full text-xs font-bold ${
-                        isGuest
+                    className={`h-10 px-3 rounded-full text-xs font-bold ${isGuest
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-900 text-white'
-                    }`}
+                        }`}
                 >
                     {isGuest ? '로그인' : '로그아웃'}
                 </button>
             </div>
-
             {isGuest && (
                 <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
                     <div>
@@ -115,53 +97,47 @@ function Header({
                 </div>
             )}
 
-            <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center justify-between gap-2 mt-2">
                 <ModeSelector
                     user={user}
                     onModeSwitch={handleModeSwitch}
                 />
 
-                <div className="flex items-center gap-2">
-                    {user?.role === 'student' && (
-                        <button
-                            onClick={() => navigate('/caregiver/apply')}
-                            className="mt-3 text-xs text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full font-bold"
-                        >
-                            돌보미 신청
-                        </button>
-                    )}
+                <div className="shrink-0 flex items-center gap-2 bg-white mt-4 px-3 py-1 rounded-full border border-slate-100 shadow-sm text-xs">
+                    {weatherLoading ? (
+                        <span>날씨 불러오는 중...</span>
+                    ) : weather ? (
+                        <>
+                            <img
+                                src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}.png`}
+                                alt={weather.weather[0].description}
+                                className="w-5 h-5 object-contain"
+                            />
 
-                    {user?.role === 'caregiver' && (
-                        <span className="mt-3 text-xs text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full font-bold">
-                            돌보미 인증 완료
-                        </span>
-                    )}
-                    {latestRequest && (
-                        <div className="mt-3 text-xs font-bold">
-                            {latestRequest.status === 'pending' && (
-                                <span className="px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700">
-                                    승인 대기 중
-                                </span>
-                            )}
+                            <span className="font-semibold text-slate-800">
+                                {weather.main.temp.toFixed(1)}°C
+                            </span>
 
-                            {latestRequest.status === 'reviewing' && (
-                                <span className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-700">
-                                    검토 중
-                                </span>
-                            )}
+                            <span className="text-slate-400">|</span>
 
-                            {latestRequest.status === 'approved' && (
-                                <span className="px-3 py-1.5 rounded-full bg-green-100 text-green-700">
-                                    승인 완료
-                                </span>
-                            )}
+                            <span className="text-slate-600">
+                                {weather.name === 'Gyeongsan-si'
+                                    ? '영남대학교'
+                                    : weather.name}
+                            </span>
 
-                            {latestRequest.status === 'rejected' && (
-                                <span className="px-3 py-1.5 rounded-full bg-red-100 text-red-700">
-                                    반려됨
-                                </span>
+                            {isRain && (
+                                <>
+                                    <span className="text-slate-400">|</span>
+
+                                    <span className="text-amber-600 font-bold">
+                                        비 오는 날 🌧️
+                                    </span>
+                                </>
                             )}
-                        </div>
+                        </>
+                    ) : (
+                        <span>날씨 정보 없음</span>
                     )}
                 </div>
             </div>
@@ -173,33 +149,17 @@ function Header({
                 user={user}
             />
 
-            {user?.activeMode === 'caregiver' &&
-                latestDietLog && (
-                    <div className="mt-2 px-4">
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2">
-                            ⚠️
-                            <span>
-                                {latestDietLog.catName}
-                                {' '}
-                                {getTimeAgo(
-                                    latestDietLog.fedAt
-                                )}
-                                {' '}
-                                급여 기록이 있어요.
-                            </span>
-                        </div>
-                    </div>
-                )}
 
 
-
-            <StatusFilterBar
-                weather={weather}
-                weatherLoading={weatherLoading}
-                isRain={isRain}
-                latestReport={latestReport}
-                activeMode={user?.activeMode}
-            />
+            {!isGuest && (
+                <StatusFilterBar
+                    weather={weather}
+                    weatherLoading={weatherLoading}
+                    isRain={isRain}
+                    latestReport={latestReport}
+                    activeMode={user?.activeMode}
+                />
+            )}
         </header>
     );
 }

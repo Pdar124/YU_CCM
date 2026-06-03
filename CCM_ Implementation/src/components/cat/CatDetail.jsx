@@ -1,21 +1,25 @@
 // src/components/cat/CatDetail.jsx
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CatCaregiverActions from './CatCaregiverActions';
 import CatStudentActions from './CatStudentActions';
 
 function CatDetail({
-  cat,
-  user,
-  isRain,
-  predictedLocation,
-  reportCount,
-  nearestShelter,
-  onClose,
-  onReport,
-  onWikiEdit,
-  onHistoryView
+    cat,
+    user,
+    isRain,
+    predictedLocation,
+    reportCount,
+    latestReport,
+    nearestShelter,
+    hasLatestDietLog,
+    onClose,
+    onReport,
+    onWikiEdit,
+    onHistoryView
 }) {
   const navigate = useNavigate();
+  const [showPrediction, setShowPrediction] = useState(false);
 
   if (!cat) return null;
 
@@ -23,11 +27,13 @@ function CatDetail({
     user?.caregiverCatIds?.includes(cat.id);
   const isGuest = user?.role === 'guest';
 
-  return (
-    <div
-      className="absolute left-4 right-4 bottom-20 z-30 rounded-3xl p-4 shadow-2xl border bg-white border-slate-100"
-    >
-      <div className="flex items-start justify-between mb-3">
+ return (
+  <div
+    className={`absolute left-4 right-4 z-40 rounded-3xl p-4 shadow-sm border bg-white border-slate-100 ${
+      hasLatestDietLog ? 'bottom-[130px]' : 'bottom-20'
+    }`}
+  >
+    <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm bg-emerald-50"
@@ -67,28 +73,7 @@ function CatDetail({
           ✕
         </button>
       </div>
-      {predictedLocation && (
-        <div
-          className="rounded-2xl p-3 mb-3 border bg-indigo-50 border-indigo-100">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-sm font-black text-indigo-700">
-              📍 AI 예측 위치
-            </span>
-            <span className="text-[10px] text-indigo-500 font-semibold">
-              Recency Weight
-            </span>
-          </div>
 
-          <div className="text-xs text-slate-600">
-            위도 {predictedLocation.lat.toFixed(5)} · 경도{' '}
-            {predictedLocation.lng.toFixed(5)}
-          </div>
-
-          <div className="text-[11px] text-slate-500 mt-1">
-            최근 {reportCount || 0}건의 제보를 기반으로 예측했습니다.
-          </div>
-        </div>
-      )}
 
       {isRain && nearestShelter && (
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 mb-3 text-xs text-blue-700 font-semibold">
@@ -109,18 +94,18 @@ function CatDetail({
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            onClick={() => navigate('/login')}
-            className="py-3 rounded-2xl bg-emerald-600 text-white text-xs font-bold"
+            onClick={() => onHistoryView(cat)}
+            className="py-3 rounded-2xl bg-white border border-slate-200 text-slate-700 text-sm font-bold"
           >
-            로그인 후 제보하기
+            상세 정보 보기
           </button>
 
           <button
             type="button"
-            onClick={() => navigate('/signup')}
-            className="py-3 rounded-2xl bg-white border border-emerald-100 text-emerald-700 text-xs font-bold"
+            onClick={() => navigate('/login')}
+            className="py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold"
           >
-            돌봄 참여하기
+            제보하기
           </button>
         </div>
       )}
@@ -129,6 +114,7 @@ function CatDetail({
         <CatStudentActions
           cat={cat}
           onReport={onReport}
+          onDetailView={onHistoryView}
         />
       )}
 
