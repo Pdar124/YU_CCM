@@ -14,6 +14,11 @@ function ProfilePage({
 
   const handleModeSwitch =
     async () => {
+      if (user.role !== 'caregiver') {
+        alert('돌보미 승인 후 사용할 수 있습니다.');
+        return;
+      }
+
       try {
         const nextMode =
           user.activeMode ===
@@ -122,10 +127,12 @@ function ProfilePage({
             }`}
           >
             <span>
-              {user.activeMode ===
-              'caregiver'
-                ? '🟠 Caregiver 모드'
-                : '🟢 Student 모드'}
+              {user.role !== 'caregiver'
+                ? '기본 보기'
+                : user.activeMode ===
+                  'caregiver'
+                  ? '🟠 돌보미 모드'
+                  : '기본 보기'}
             </span>
 
             <span>

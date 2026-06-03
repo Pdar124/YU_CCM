@@ -139,9 +139,13 @@ function Login({ onLoginSuccess, onGuestLogin }) {
           <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs text-slate-400">또는</span>
         </div>
 
-        <div
-          onClick={onGuestLogin}
-          className="border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 p-4 rounded-xl cursor-pointer transition text-left group"
+        <button
+          type="button"
+          onClick={() => {
+            onGuestLogin();
+            navigate('/');
+          }}
+          className="w-full border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 p-4 rounded-xl cursor-pointer transition text-left group"
         >
           <div className="flex justify-between items-center mb-1">
             <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
@@ -151,7 +155,7 @@ function Login({ onLoginSuccess, onGuestLogin }) {
           </div>
           <h3 className="text-sm font-bold text-slate-700">조회 전용 모드로 시작</h3>
           <p className="text-xs text-slate-500 mt-0.5">지도 조회 및 고양이의 기본 정보 확인만 가능합니다.</p>
-        </div>
+        </button>
 
         <div className="text-center mt-8 text-xs text-slate-500">
           아직 계정이 없으신가요?{' '}

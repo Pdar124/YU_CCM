@@ -20,6 +20,7 @@ import DashboardPage from '../pages/student/DashboardPage';
 function AppRoutes() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isAuthenticatedUser = user && user.role !== 'guest';
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -71,14 +72,14 @@ function AppRoutes() {
       <Route
         path="/login"
         element={
-          user ? <Navigate to="/" /> : <LoginPage setUser={setUser} />
+          isAuthenticatedUser ? <Navigate to="/" /> : <LoginPage setUser={setUser} />
         }
       />
 
       <Route
         path="/signup"
         element={
-          user ? <Navigate to="/" /> : <SignupPage setUser={setUser} />
+          isAuthenticatedUser ? <Navigate to="/" /> : <SignupPage setUser={setUser} />
         }
       />
 
@@ -100,7 +101,7 @@ function AppRoutes() {
       <Route
         path="/caregiver/apply"
         element={
-          user ? (
+          isAuthenticatedUser ? (
             <CaregiverApplicationPage user={user} />
           ) : (
             <Navigate to="/login" />
@@ -131,14 +132,14 @@ function AppRoutes() {
       <Route
         path="/diet-health/:catId"
         element={
-          user ? <DietHealthRecordPage user={user} /> : <Navigate to="/login" />
+          isAuthenticatedUser ? <DietHealthRecordPage user={user} /> : <Navigate to="/login" />
         }
       />
 
       <Route
         path="/profile"
         element={
-          user ? <ProfilePage user={user} setUser={setUser} /> : <Navigate to="/login" />
+          isAuthenticatedUser ? <ProfilePage user={user} setUser={setUser} /> : <Navigate to="/login" />
         }
       />
       <Route
