@@ -140,7 +140,6 @@ function AdminPage() {
         origin: '사용자 신규 등록 요청',
         healthStatus: '정보 없음',
         territory: request.location || '',
-        imageUrl: request.imageUrl || '',
         lat: request.lat || null,
         lng: request.lng || null,
         location: request.location || '',
@@ -367,16 +366,8 @@ function AdminPage() {
                     className="border border-slate-200 rounded-3xl p-5 bg-white shadow-sm"
                   >
                     <div className="flex gap-3">
-                      <div className="w-30 h-30 rounded-2xl bg-slate-100 flex items-center justify-center text-3xl overflow-hidden">
-                        {request.imageUrl ? (
-                          <img
-                            src={request.imageUrl}
-                            alt="신규 고양이"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          '🐈'
-                        )}
+                      <div className="w-30 h-30 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+                        <Cat size={32} strokeWidth={2.5} />
                       </div>
 
                       <div className="flex-1">
@@ -474,13 +465,9 @@ function AdminPage() {
                 </button>
               </div>
 
-              {selectedRequest.imageUrl && (
-                <img
-                  src={selectedRequest.imageUrl}
-                  alt="cat"
-                  className="w-full h-56 object-cover rounded-2xl mb-4"
-                />
-              )}
+              <div className="w-full h-40 rounded-2xl mb-4 bg-slate-100 flex items-center justify-center text-slate-400">
+                <Cat size={42} strokeWidth={2.5} />
+              </div>
 
               <div className="space-y-3 text-sm">
                 <div>

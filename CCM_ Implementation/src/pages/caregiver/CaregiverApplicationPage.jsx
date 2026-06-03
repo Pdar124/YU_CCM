@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import useCats from '../../hooks/useCats';
+import { getCatImageUrl } from '../../utils/catImage';
 
 function CaregiverApplicationPage({ user }) {
   const navigate = useNavigate();
@@ -93,6 +94,7 @@ function CaregiverApplicationPage({ user }) {
             <div className="space-y-2">
               {cats.map((cat) => {
                 const selected = selectedCatIds.includes(cat.id);
+                const catImageUrl = getCatImageUrl(cat);
 
                 return (
                   <button
@@ -105,7 +107,17 @@ function CaregiverApplicationPage({ user }) {
                         : 'border-slate-200 bg-white'
                     }`}
                   >
-                    <div className="text-2xl">{cat.icon || '🐈'}</div>
+                    <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center overflow-hidden text-2xl">
+                      {catImageUrl ? (
+                        <img
+                          src={catImageUrl}
+                          alt={cat.name || '고양이'}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        cat.icon || '🐈'
+                      )}
+                    </div>
 
                     <div className="flex-1">
                       <div className="font-bold text-slate-900">

@@ -8,6 +8,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
+import { getCatImageUrl } from '../../utils/catImage';
 
 function DietHealthRecordPage({ user }) {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function DietHealthRecordPage({ user }) {
   const [amount, setAmount] = useState('normal');
   const [symptoms, setSymptoms] = useState(['기타 이상 없음']);
   const [memo, setMemo] = useState('');
+  const catImageUrl = getCatImageUrl(cat);
 
   const symptomList = [
     '식욕 저하',
@@ -104,8 +106,16 @@ function DietHealthRecordPage({ user }) {
 
         {cat && (
           <div className="border border-slate-100 rounded-3xl p-4 mb-5 flex items-center gap-3 shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-3xl">
-              {cat.icon || '🐈'}
+            <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center overflow-hidden text-3xl">
+              {catImageUrl ? (
+                <img
+                  src={catImageUrl}
+                  alt={cat.name || '고양이'}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                cat.icon || '🐈'
+              )}
             </div>
 
             <div>

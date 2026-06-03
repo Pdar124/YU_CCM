@@ -1,4 +1,5 @@
 import { Cat, CheckCircle2, List } from 'lucide-react';
+import { getCatImageUrl } from '../../utils/catImage';
 
 function CatList({
   cats,
@@ -53,6 +54,7 @@ function CatList({
 
           const isSelected = selectedCatId === cat.id;
           const isDimmed = isCaregiverMode && !isMyCat;
+          const catImageUrl = getCatImageUrl(cat);
 
           return (
             <button
@@ -93,7 +95,13 @@ function CatList({
                     }
                   `}
                 >
-                  {cat.icon ? (
+                  {catImageUrl ? (
+                    <img
+                      src={catImageUrl}
+                      alt={cat.name || '고양이'}
+                      className="h-full w-full rounded-2xl object-cover"
+                    />
+                  ) : cat.icon ? (
                     <span className="text-2xl leading-none">{cat.icon}</span>
                   ) : (
                     <Cat size={26} strokeWidth={2.5} />

@@ -33,6 +33,7 @@ import useShelters from '../../hooks/useShelters';
 import useWeather from '../../hooks/useWeather';
 import useCatPrediction from '../../hooks/useCatPrediction';
 import useCatModals from '../../hooks/useCatModals';
+import { getCatImageUrl } from '../../utils/catImage';
 
 
 import HistoryModal from '../../components/modal/HistoryModal';
@@ -137,7 +138,7 @@ function DashboardPage({ user, setUser }) {
         inner.style.fontSize = isSelected ? '18px' : '16px';
         inner.style.lineHeight = '1';
 
-        const catImageUrl = cat.imageUrl || cat.photoUrl || cat.profileImageUrl || '';
+        const catImageUrl = getCatImageUrl(cat);
 
         if (catImageUrl) {
             const img = document.createElement('img');

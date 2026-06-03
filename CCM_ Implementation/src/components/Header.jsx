@@ -6,7 +6,6 @@ import SearchBar from './header/SearchBar';
 import ModeSelector from './header/ModeSelector';
 import StatusFilterBar from './header/StatusFilterBar';
 import CatList from './cat/CatList';
-import useCaregiverRequests from '../hooks/useCaregiverRequests';
 
 function Header({
     user,
@@ -20,19 +19,10 @@ function Header({
     searchKeyword,
     onSearchChange,
     latestReport,
-    latestDietLog,
-    caregiverCats,
     onCatClick
 }) {
     const navigate = useNavigate();
     const isGuest = user?.role === 'guest';
-    const { requests } =
-        useCaregiverRequests(user?.uid);
-    const latestRequest =
-        requests.sort((a, b) =>
-            (b.createdAt?.seconds || 0) -
-            (a.createdAt?.seconds || 0)
-        )[0];
     const canUseCaregiverMode =
         user?.role === 'caregiver' &&
         user?.caregiverCatIds?.length > 0;

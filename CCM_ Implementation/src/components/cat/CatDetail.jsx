@@ -3,14 +3,12 @@ import { Cat, CloudRain, MapPin, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CatCaregiverActions from './CatCaregiverActions';
 import CatStudentActions from './CatStudentActions';
+import { getCatImageUrl } from '../../utils/catImage';
 
 function CatDetail({
     cat,
     user,
     isRain,
-    predictedLocation,
-    reportCount,
-    latestReport,
     nearestShelter,
     hasLatestDietLog,
     onClose,
@@ -25,6 +23,7 @@ function CatDetail({
   const isMyCat =
     user?.caregiverCatIds?.includes(cat.id);
   const isGuest = user?.role === 'guest';
+  const catImageUrl = getCatImageUrl(cat);
 
  return (
   <div
@@ -37,7 +36,13 @@ function CatDetail({
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm bg-emerald-50 text-emerald-600"
           >
-            {cat.icon ? (
+            {catImageUrl ? (
+              <img
+                src={catImageUrl}
+                alt={cat.name || '고양이'}
+                className="h-full w-full rounded-2xl object-cover"
+              />
+            ) : cat.icon ? (
               <span className="text-3xl">{cat.icon}</span>
             ) : (
               <Cat size={28} strokeWidth={2.5} />
