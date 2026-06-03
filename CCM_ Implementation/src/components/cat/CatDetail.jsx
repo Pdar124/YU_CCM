@@ -110,9 +110,9 @@ function CatDetail({
             상세 정보 보기
           </button>
 
-          <button
+         <button
             type="button"
-            onClick={() => navigate('/login')}
+            onClick={() => alert('로그인 후 이용 가능합니다.')}
             className="py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold"
           >
             제보하기
