@@ -58,7 +58,7 @@ function DashboardPage({ user, setUser }) {
     const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
-    const polylineRef = useRef(null); // 동선 참조 추가
+    const polylineRef = useRef([]); // 동선 참조 추가
     const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -68,6 +68,51 @@ function DashboardPage({ user, setUser }) {
     const [activeNavigation, setActiveNavigation] = useState('map');
 
     const isGuest = user?.role === 'guest';
+
+    const createCurvedRoutePath = (points) => {
+        if (points.length < 2 || !window.kakao?.maps) return points;
+
+        const curvedPath = [];
+
+        points.forEach((point, index) => {
+            const nextPoint = points[index + 1];
+
+            if (!nextPoint) {
+                curvedPath.push(point);
+                return;
+            }
+
+            const startLat = point.getLat();
+            const startLng = point.getLng();
+            const endLat = nextPoint.getLat();
+            const endLng = nextPoint.getLng();
+            const midLat = (startLat + endLat) / 2;
+            const midLng = (startLng + endLng) / 2;
+            const latDiff = endLat - startLat;
+            const lngDiff = endLng - startLng;
+            const curveStrength = 0.18;
+            const controlLat = midLat - lngDiff * curveStrength;
+            const controlLng = midLng + latDiff * curveStrength;
+
+            for (let step = 0; step < 14; step += 1) {
+                const t = step / 14;
+                const lat =
+                    (1 - t) * (1 - t) * startLat +
+                    2 * (1 - t) * t * controlLat +
+                    t * t * endLat;
+                const lng =
+                    (1 - t) * (1 - t) * startLng +
+                    2 * (1 - t) * t * controlLng +
+                    t * t * endLng;
+
+                curvedPath.push(new window.kakao.maps.LatLng(lat, lng));
+            }
+        });
+
+        curvedPath.push(points[points.length - 1]);
+
+        return curvedPath;
+    };
 
     // Custom marker image generator
     const createMarkerImage = ({ emoji, bgColor, borderColor, size = 48 }) => {
@@ -104,37 +149,37 @@ function DashboardPage({ user, setUser }) {
         const markerButton = document.createElement('button');
         markerButton.type = 'button';
         markerButton.setAttribute('aria-label', `${cat.name} 마커`);
-        markerButton.style.width = isSelected ? '44px' : '40px';
-        markerButton.style.height = isSelected ? '50px' : '46px';
+        markerButton.style.width = isSelected ? '64px' : '56px';
+        markerButton.style.height = isSelected ? '72px' : '64px';
         markerButton.style.position = 'relative';
         markerButton.style.border = '0';
         markerButton.style.padding = '0';
         markerButton.style.background = 'transparent';
         markerButton.style.cursor = 'pointer';
-        markerButton.style.transform = 'translateY(-4px)';
+        markerButton.style.transform = 'translateY(-6px)';
 
         const pin = document.createElement('div');
-        pin.style.width = isSelected ? '42px' : '38px';
-        pin.style.height = isSelected ? '42px' : '38px';
+        pin.style.width = isSelected ? '60px' : '52px';
+        pin.style.height = isSelected ? '60px' : '52px';
         pin.style.borderRadius = '999px';
         pin.style.background = isSelected ? '#fb923c' : '#10b981';
         pin.style.border = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
-        pin.style.boxShadow = '0 4px 10px rgba(15, 23, 42, 0.18)';
+        pin.style.boxShadow = '0 8px 18px rgba(15, 23, 42, 0.22)';
         pin.style.display = 'flex';
         pin.style.alignItems = 'center';
         pin.style.justifyContent = 'center';
         pin.style.position = 'relative';
 
         const inner = document.createElement('div');
-        inner.style.width = isSelected ? '30px' : '27px';
-        inner.style.height = isSelected ? '30px' : '27px';
+        inner.style.width = isSelected ? '46px' : '40px';
+        inner.style.height = isSelected ? '46px' : '40px';
         inner.style.borderRadius = '999px';
         inner.style.background = '#ffffff';
         inner.style.overflow = 'hidden';
         inner.style.display = 'flex';
         inner.style.alignItems = 'center';
         inner.style.justifyContent = 'center';
-        inner.style.fontSize = isSelected ? '18px' : '16px';
+        inner.style.fontSize = isSelected ? '26px' : '22px';
         inner.style.lineHeight = '1';
 
         const catImageUrl = getCatImageUrl(cat);
@@ -154,9 +199,9 @@ function DashboardPage({ user, setUser }) {
         const tail = document.createElement('div');
         tail.style.position = 'absolute';
         tail.style.left = '50%';
-        tail.style.bottom = '-4px';
-        tail.style.width = '10px';
-        tail.style.height = '10px';
+        tail.style.bottom = '-6px';
+        tail.style.width = '14px';
+        tail.style.height = '14px';
         tail.style.background = isSelected ? '#fb923c' : '#10b981';
         tail.style.borderRight = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
         tail.style.borderBottom = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
@@ -418,8 +463,12 @@ function DashboardPage({ user, setUser }) {
         markersRef.current.forEach(marker => marker.setMap && marker.setMap(null));
         markersRef.current = [];
 
+        const visibleMarkerCats = selectedCatId
+            ? cats.filter((cat) => cat.id === selectedCatId)
+            : cats;
+
         // 새 마커 생성
-        cats.forEach((cat) => {
+        visibleMarkerCats.forEach((cat) => {
             const latestReport =
                 getLatestReport(cat.id, reports);
 
@@ -531,7 +580,13 @@ function DashboardPage({ user, setUser }) {
     // 🛣️ 고양이 이동 경로(Polyline) 표시
     useEffect(() => {
         if (!mapRef.current) return;
-        if (!currentSelectedCat) return;
+        if (!currentSelectedCat) {
+            polylineRef.current.forEach((overlay) => {
+                overlay.setMap(null);
+            });
+            polylineRef.current = [];
+            return;
+        }
 
         const catReports = reports
             .filter(
@@ -544,6 +599,11 @@ function DashboardPage({ user, setUser }) {
                     b.createdAt?.toMillis()
             );
 
+        polylineRef.current.forEach((overlay) => {
+            overlay.setMap(null);
+        });
+        polylineRef.current = [];
+
         if (catReports.length < 2) return;
 
         const path = catReports.map(
@@ -553,23 +613,62 @@ function DashboardPage({ user, setUser }) {
                     report.lng
                 )
         );
+        const curvedPath = createCurvedRoutePath(path);
 
-        if (polylineRef.current) {
-            polylineRef.current.setMap(null);
-        }
+        const routeShadow = new window.kakao.maps.Polyline({
+            path: curvedPath,
+            strokeWeight: 10,
+            strokeColor: '#ffffff',
+            strokeOpacity: 0.92,
+            strokeStyle: 'solid'
+        });
 
-        const polyline =
-            new window.kakao.maps.Polyline({
-                path,
-                strokeWeight: 4,
-                strokeColor: '#7ED957',
-                strokeOpacity: 0.8,
-                strokeStyle: 'dashed'
+        const routeLine = new window.kakao.maps.Polyline({
+            path: curvedPath,
+            strokeWeight: 6,
+            strokeColor: '#10b981',
+            strokeOpacity: 0.95,
+            strokeStyle: 'shortdash'
+        });
+
+        const startPoint = new window.kakao.maps.Circle({
+            center: path[0],
+            radius: 9,
+            strokeWeight: 3,
+            strokeColor: '#ffffff',
+            strokeOpacity: 1,
+            fillColor: '#94a3b8',
+            fillOpacity: 1
+        });
+
+        const endPoint = new window.kakao.maps.Circle({
+            center: path[path.length - 1],
+            radius: 12,
+            strokeWeight: 4,
+            strokeColor: '#ffffff',
+            strokeOpacity: 1,
+            fillColor: '#10b981',
+            fillOpacity: 1
+        });
+
+        routeShadow.setMap(mapRef.current);
+        routeLine.setMap(mapRef.current);
+        startPoint.setMap(mapRef.current);
+        endPoint.setMap(mapRef.current);
+
+        polylineRef.current = [
+            routeShadow,
+            routeLine,
+            startPoint,
+            endPoint
+        ];
+
+        return () => {
+            polylineRef.current.forEach((overlay) => {
+                overlay.setMap(null);
             });
-
-        polyline.setMap(mapRef.current);
-
-        polylineRef.current = polyline;
+            polylineRef.current = [];
+        };
 
     }, [reports, currentSelectedCat]);
 
