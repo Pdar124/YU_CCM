@@ -58,7 +58,8 @@ function DashboardPage({ user, setUser }) {
     const predictedCircleRef = useRef(null); // 예측 위치 원 참조 추가
     const shelterMarkersRef = useRef([]); // 보호소 마커 참조 추가
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
-    const polylineRef = useRef(null); // 동선 참조 추가
+    const predictedLabelRef = useRef(null); // 예측 위치 라벨 참조 추가
+    const polylineRef = useRef([]); // 동선 참조 추가
     const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -68,6 +69,156 @@ function DashboardPage({ user, setUser }) {
     const [activeNavigation, setActiveNavigation] = useState('map');
 
     const isGuest = user?.role === 'guest';
+
+    const createCurvedRoutePath = (points) => {
+        if (points.length < 2 || !window.kakao?.maps) return points;
+
+        const curvedPath = [];
+
+        points.forEach((point, index) => {
+            const nextPoint = points[index + 1];
+
+            if (!nextPoint) {
+                curvedPath.push(point);
+                return;
+            }
+
+            const startLat = point.getLat();
+            const startLng = point.getLng();
+            const endLat = nextPoint.getLat();
+            const endLng = nextPoint.getLng();
+            const midLat = (startLat + endLat) / 2;
+            const midLng = (startLng + endLng) / 2;
+            const latDiff = endLat - startLat;
+            const lngDiff = endLng - startLng;
+            const curveStrength = 0.18;
+            const controlLat = midLat - lngDiff * curveStrength;
+            const controlLng = midLng + latDiff * curveStrength;
+
+            for (let step = 0; step < 14; step += 1) {
+                const t = step / 14;
+                const lat =
+                    (1 - t) * (1 - t) * startLat +
+                    2 * (1 - t) * t * controlLat +
+                    t * t * endLat;
+                const lng =
+                    (1 - t) * (1 - t) * startLng +
+                    2 * (1 - t) * t * controlLng +
+                    t * t * endLng;
+
+                curvedPath.push(new window.kakao.maps.LatLng(lat, lng));
+            }
+        });
+
+        curvedPath.push(points[points.length - 1]);
+
+        return curvedPath;
+    };
+
+    const createRouteTimeLabel = ({ text, variant = 'start' }) => {
+        const label = document.createElement('div');
+        label.style.position = 'relative';
+        label.style.padding = '7px 10px';
+        label.style.borderRadius = '999px';
+        label.style.background = 'rgba(255, 255, 255, 0.96)';
+        label.style.border =
+            variant === 'end'
+                ? '1px solid rgba(16, 185, 129, 0.25)'
+                : '1px solid rgba(148, 163, 184, 0.28)';
+        label.style.boxShadow = '0 10px 24px rgba(15, 23, 42, 0.14)';
+        label.style.color = variant === 'end' ? '#047857' : '#475569';
+        label.style.fontSize = '11px';
+        label.style.fontWeight = '900';
+        label.style.lineHeight = '1';
+        label.style.whiteSpace = 'nowrap';
+        label.style.pointerEvents = 'none';
+        label.textContent = text;
+
+        const tail = document.createElement('div');
+        tail.style.position = 'absolute';
+        tail.style.left = '50%';
+        tail.style.bottom = '-5px';
+        tail.style.width = '10px';
+        tail.style.height = '10px';
+        tail.style.background = 'rgba(255, 255, 255, 0.96)';
+        tail.style.borderRight =
+            variant === 'end'
+                ? '1px solid rgba(16, 185, 129, 0.25)'
+                : '1px solid rgba(148, 163, 184, 0.28)';
+        tail.style.borderBottom =
+            variant === 'end'
+                ? '1px solid rgba(16, 185, 129, 0.25)'
+                : '1px solid rgba(148, 163, 184, 0.28)';
+        tail.style.transform = 'translateX(-50%) rotate(45deg)';
+
+        label.appendChild(tail);
+
+        return label;
+    };
+
+    const createPredictionLabel = () => {
+        const label = document.createElement('div');
+        label.style.position = 'relative';
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '7px';
+        label.style.padding = '9px 12px';
+        label.style.borderRadius = '17px';
+        label.style.background = 'rgba(255, 255, 255, 0.97)';
+        label.style.border = '1px solid rgba(99, 102, 241, 0.24)';
+        label.style.boxShadow = '0 14px 30px rgba(67, 56, 202, 0.18)';
+        label.style.color = '#4338ca';
+        label.style.fontSize = '12px';
+        label.style.fontWeight = '900';
+        label.style.lineHeight = '1';
+        label.style.whiteSpace = 'nowrap';
+        label.style.pointerEvents = 'none';
+
+        const icon = document.createElement('span');
+        icon.style.display = 'flex';
+        icon.style.width = '23px';
+        icon.style.height = '23px';
+        icon.style.borderRadius = '999px';
+        icon.style.alignItems = 'center';
+        icon.style.justifyContent = 'center';
+        icon.style.background = '#eef2ff';
+        icon.style.color = '#4f46e5';
+        icon.innerHTML = `
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9.937 15.5A2 2 0 0 0 11.5 17.063" />
+                <path d="M14.063 8.5A2 2 0 0 0 12.5 6.937" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.41" />
+                <circle cx="12" cy="12" r="4" />
+            </svg>
+        `;
+
+        const text = document.createElement('span');
+        text.textContent = 'AI 예측 위치';
+
+        const tail = document.createElement('div');
+        tail.style.position = 'absolute';
+        tail.style.left = '50%';
+        tail.style.bottom = '-5px';
+        tail.style.width = '10px';
+        tail.style.height = '10px';
+        tail.style.background = 'rgba(255, 255, 255, 0.97)';
+        tail.style.borderRight = '1px solid rgba(99, 102, 241, 0.24)';
+        tail.style.borderBottom = '1px solid rgba(99, 102, 241, 0.24)';
+        tail.style.transform = 'translateX(-50%) rotate(45deg)';
+
+        label.appendChild(icon);
+        label.appendChild(text);
+        label.appendChild(tail);
+
+        return label;
+    };
 
     // Custom marker image generator
     const createMarkerImage = ({ emoji, bgColor, borderColor, size = 48 }) => {
@@ -99,42 +250,140 @@ function DashboardPage({ user, setUser }) {
         );
     };
 
+    const createPredictionMarkerImage = (size = 58) => {
+        if (!window.kakao?.maps) return null;
+
+        const svg = `
+            <svg width="${size}" height="${size + 12}" viewBox="0 0 ${size} ${size + 12}" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <filter id="predictionShadow" x="0" y="0" width="${size}" height="${size + 12}" filterUnits="userSpaceOnUse">
+                    <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#4338ca" flood-opacity="0.28"/>
+                </filter>
+                <g filter="url(#predictionShadow)">
+                    <path d="M${size / 2} ${size + 8}C${size / 2} ${size + 8} ${size / 2 - 8} ${size - 1} ${size / 2 - 15} ${size - 10}C${size / 2 - 22} ${size - 20} ${size / 2 - 25} ${size - 28} ${size / 2 - 25} ${size / 2}C${size / 2 - 25} ${size / 2 - 14} ${size / 2 - 14} 3 ${size / 2} 3C${size / 2 + 14} 3 ${size / 2 + 25} ${size / 2 - 14} ${size / 2 + 25} ${size / 2}C${size / 2 + 25} ${size - 28} ${size / 2 + 22} ${size - 20} ${size / 2 + 15} ${size - 10}C${size / 2 + 8} ${size - 1} ${size / 2} ${size + 8} ${size / 2} ${size + 8}Z" fill="#4f46e5" stroke="#c7d2fe" stroke-width="3"/>
+                    <circle cx="${size / 2}" cy="${size / 2}" r="${size * 0.32}" fill="white" fill-opacity="0.95"/>
+                    <circle cx="${size / 2}" cy="${size / 2}" r="${size * 0.18}" fill="#eef2ff" stroke="#6366f1" stroke-width="2.6"/>
+                    <path d="M${size / 2} ${size / 2 - 13}V${size / 2 - 20}" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="M${size / 2} ${size / 2 + 13}V${size / 2 + 20}" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="M${size / 2 - 13} ${size / 2}H${size / 2 - 20}" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="M${size / 2 + 13} ${size / 2}H${size / 2 + 20}" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="M${size / 2 + 12} ${size / 2 - 17}L${size / 2 + 14} ${size / 2 - 12}L${size / 2 + 19} ${size / 2 - 10}L${size / 2 + 14} ${size / 2 - 8}L${size / 2 + 12} ${size / 2 - 3}L${size / 2 + 10} ${size / 2 - 8}L${size / 2 + 5} ${size / 2 - 10}L${size / 2 + 10} ${size / 2 - 12}Z" fill="#a5b4fc"/>
+                </g>
+            </svg>
+        `;
+
+        return new window.kakao.maps.MarkerImage(
+            `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+            new window.kakao.maps.Size(size, size + 12),
+            {
+                offset: new window.kakao.maps.Point(size / 2, size + 8)
+            }
+        );
+    };
+
     // 🐱 Custom cat marker element for CustomOverlay
-    const createCatMarkerElement = ({ cat, isSelected, onClick }) => {
+    const createCatMarkerElement = ({ cat, isSelected, lastSeenText, onClick }) => {
         const markerButton = document.createElement('button');
         markerButton.type = 'button';
         markerButton.setAttribute('aria-label', `${cat.name} 마커`);
-        markerButton.style.width = isSelected ? '44px' : '40px';
-        markerButton.style.height = isSelected ? '50px' : '46px';
+        markerButton.style.width = isSelected ? '150px' : '56px';
+        markerButton.style.height = isSelected ? '112px' : '64px';
         markerButton.style.position = 'relative';
         markerButton.style.border = '0';
         markerButton.style.padding = '0';
         markerButton.style.background = 'transparent';
         markerButton.style.cursor = 'pointer';
-        markerButton.style.transform = 'translateY(-4px)';
+        markerButton.style.transform = 'translateY(-6px)';
+        markerButton.style.display = 'flex';
+        markerButton.style.alignItems = 'flex-end';
+        markerButton.style.justifyContent = 'center';
+
+        if (isSelected) {
+            const bubble = document.createElement('div');
+            bubble.style.position = 'absolute';
+            bubble.style.left = '50%';
+            bubble.style.top = '0';
+            bubble.style.transform = 'translateX(-50%)';
+            bubble.style.display = 'flex';
+            bubble.style.alignItems = 'center';
+            bubble.style.gap = '6px';
+            bubble.style.padding = '8px 11px';
+            bubble.style.borderRadius = '16px';
+            bubble.style.background = 'rgba(255, 255, 255, 0.96)';
+            bubble.style.border = '1px solid rgba(16, 185, 129, 0.18)';
+            bubble.style.color = '#334155';
+            bubble.style.fontSize = '11px';
+            bubble.style.fontWeight = '800';
+            bubble.style.lineHeight = '1';
+            bubble.style.whiteSpace = 'nowrap';
+            bubble.style.boxShadow = '0 12px 28px rgba(15, 23, 42, 0.16)';
+            bubble.style.backdropFilter = 'blur(10px)';
+            bubble.style.pointerEvents = 'none';
+
+            const bubbleIcon = document.createElement('span');
+            bubbleIcon.textContent = '📍';
+            bubbleIcon.style.display = 'flex';
+            bubbleIcon.style.width = '22px';
+            bubbleIcon.style.height = '22px';
+            bubbleIcon.style.borderRadius = '999px';
+            bubbleIcon.style.alignItems = 'center';
+            bubbleIcon.style.justifyContent = 'center';
+            bubbleIcon.style.background = '#ecfdf5';
+            bubbleIcon.style.color = '#059669';
+            bubbleIcon.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                    <circle cx="12" cy="10" r="3" />
+                </svg>
+            `;
+
+            const bubbleText = document.createElement('span');
+            bubbleText.textContent = '최근 위치';
+            bubbleText.style.color = '#64748b';
+
+            const bubbleTime = document.createElement('span');
+            bubbleTime.textContent = lastSeenText || '정보 없음';
+            bubbleTime.style.color = '#059669';
+
+            const bubbleTail = document.createElement('div');
+            bubbleTail.style.position = 'absolute';
+            bubbleTail.style.left = '50%';
+            bubbleTail.style.bottom = '-5px';
+            bubbleTail.style.width = '10px';
+            bubbleTail.style.height = '10px';
+            bubbleTail.style.background = 'rgba(255, 255, 255, 0.96)';
+            bubbleTail.style.borderRight = '1px solid rgba(16, 185, 129, 0.18)';
+            bubbleTail.style.borderBottom = '1px solid rgba(16, 185, 129, 0.18)';
+            bubbleTail.style.transform = 'translateX(-50%) rotate(45deg)';
+
+            bubble.appendChild(bubbleIcon);
+            bubble.appendChild(bubbleText);
+            bubble.appendChild(bubbleTime);
+            bubble.appendChild(bubbleTail);
+            markerButton.appendChild(bubble);
+        }
 
         const pin = document.createElement('div');
-        pin.style.width = isSelected ? '42px' : '38px';
-        pin.style.height = isSelected ? '42px' : '38px';
+        pin.style.width = isSelected ? '60px' : '52px';
+        pin.style.height = isSelected ? '60px' : '52px';
         pin.style.borderRadius = '999px';
         pin.style.background = isSelected ? '#fb923c' : '#10b981';
         pin.style.border = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
-        pin.style.boxShadow = '0 4px 10px rgba(15, 23, 42, 0.18)';
+        pin.style.boxShadow = '0 8px 18px rgba(15, 23, 42, 0.22)';
         pin.style.display = 'flex';
         pin.style.alignItems = 'center';
         pin.style.justifyContent = 'center';
         pin.style.position = 'relative';
 
         const inner = document.createElement('div');
-        inner.style.width = isSelected ? '30px' : '27px';
-        inner.style.height = isSelected ? '30px' : '27px';
+        inner.style.width = isSelected ? '46px' : '40px';
+        inner.style.height = isSelected ? '46px' : '40px';
         inner.style.borderRadius = '999px';
         inner.style.background = '#ffffff';
         inner.style.overflow = 'hidden';
         inner.style.display = 'flex';
         inner.style.alignItems = 'center';
         inner.style.justifyContent = 'center';
-        inner.style.fontSize = isSelected ? '18px' : '16px';
+        inner.style.fontSize = isSelected ? '26px' : '22px';
         inner.style.lineHeight = '1';
 
         const catImageUrl = getCatImageUrl(cat);
@@ -154,9 +403,9 @@ function DashboardPage({ user, setUser }) {
         const tail = document.createElement('div');
         tail.style.position = 'absolute';
         tail.style.left = '50%';
-        tail.style.bottom = '-4px';
-        tail.style.width = '10px';
-        tail.style.height = '10px';
+        tail.style.bottom = '-6px';
+        tail.style.width = '14px';
+        tail.style.height = '14px';
         tail.style.background = isSelected ? '#fb923c' : '#10b981';
         tail.style.borderRight = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
         tail.style.borderBottom = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
@@ -314,7 +563,16 @@ function DashboardPage({ user, setUser }) {
                 return;
             }
 
-            moveMapToCat(currentSelectedCat);
+            if (predictedLocation && window.kakao?.maps && mapRef.current) {
+                mapRef.current.panTo(
+                    new window.kakao.maps.LatLng(
+                        predictedLocation.lat,
+                        predictedLocation.lng
+                    )
+                );
+            } else {
+                moveMapToCat(currentSelectedCat);
+            }
             return;
         }
 
@@ -418,8 +676,12 @@ function DashboardPage({ user, setUser }) {
         markersRef.current.forEach(marker => marker.setMap && marker.setMap(null));
         markersRef.current = [];
 
+        const visibleMarkerCats = selectedCatId
+            ? cats.filter((cat) => cat.id === selectedCatId)
+            : cats;
+
         // 새 마커 생성
-        cats.forEach((cat) => {
+        visibleMarkerCats.forEach((cat) => {
             const latestReport =
                 getLatestReport(cat.id, reports);
 
@@ -435,9 +697,15 @@ function DashboardPage({ user, setUser }) {
                     );
 
             const isSelected = selectedCatId === cat.id;
+            const latestReportTime =
+                latestReport?.observedAt ||
+                latestReport?.createdAt;
             const content = createCatMarkerElement({
                 cat,
                 isSelected,
+                lastSeenText: latestReportTime
+                    ? getTimeAgo(latestReportTime)
+                    : '기본 위치',
                 onClick: () => {
                     setSelectedCatId(cat.id);
                     mapRef.current.panTo(position);
@@ -463,14 +731,22 @@ function DashboardPage({ user, setUser }) {
         console.log("predictedLocation:", predictedLocation);
 
         if (!mapRef.current) return;
-        if (!predictedLocation) return;
 
         if (predictedMarkerRef.current) {
             predictedMarkerRef.current.setMap(null);
+            predictedMarkerRef.current = null;
         }
         if (predictedCircleRef.current) {
             predictedCircleRef.current.setMap(null);
+            predictedCircleRef.current = null;
         }
+        if (predictedLabelRef.current) {
+            predictedLabelRef.current.setMap(null);
+            predictedLabelRef.current = null;
+        }
+
+        if (activeNavigation !== 'analysis') return;
+        if (!predictedLocation) return;
 
         const position =
             new window.kakao.maps.LatLng(
@@ -478,12 +754,7 @@ function DashboardPage({ user, setUser }) {
                 predictedLocation.lng
             );
 
-        const markerImage = createMarkerImage({
-            emoji: '📍',
-            bgColor: '#6366f1',
-            borderColor: '#c7d2fe',
-            size: 50
-        });
+        const markerImage = createPredictionMarkerImage();
 
         const marker = new window.kakao.maps.Marker({
             map: mapRef.current,
@@ -493,14 +764,20 @@ function DashboardPage({ user, setUser }) {
 
         const circle = new window.kakao.maps.Circle({
             center: position,
-            radius: 50,
-            strokeWeight: 3,
+            radius: 56,
+            strokeWeight: 2,
             strokeColor: '#6366f1',
-            strokeOpacity: 0.75,
+            strokeOpacity: 0.55,
             fillColor: '#818cf8',
-            fillOpacity: 0.18,
+            fillOpacity: 0.13,
             map: mapRef.current
         });
+        const predictionLabel = new window.kakao.maps.CustomOverlay({
+            position,
+            content: createPredictionLabel(),
+            yAnchor: 2.15
+        });
+        predictionLabel.setMap(mapRef.current);
         mapRef.current.panTo(position);
 
         const infowindow =
@@ -525,13 +802,20 @@ function DashboardPage({ user, setUser }) {
 
         predictedMarkerRef.current = marker;
         predictedCircleRef.current = circle;
+        predictedLabelRef.current = predictionLabel;
 
-    }, [predictedLocation, mapReady]);
+    }, [activeNavigation, predictedLocation, mapReady]);
 
     // 🛣️ 고양이 이동 경로(Polyline) 표시
     useEffect(() => {
         if (!mapRef.current) return;
-        if (!currentSelectedCat) return;
+        if (!currentSelectedCat) {
+            polylineRef.current.forEach((overlay) => {
+                overlay.setMap(null);
+            });
+            polylineRef.current = [];
+            return;
+        }
 
         const catReports = reports
             .filter(
@@ -540,9 +824,20 @@ function DashboardPage({ user, setUser }) {
             )
             .sort(
                 (a, b) =>
-                    a.createdAt?.toMillis() -
-                    b.createdAt?.toMillis()
+                    (b.observedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0) -
+                    (a.observedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0)
+            )
+            .slice(0, 3)
+            .sort(
+                (a, b) =>
+                    (a.observedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0) -
+                    (b.observedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0)
             );
+
+        polylineRef.current.forEach((overlay) => {
+            overlay.setMap(null);
+        });
+        polylineRef.current = [];
 
         if (catReports.length < 2) return;
 
@@ -553,23 +848,77 @@ function DashboardPage({ user, setUser }) {
                     report.lng
                 )
         );
+        const curvedPath = createCurvedRoutePath(path);
 
-        if (polylineRef.current) {
-            polylineRef.current.setMap(null);
-        }
+        const routeShadow = new window.kakao.maps.Polyline({
+            path: curvedPath,
+            strokeWeight: 10,
+            strokeColor: '#ffffff',
+            strokeOpacity: 0.92,
+            strokeStyle: 'solid'
+        });
 
-        const polyline =
-            new window.kakao.maps.Polyline({
-                path,
-                strokeWeight: 4,
-                strokeColor: '#7ED957',
-                strokeOpacity: 0.8,
-                strokeStyle: 'dashed'
+        const routeLine = new window.kakao.maps.Polyline({
+            path: curvedPath,
+            strokeWeight: 6,
+            strokeColor: '#10b981',
+            strokeOpacity: 0.95,
+            strokeStyle: 'shortdash'
+        });
+
+        const startPoint = new window.kakao.maps.Circle({
+            center: path[0],
+            radius: 9,
+            strokeWeight: 3,
+            strokeColor: '#ffffff',
+            strokeOpacity: 1,
+            fillColor: '#94a3b8',
+            fillOpacity: 1
+        });
+
+        const endPoint = new window.kakao.maps.Circle({
+            center: path[path.length - 1],
+            radius: 12,
+            strokeWeight: 4,
+            strokeColor: '#ffffff',
+            strokeOpacity: 1,
+            fillColor: '#10b981',
+            fillOpacity: 1
+        });
+
+        const startReportTime =
+            catReports[0]?.observedAt ||
+            catReports[0]?.createdAt;
+
+        const startLabel = new window.kakao.maps.CustomOverlay({
+            position: path[0],
+            content: createRouteTimeLabel({
+                text: `${getTimeAgo(startReportTime) || '시간 정보 없음'} 제보`,
+                variant: 'start'
+            }),
+            yAnchor: 2.35
+        });
+
+        routeShadow.setMap(mapRef.current);
+        routeLine.setMap(mapRef.current);
+        startPoint.setMap(mapRef.current);
+        endPoint.setMap(mapRef.current);
+        startLabel.setMap(mapRef.current);
+
+        polylineRef.current = [
+            routeShadow,
+            routeLine,
+            startPoint,
+            endPoint,
+            startLabel
+        ];
+
+        return () => {
+            polylineRef.current.forEach((overlay) => {
+                overlay.setMap(null);
             });
-
-        polyline.setMap(mapRef.current);
-
-        polylineRef.current = polyline;
+            polylineRef.current = [];
+        };
 
     }, [reports, currentSelectedCat]);
 
