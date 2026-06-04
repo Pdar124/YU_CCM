@@ -7,6 +7,7 @@ function SignupCompletePage() {
   const handleLogin = () => {
     localStorage.removeItem('signup_uid');
     localStorage.removeItem('signup_accountId');
+    localStorage.removeItem('signup_type');
 
     navigate('/login');
   };
