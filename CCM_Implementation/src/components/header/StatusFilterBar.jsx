@@ -1,4 +1,4 @@
-import { MapPin, Target, Utensils } from 'lucide-react';
+import { Target, Utensils } from 'lucide-react';
 import { getTimeAgo } from '../../utils/time';
 
 function StatusFilterBar({
@@ -17,7 +17,10 @@ function StatusFilterBar({
         });
     };
 
-    const latestTimeText = formatReportTime(latestReport?.createdAt);
+    const latestReportTime =
+        latestReport?.observedAt ||
+        latestReport?.createdAt;
+    const latestTimeText = formatReportTime(latestReportTime);
 
     if (activeMode === 'caregiver') {
         return (
@@ -57,15 +60,10 @@ function StatusFilterBar({
     }
 
     return (
-        <div className="mt-1 flex gap-3 text-xs text-slate-600">
-            <div className="basis-3/5 min-w-0 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
+        <div className="mt-1 text-xs text-slate-600">
+            <div className="flex min-w-0 items-center justify-center gap-1 rounded-full border border-slate-100 bg-white px-3 py-2 shadow-sm">
                 <Target size={14} strokeWidth={2.5} className="shrink-0 text-emerald-500" />
                 <span className="truncate">최근 제보 {latestTimeText || '없음'}</span>
-            </div>
-
-            <div className="basis-2/5 min-w-0 flex items-center justify-center gap-1 bg-white px-3 py-2 rounded-full border border-slate-100 shadow-sm">
-                <MapPin size={14} strokeWidth={2.5} className="shrink-0 text-indigo-500" />
-                <span className="truncate">인기 제보 구역</span>
             </div>
         </div>
     );

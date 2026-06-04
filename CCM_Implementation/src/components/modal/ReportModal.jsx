@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import {
-  CalendarClock,
   Cat,
   ChevronDown,
   CirclePlus,
@@ -64,8 +63,6 @@ function ReportModal({
   isRain,
   user
 }) {
-  const getCurrentInputTime = () => new Date().toISOString().slice(0, 16);
-
   const [showNewCatForm, setShowNewCatForm] = useState(false);
 
   const [tempName, setTempName] = useState('');
@@ -75,7 +72,6 @@ function ReportModal({
   const [selectedReportCatId, setSelectedReportCatId] = useState(selectedCatId || '');
   const [memo, setMemo] = useState('');
   const [reportImageUrl, setReportImageUrl] = useState('');
-  const [observedAt, setObservedAt] = useState(getCurrentInputTime);
 
   const recommendedCats = useMemo(() => {
     if (!clickedCoords?.lat || !clickedCoords?.lng) return cats.slice(0, 3);
@@ -100,7 +96,7 @@ function ReportModal({
               )
             )
           : territoryScore;
-        const timeZoneScore = getTimeZoneScore(cat.id, reports, observedAt);
+        const timeZoneScore = getTimeZoneScore(cat.id, reports);
         const matchScore = Math.round(
           territoryScore * 0.4 +
           predictionScore * 0.45 +
@@ -115,7 +111,7 @@ function ReportModal({
       })
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, 3);
-  }, [cats, clickedCoords, isRain, observedAt, reports, shelters]);
+  }, [cats, clickedCoords, isRain, reports, shelters]);
 
   if (!isOpen) return null;
 
@@ -133,13 +129,12 @@ function ReportModal({
       catId: reportCatId,
       memo,
       imageUrl: reportImageUrl.trim(),
-      observedAt: observedAt ? new Date(observedAt) : new Date()
+      observedAt: new Date()
     });
 
     setSelectedReportCatId('');
     setMemo('');
     setReportImageUrl('');
-    setObservedAt(getCurrentInputTime());
   };
 
   const handleRequestCatRegistration = async () => {
@@ -155,7 +150,7 @@ function ReportModal({
         description,
         user,
         clickedCoords,
-        observedAt
+        observedAt: new Date()
       });
 
       alert('신규 고양이 등록 요청이 접수되었습니다.');
@@ -186,7 +181,7 @@ function ReportModal({
                 고양이 조우 기록 제보
               </h2>
               <p className="text-xs text-slate-400 mt-0.5 px-1">
-                발견 위치와 시간을 기록해 주세요.
+                발견 위치와 현재 시간을 기록해 주세요.
               </p>
             </div>
           </div>
@@ -273,19 +268,6 @@ function ReportModal({
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="flex items-center gap-1.5 text-xs font-black text-slate-500 mb-1.5">
-              <CalendarClock size={14} strokeWidth={2.5} className="text-emerald-500" />
-              발견 시간
-            </label>
-            <input
-              type="datetime-local"
-              value={observedAt}
-              onChange={(e) => setObservedAt(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-indigo-200 focus:bg-white focus:shadow-sm transition-all"
-            />
           </div>
 
           <div>
