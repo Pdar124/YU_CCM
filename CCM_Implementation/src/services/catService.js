@@ -34,6 +34,8 @@ export const updateCatWiki = (catId, formData) =>
     origin: formData.origin,
     feature: formData.feature,
     healthStatus: formData.healthStatus,
+    estimatedAge: formData.estimatedAge,
+    weight: formData.weight,
     territory: formData.territory
   });
 

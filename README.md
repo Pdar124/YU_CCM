@@ -37,8 +37,9 @@ npm install
 
 ```env
 OPENWEATHER_API_KEY=OpenWeather API Key
-VITE_KAKAO_MAP_KEY=Kakao JavaScript Key
 ```
+
+Kakao Map JavaScript Key는 현재 `DashboardPage.jsx`의 Kakao Map SDK script URL에서 로드됩니다.
 
 ### 4. 개발 서버 실행
 
