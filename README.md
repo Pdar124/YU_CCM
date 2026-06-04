@@ -1,29 +1,23 @@
-# 🐈 Campus Cat Mate (CCM)
+<div align="center">
+  
+# Campus Cat Mate (CCM)
 > **캠퍼스 길고양이와 인간의 건강한 공존을 위한 지능형 위치 예측 및 돌봄 네트워크**
 
 <img width="300" height="300" alt="Logo_Image" src="https://github.com/user-attachments/assets/d16ac81e-b9c0-491a-a371-f0545958a865" />
 
+</div>
 
 **Campus Cat Mate**는 파편화된 캠퍼스 고양이 정보를 통합하여 실시간 위치 예측, 예상 동선 분석, 그리고 체계적인 건강 관리를 제공하는 **생태 기반 지능형 시스템**입니다.
 
 ---
 
-## 🔗 서비스 접속
+## 서비스 접속
 
-- 배포 서비스: Vercel
 - 서비스 URL: https://yu-ccm.vercel.app
-- Vercel Root Directory: `CCM_Implementation`
-
-Vercel 배포 환경에서는 다음 환경변수를 등록해야 합니다.
-
-```env
-OPENWEATHER_API_KEY=OpenWeather API Key
-VITE_KAKAO_MAP_KEY=Kakao JavaScript Key
-```
 
 ---
 
-## 💻 로컬 실행 방법
+## 로컬 실행 방법
 
 ### 1. 프로젝트 폴더로 이동
 
@@ -65,19 +59,20 @@ npm run build
 npm run preview
 ```
 
+
 ---
 
-# 📍 Project Architecture
+# Project Architecture
 <img width="600" height="600" alt="Architecture_Image" src="https://github.com/user-attachments/assets/1d738ef7-c306-4779-8f04-340c7b8924b6" />
 
 ---
 
-# 📍ERD
+# ERD
 
-<img width="5932" height="3284" alt="Image" src="https://github.com/user-attachments/assets/cfdc3263-3054-4502-8dcc-e4e7e1811e1e" />
+<img width="1000" height="600" alt="Image" src="https://github.com/user-attachments/assets/cfdc3263-3054-4502-8dcc-e4e7e1811e1e" />
 
 ---
-## 📝 Commit Message Convention
+## Commit Message Convention
 
 본 프로젝트는 일관된 커밋 기록을 위해 **Conventional Commits** 스타일을 따릅니다.
 
@@ -95,7 +90,8 @@ npm run preview
 
 ---
 
-## 👤 Author
+
+## Author
 
 * **Name:** 박다래 (Darae Park)
 * **Student ID:** 22411841
