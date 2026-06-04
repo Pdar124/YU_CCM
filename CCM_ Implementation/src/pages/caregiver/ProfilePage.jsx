@@ -1,9 +1,14 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../config/firebase';
 import {
+  collection,
   doc,
-  updateDoc
+  onSnapshot,
+  query,
+  updateDoc,
+  where
 } from 'firebase/firestore';
 import {
   ArrowLeft,
@@ -23,6 +28,35 @@ function ProfilePage({
 }) {
   const navigate = useNavigate();
   const { cats } = useCats();
+  const [latestCaregiverRequest, setLatestCaregiverRequest] =
+    useState(null);
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const requestQuery = query(
+      collection(db, 'caregiverRequests'),
+      where('uid', '==', user.uid)
+    );
+
+    const unsubscribe = onSnapshot(requestQuery, (snapshot) => {
+      const userRequests = snapshot.docs
+        .map((docSnapshot) => ({
+          id: docSnapshot.id,
+          ...docSnapshot.data()
+        }))
+        .sort((a, b) => {
+          const aTime = a.createdAt?.toMillis?.() || 0;
+          const bTime = b.createdAt?.toMillis?.() || 0;
+
+          return bTime - aTime;
+        });
+
+      setLatestCaregiverRequest(userRequests[0] || null);
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid]);
 
   const handleModeSwitch =
     async () => {
@@ -79,6 +113,32 @@ function ProfilePage({
 
     return cat?.name || '이름 정보 없음';
   };
+
+  const getRequestStatusMeta = (status) => {
+    if (status === 'approved') {
+      return {
+        label: '승인 완료',
+        className: 'bg-emerald-50 text-emerald-600'
+      };
+    }
+
+    if (status === 'rejected') {
+      return {
+        label: '반려',
+        className: 'bg-rose-50 text-rose-600'
+      };
+    }
+
+    return {
+      label: '승인 대기',
+      className: 'bg-yellow-50 text-yellow-700'
+    };
+  };
+
+  const requestStatusMeta =
+    latestCaregiverRequest
+      ? getRequestStatusMeta(latestCaregiverRequest.status)
+      : null;
 
   return (
     <div className="min-h-screen bg-slate-100 flex justify-center">
@@ -266,8 +326,22 @@ function ProfilePage({
             <span className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
               <FileText size={20} strokeWidth={2.5} />
             </span>
-            돌보미 신청 관리
+            <span>
+              <span className="block">돌보미 신청 관리</span>
+              <span className="mt-1 block text-xs font-semibold text-slate-400">
+                신청 상태:{' '}
+                {requestStatusMeta
+                  ? requestStatusMeta.label
+                  : '신청 내역 없음'}
+              </span>
+            </span>
           </span>
+
+          {requestStatusMeta && (
+            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${requestStatusMeta.className}`}>
+              {requestStatusMeta.label}
+            </span>
+          )}
         </button>
 
         <button
