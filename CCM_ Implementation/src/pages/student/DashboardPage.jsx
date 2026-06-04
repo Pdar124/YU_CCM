@@ -285,8 +285,8 @@ function DashboardPage({ user, setUser }) {
         const markerButton = document.createElement('button');
         markerButton.type = 'button';
         markerButton.setAttribute('aria-label', `${cat.name} 마커`);
-        markerButton.style.width = isSelected ? '150px' : '56px';
-        markerButton.style.height = isSelected ? '112px' : '64px';
+        markerButton.style.width = isSelected ? '164px' : '72px';
+        markerButton.style.height = isSelected ? '128px' : '82px';
         markerButton.style.position = 'relative';
         markerButton.style.border = '0';
         markerButton.style.padding = '0';
@@ -363,8 +363,8 @@ function DashboardPage({ user, setUser }) {
         }
 
         const pin = document.createElement('div');
-        pin.style.width = isSelected ? '60px' : '52px';
-        pin.style.height = isSelected ? '60px' : '52px';
+        pin.style.width = isSelected ? '74px' : '64px';
+        pin.style.height = isSelected ? '74px' : '64px';
         pin.style.borderRadius = '999px';
         pin.style.background = isSelected ? '#fb923c' : '#10b981';
         pin.style.border = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
@@ -375,15 +375,15 @@ function DashboardPage({ user, setUser }) {
         pin.style.position = 'relative';
 
         const inner = document.createElement('div');
-        inner.style.width = isSelected ? '46px' : '40px';
-        inner.style.height = isSelected ? '46px' : '40px';
+        inner.style.width = isSelected ? '58px' : '50px';
+        inner.style.height = isSelected ? '58px' : '50px';
         inner.style.borderRadius = '999px';
         inner.style.background = '#ffffff';
         inner.style.overflow = 'hidden';
         inner.style.display = 'flex';
         inner.style.alignItems = 'center';
         inner.style.justifyContent = 'center';
-        inner.style.fontSize = isSelected ? '26px' : '22px';
+        inner.style.fontSize = isSelected ? '30px' : '26px';
         inner.style.lineHeight = '1';
 
         const catImageUrl = getCatImageUrl(cat);
@@ -403,9 +403,9 @@ function DashboardPage({ user, setUser }) {
         const tail = document.createElement('div');
         tail.style.position = 'absolute';
         tail.style.left = '50%';
-        tail.style.bottom = '-6px';
-        tail.style.width = '14px';
-        tail.style.height = '14px';
+        tail.style.bottom = '-7px';
+        tail.style.width = '17px';
+        tail.style.height = '17px';
         tail.style.background = isSelected ? '#fb923c' : '#10b981';
         tail.style.borderRight = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
         tail.style.borderBottom = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
@@ -817,6 +817,9 @@ function DashboardPage({ user, setUser }) {
             return;
         }
 
+        const getReportCreatedMillis = (report) =>
+            report.createdAt?.toMillis?.() || 0;
+
         const catReports = reports
             .filter(
                 report =>
@@ -824,14 +827,14 @@ function DashboardPage({ user, setUser }) {
             )
             .sort(
                 (a, b) =>
-                    (b.observedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0) -
-                    (a.observedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0)
+                    getReportCreatedMillis(b) -
+                    getReportCreatedMillis(a)
             )
             .slice(0, 3)
             .sort(
                 (a, b) =>
-                    (a.observedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0) -
-                    (b.observedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0)
+                    getReportCreatedMillis(a) -
+                    getReportCreatedMillis(b)
             );
 
         polylineRef.current.forEach((overlay) => {
@@ -852,33 +855,33 @@ function DashboardPage({ user, setUser }) {
 
         const routeShadow = new window.kakao.maps.Polyline({
             path: curvedPath,
-            strokeWeight: 10,
-            strokeColor: '#ffffff',
-            strokeOpacity: 0.92,
+            strokeWeight: 11,
+            strokeColor: '#064e3b',
+            strokeOpacity: 0.34,
             strokeStyle: 'solid'
         });
 
         const routeLine = new window.kakao.maps.Polyline({
             path: curvedPath,
-            strokeWeight: 6,
+            strokeWeight: 5,
             strokeColor: '#10b981',
-            strokeOpacity: 0.95,
+            strokeOpacity: 1,
             strokeStyle: 'shortdash'
         });
 
         const startPoint = new window.kakao.maps.Circle({
             center: path[0],
-            radius: 9,
+            radius: 11,
             strokeWeight: 3,
             strokeColor: '#ffffff',
             strokeOpacity: 1,
-            fillColor: '#94a3b8',
+            fillColor: '#475569',
             fillOpacity: 1
         });
 
         const endPoint = new window.kakao.maps.Circle({
             center: path[path.length - 1],
-            radius: 12,
+            radius: 15,
             strokeWeight: 4,
             strokeColor: '#ffffff',
             strokeOpacity: 1,
@@ -886,9 +889,7 @@ function DashboardPage({ user, setUser }) {
             fillOpacity: 1
         });
 
-        const startReportTime =
-            catReports[0]?.observedAt ||
-            catReports[0]?.createdAt;
+        const startReportTime = catReports[0]?.createdAt;
 
         const startLabel = new window.kakao.maps.CustomOverlay({
             position: path[0],
