@@ -848,8 +848,10 @@ function DashboardPage({ user, setUser }) {
             return;
         }
 
-        const getReportCreatedMillis = (report) =>
-            report.createdAt?.toMillis?.() || 0;
+        const getReportObservedMillis = (report) =>
+            report.observedAt?.toMillis?.() ||
+            report.createdAt?.toMillis?.() ||
+            0;
 
         const catReports = reports
             .filter(
@@ -858,14 +860,14 @@ function DashboardPage({ user, setUser }) {
             )
             .sort(
                 (a, b) =>
-                    getReportCreatedMillis(b) -
-                    getReportCreatedMillis(a)
+                    getReportObservedMillis(b) -
+                    getReportObservedMillis(a)
             )
             .slice(0, 3)
             .sort(
                 (a, b) =>
-                    getReportCreatedMillis(a) -
-                    getReportCreatedMillis(b)
+                    getReportObservedMillis(a) -
+                    getReportObservedMillis(b)
             );
 
         polylineRef.current.forEach((overlay) => {
@@ -920,7 +922,9 @@ function DashboardPage({ user, setUser }) {
             fillOpacity: 1
         });
 
-        const startReportTime = catReports[0]?.createdAt;
+        const startReportTime =
+            catReports[0]?.observedAt ||
+            catReports[0]?.createdAt;
 
         const startLabel = new window.kakao.maps.CustomOverlay({
             position: path[0],
