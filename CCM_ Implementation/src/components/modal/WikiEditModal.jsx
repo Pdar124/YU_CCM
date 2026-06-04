@@ -2,9 +2,11 @@ import { useState } from 'react';
 import {
   Activity,
   BookOpenText,
+  CalendarClock,
   MapPin,
   Pencil,
   Save,
+  Scale,
   Sparkles,
   X
 } from 'lucide-react';
@@ -16,6 +18,10 @@ function WikiEditForm({
 }) {
   const [origin, setOrigin] = useState(cat.origin || '');
   const [feature, setFeature] = useState(cat.feature || '');
+  const [estimatedAge, setEstimatedAge] =
+    useState(cat.estimatedAge || '');
+  const [weight, setWeight] =
+    useState(cat.weight || '');
   const [healthStatus, setHealthStatus] =
     useState(cat.healthStatus || '');
   const [territory, setTerritory] =
@@ -83,6 +89,40 @@ function WikiEditForm({
             />
           </label>
 
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block min-w-0">
+              <span className="flex items-center gap-1.5 text-xs font-black text-slate-500 mb-1.5">
+                <CalendarClock size={14} strokeWidth={2.5} className="text-sky-500" />
+                추정 나이
+              </span>
+
+              <input
+                value={estimatedAge}
+                onChange={(e) =>
+                  setEstimatedAge(e.target.value)
+                }
+                placeholder="예: 2살 추정"
+                className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-400 outline-none focus:border-orange-200 focus:bg-white focus:shadow-sm transition-all"
+              />
+            </label>
+
+            <label className="block min-w-0">
+              <span className="flex items-center gap-1.5 text-xs font-black text-slate-500 mb-1.5">
+                <Scale size={14} strokeWidth={2.5} className="text-violet-500" />
+                몸무게
+              </span>
+
+              <input
+                value={weight}
+                onChange={(e) =>
+                  setWeight(e.target.value)
+                }
+                placeholder="예: 4.2kg"
+                className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 placeholder:text-slate-400 outline-none focus:border-orange-200 focus:bg-white focus:shadow-sm transition-all"
+              />
+            </label>
+          </div>
+
           <label className="block">
             <span className="flex items-center gap-1.5 text-xs font-black text-slate-500 mb-1.5">
               <Activity size={14} strokeWidth={2.5} className="text-red-500" />
@@ -130,6 +170,8 @@ function WikiEditForm({
                 onSave({
                   origin,
                   feature,
+                  estimatedAge,
+                  weight,
                   healthStatus,
                   territory
                 })

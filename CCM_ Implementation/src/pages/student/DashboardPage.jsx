@@ -447,6 +447,8 @@ function DashboardPage({ user, setUser }) {
             await updateDoc(doc(db, 'cats', wikiTargetCat.id), {
                 origin: formData.origin,
                 feature: formData.feature,
+                estimatedAge: formData.estimatedAge,
+                weight: formData.weight,
                 healthStatus: formData.healthStatus,
                 territory: formData.territory,
                 location: formData.territory

@@ -147,6 +147,8 @@ function AdminPage() {
         description: request.description || '',
         feature: request.description || '',
         origin: '사용자 신규 등록 요청',
+        estimatedAge: '',
+        weight: '',
         healthStatus: '정보 없음',
         territory: request.location || '',
         lat: request.lat || null,
