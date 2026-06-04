@@ -20,14 +20,53 @@ import {
   X
 } from 'lucide-react';
 import { getCatImageUrl } from '../../utils/catImage';
+import { getPredictedLocation } from '../../utils/prediction';
+
+const getTimestampMillis = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) return value.getTime();
+  if (value.toDate) return value.toDate().getTime();
+
+  return null;
+};
+
+const getDistanceScore = (distance) =>
+  Math.max(0, Math.round((1 - distance * 1000) * 100));
+
+const getTimeZoneScore = (catId, reports, observedAt) => {
+  const observedDate = observedAt ? new Date(observedAt) : new Date();
+  const observedHour = observedDate.getHours();
+  const catReports = reports.filter((report) => report.catId === catId);
+
+  if (catReports.length === 0) return 50;
+
+  const bestHourDistance = catReports.reduce((best, report) => {
+    const reportMillis =
+      getTimestampMillis(report.observedAt) ||
+      getTimestampMillis(report.createdAt);
+
+    if (!reportMillis) return best;
+
+    const reportHour = new Date(reportMillis).getHours();
+    const hourDiff = Math.abs(reportHour - observedHour);
+    const circularHourDiff = Math.min(hourDiff, 24 - hourDiff);
+
+    return Math.min(best, circularHourDiff);
+  }, 12);
+
+  return Math.max(0, Math.round((1 - bestHourDistance / 12) * 100));
+};
 
 function ReportModal({
   isOpen,
   onClose,
   onSubmit,
   cats,
+  reports = [],
+  shelters = [],
   clickedCoords,
   selectedCatId,
+  isRain,
   user
 }) {
   const getCurrentInputTime = () => new Date().toISOString().slice(0, 16);
@@ -51,15 +90,37 @@ function ReportModal({
         const latDiff = Number(cat.lat || 0) - clickedCoords.lat;
         const lngDiff = Number(cat.lng || 0) - clickedCoords.lng;
         const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+        const territoryScore = getDistanceScore(distance);
+        const predictedLocation = getPredictedLocation({
+          catId: cat.id,
+          reports,
+          shelters,
+          isRain
+        });
+        const predictionScore = predictedLocation
+          ? getDistanceScore(
+              Math.sqrt(
+                Math.pow(predictedLocation.lat - clickedCoords.lat, 2) +
+                Math.pow(predictedLocation.lng - clickedCoords.lng, 2)
+              )
+            )
+          : territoryScore;
+        const timeZoneScore = getTimeZoneScore(cat.id, reports, observedAt);
+        const matchScore = Math.round(
+          territoryScore * 0.4 +
+          predictionScore * 0.45 +
+          timeZoneScore * 0.15
+        );
 
         return {
           ...cat,
-          matchScore: Math.max(0, Math.round((1 - distance * 1000) * 100))
+          matchScore,
+          predictionScore
         };
       })
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, 3);
-  }, [cats, clickedCoords]);
+  }, [cats, clickedCoords, isRain, observedAt, reports, shelters]);
 
   if (!isOpen) return null;
 
