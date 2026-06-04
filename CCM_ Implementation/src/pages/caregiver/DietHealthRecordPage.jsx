@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
-import { db } from '../../config/firebase';
 import { getCatImageUrl } from '../../utils/catImage';
+import { getCat } from '../../services/catService';
+import { createDietLog } from '../../services/dietLogService';
 
 function DietHealthRecordPage({ user }) {
   const navigate = useNavigate();
@@ -34,14 +28,8 @@ function DietHealthRecordPage({ user }) {
 
   useEffect(() => {
     const fetchCat = async () => {
-      const snap = await getDoc(doc(db, 'cats', catId));
-
-      if (snap.exists()) {
-        setCat({
-          id: snap.id,
-          ...snap.data()
-        });
-      }
+      const catData = await getCat(catId);
+      setCat(catData);
     };
 
     fetchCat();
@@ -67,16 +55,14 @@ function DietHealthRecordPage({ user }) {
     }
 
     try {
-      await addDoc(collection(db, 'dietLogs'), {
+      await createDietLog({
         catId,
-        catName: cat?.name || '',
-        caregiverUid: user.uid,
-        caregiverName: user.nickname || user.studentId || user.id,
+        cat,
+        user,
         foodType,
         amount,
         symptoms,
-        memo,
-        fedAt: serverTimestamp()
+        memo
       });
 
       alert('급여 및 건강 기록이 저장되었습니다.');

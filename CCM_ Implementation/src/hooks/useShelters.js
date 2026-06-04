@@ -1,24 +1,13 @@
 // src/hooks/useShelters.js
 
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { subscribeShelters } from '../services/shelterService';
 
 export default function useShelters() {
   const [shelters, setShelters] = useState([]);
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, 'shelters'),
-      (snapshot) => {
-        setShelters(
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data()
-          }))
-        );
-      }
-    );
+    const unsub = subscribeShelters(setShelters);
 
     return () => unsub();
   }, []);
