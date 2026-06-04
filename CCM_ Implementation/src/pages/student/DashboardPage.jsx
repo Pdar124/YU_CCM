@@ -811,25 +811,7 @@ function DashboardPage({ user, setUser }) {
         predictionLabel.setMap(mapRef.current);
         mapRef.current.panTo(position);
 
-        const infowindow =
-            new window.kakao.maps.InfoWindow({
-                content: `
-            <div style="padding:10px 12px; font-size:12px; font-weight:800; color:#4338ca; border-radius:14px;">
-                Recency Weight 예측 위치
-            </div>
-        `
-            });
 
-        window.kakao.maps.event.addListener(
-            marker,
-            'click',
-            () => {
-                infowindow.open(
-                    mapRef.current,
-                    marker
-                );
-            }
-        );
 
         predictedMarkerRef.current = marker;
         predictedCircleRef.current = circle;
@@ -1175,8 +1157,11 @@ function DashboardPage({ user, setUser }) {
                     isOpen={isModalOpen && !isGuest}
                     onClose={() => setIsModalOpen(false)}
                     cats={cats}
+                    reports={reports}
+                    shelters={shelters}
                     clickedCoords={clickedCoords}
                     selectedCatId={selectedCatId}
+                    isRain={isRain}
                     onSubmit={handleAddReport}
                     user={user}
                 />

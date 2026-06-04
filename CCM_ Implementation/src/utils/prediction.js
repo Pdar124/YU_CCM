@@ -3,7 +3,9 @@ import { getNearestShelter } from './distance';
 export const getRecencyWeight = (timestamp) => {
   if (!timestamp) return 0;
 
-  const reportTime = timestamp.toDate().getTime();
+  const reportTime = timestamp instanceof Date
+    ? timestamp.getTime()
+    : timestamp.toDate().getTime();
 
   const hoursAgo =
     (Date.now() - reportTime) / (1000 * 60 * 60);
@@ -51,7 +53,7 @@ export const getPredictedLocation = ({
   let totalWeight = 0;
 
   catReports.forEach((report) => {
-    const weight = getRecencyWeight(report.createdAt);
+    const weight = getRecencyWeight(report.observedAt || report.createdAt);
 
     weightedLat += report.lat * weight;
     weightedLng += report.lng * weight;
