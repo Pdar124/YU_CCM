@@ -18,12 +18,17 @@ export const getRecencyWeight = (timestamp) => {
 };
 
 export const getLatestReport = (catId, reports) => {
+  const getReportObservedMillis = (report) =>
+    report.observedAt?.toMillis?.() ||
+    report.createdAt?.toMillis?.() ||
+    0;
+
   const catReports = reports
     .filter((report) => report.catId === catId)
     .sort(
       (a, b) =>
-        b.createdAt?.toMillis() -
-        a.createdAt?.toMillis()
+        getReportObservedMillis(b) -
+        getReportObservedMillis(a)
     );
 
   return catReports[0];

@@ -60,6 +60,7 @@ function DashboardPage({ user, setUser }) {
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const predictedLabelRef = useRef(null); // 예측 위치 라벨 참조 추가
     const polylineRef = useRef([]); // 동선 참조 추가
+    const hasFitAllCatsRef = useRef(false);
     const [latestDietLog, setLatestDietLog] = useState(null);
 
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -721,6 +722,36 @@ function DashboardPage({ user, setUser }) {
 
             markersRef.current.push(marker);
         });
+
+        if (!selectedCatId && !hasFitAllCatsRef.current) {
+            const positions = visibleMarkerCats
+                .map((cat) => {
+                    const latestReport = getLatestReport(cat.id, reports);
+                    const lat = latestReport?.lat || cat.lat;
+                    const lng = latestReport?.lng || cat.lng;
+
+                    if (!lat || !lng) return null;
+
+                    return new window.kakao.maps.LatLng(lat, lng);
+                })
+                .filter(Boolean);
+
+            if (positions.length === 1) {
+                mapRef.current.panTo(positions[0]);
+                hasFitAllCatsRef.current = true;
+            }
+
+            if (positions.length > 1) {
+                const bounds = new window.kakao.maps.LatLngBounds();
+
+                positions.forEach((position) => {
+                    bounds.extend(position);
+                });
+
+                mapRef.current.setBounds(bounds);
+                hasFitAllCatsRef.current = true;
+            }
+        }
     }, [cats, reports, mapReady, selectedCatId]);
 
 
@@ -1025,6 +1056,7 @@ function DashboardPage({ user, setUser }) {
                         if (!cat) {
                             setSelectedCatId(null);
                             setActiveNavigation('map');
+                            hasFitAllCatsRef.current = false;
                             return;
                         }
 
