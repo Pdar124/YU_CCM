@@ -19,7 +19,6 @@ import {
     getLatestReport
 } from '../../utils/prediction';
 import {
-    AlertTriangle,
     LocateFixed,
     Route,
     Sparkles,
@@ -61,7 +60,7 @@ function DashboardPage({ user, setUser }) {
     const predictedLabelRef = useRef(null); // 예측 위치 라벨 참조 추가
     const polylineRef = useRef([]); // 동선 참조 추가
     const hasFitAllCatsRef = useRef(false);
-    const [latestDietLog, setLatestDietLog] = useState(null);
+    const [latestDietLogs, setLatestDietLogs] = useState([]);
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1026,17 +1025,24 @@ function DashboardPage({ user, setUser }) {
 
         const unsub = onSnapshot(q, (snapshot) => {
             const caregiverCatIds = user?.caregiverCatIds || [];
-            const latestAssignedLog =
-                snapshot.docs
-                    .map((docSnapshot) => ({
-                        id: docSnapshot.id,
-                        ...docSnapshot.data()
-                    }))
-                    .find((log) =>
-                        caregiverCatIds.includes(log.catId)
-                    );
+            const latestByCat = new Map();
 
-            setLatestDietLog(latestAssignedLog || null);
+            snapshot.docs.forEach((docSnapshot) => {
+                const log = {
+                    id: docSnapshot.id,
+                    ...docSnapshot.data()
+                };
+
+                if (!caregiverCatIds.includes(log.catId)) return;
+                if (latestByCat.has(log.catId)) return;
+
+                latestByCat.set(log.catId, log);
+            });
+
+            const latestAssignedLogs =
+                Array.from(latestByCat.values());
+
+            setLatestDietLogs(latestAssignedLogs);
         });
 
         return () => unsub();
@@ -1060,7 +1066,7 @@ function DashboardPage({ user, setUser }) {
                     searchKeyword={searchKeyword}
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
-                    latestDietLog={latestDietLog}
+                    latestDietLogs={latestDietLogs}
                     caregiverCats={caregiverCats}
                     onCatClick={(cat) => {
                         if (!cat) {
@@ -1088,9 +1094,7 @@ function DashboardPage({ user, setUser }) {
                             reportCount={reportCount}
                             latestReport={latestReport}
                             nearestShelter={nearestShelter}
-                            hasLatestDietLog={
-                                user?.activeMode === 'caregiver' && !!latestDietLog
-                            }
+                            hasLatestDietLog={false}
                             onClose={() => setSelectedCatId(null)}
                             onReport={handleReportClick}
                             onWikiEdit={openWikiModal}
@@ -1156,22 +1160,6 @@ function DashboardPage({ user, setUser }) {
                         </div>
                     )}
                 </main>
-                {user?.activeMode === 'caregiver' && latestDietLog && (
-                    <div className="absolute left-4 right-4 bottom-20 z-30">
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
-                            <AlertTriangle
-                                size={18}
-                                strokeWidth={2.5}
-                                className="shrink-0 text-amber-600"
-                            />
-                            <span>
-                                {latestDietLog.catName}{' '}
-                                {getTimeAgo(latestDietLog.fedAt)}{' '}
-                                급여 기록이 있어요.
-                            </span>
-                        </div>
-                    </div>
-                )}
                 <BottomNavigation
                     activeItem={activeNavigation}
                     onSelect={handleNavigationSelect}
