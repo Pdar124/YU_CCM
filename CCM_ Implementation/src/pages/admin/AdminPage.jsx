@@ -26,6 +26,18 @@ function AdminPage() {
   const [catRequests, setCatRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
+  const getCatName = (catId) => {
+    const cat = cats.find((item) => item.id === catId);
+
+    return cat?.name || '이름 정보 없음';
+  };
+
+  const getCatNamesText = (catIds = []) => {
+    if (catIds.length === 0) return '없음';
+
+    return catIds.map(getCatName).join(', ');
+  };
+
   useEffect(() => {
     const q = query(
       collection(db, 'caregiverRequests'),
@@ -321,8 +333,8 @@ function AdminPage() {
                     </div>
 
                     <div className="text-xs text-slate-500 mb-4">
-                      신청 고양이 ID:{' '}
-                      {(request.catIds || []).join(', ') || '없음'}
+                      신청 고양이:{' '}
+                      {getCatNamesText(request.catIds || [])}
                     </div>
 
                     <div className="flex gap-2 mt-6">

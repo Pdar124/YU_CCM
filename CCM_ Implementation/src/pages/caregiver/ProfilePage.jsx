@@ -15,12 +15,14 @@ import {
   ShieldCheck,
   UserRound
 } from 'lucide-react';
+import useCats from '../../hooks/useCats';
 
 function ProfilePage({
   user,
   setUser
 }) {
   const navigate = useNavigate();
+  const { cats } = useCats();
 
   const handleModeSwitch =
     async () => {
@@ -71,6 +73,12 @@ function ProfilePage({
 
   const isCaregiverMode =
     user.activeMode === 'caregiver';
+
+  const getCatName = (catId) => {
+    const cat = cats.find((item) => item.id === catId);
+
+    return cat?.name || '이름 정보 없음';
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 flex justify-center">
@@ -219,10 +227,10 @@ function ProfilePage({
 
                       <div className="min-w-0">
                         <div className="text-sm font-bold text-slate-700 truncate">
-                          {catId}
+                          {getCatName(catId)}
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          담당 고양이 ID
+                          담당 고양이
                         </div>
                       </div>
                     </div>
