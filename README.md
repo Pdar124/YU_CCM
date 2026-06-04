@@ -7,6 +7,66 @@
 **Campus Cat Mate**는 파편화된 캠퍼스 고양이 정보를 통합하여 실시간 위치 예측, 예상 동선 분석, 그리고 체계적인 건강 관리를 제공하는 **생태 기반 지능형 시스템**입니다.
 
 ---
+
+## 🔗 서비스 접속
+
+- 배포 서비스: Vercel
+- 서비스 URL: https://yu-ccm.vercel.app
+- Vercel Root Directory: `CCM_Implementation`
+
+Vercel 배포 환경에서는 다음 환경변수를 등록해야 합니다.
+
+```env
+OPENWEATHER_API_KEY=OpenWeather API Key
+VITE_KAKAO_MAP_KEY=Kakao JavaScript Key
+```
+
+---
+
+## 💻 로컬 실행 방법
+
+### 1. 프로젝트 폴더로 이동
+
+```bash
+cd CCM_Implementation
+```
+
+### 2. 패키지 설치
+
+```bash
+npm install
+```
+
+### 3. 환경변수 설정
+
+`CCM_Implementation/.env` 파일을 생성하고 아래 값을 설정합니다.
+
+```env
+OPENWEATHER_API_KEY=OpenWeather API Key
+VITE_KAKAO_MAP_KEY=Kakao JavaScript Key
+```
+
+### 4. 개발 서버 실행
+
+```bash
+npm run dev
+```
+
+기본 로컬 접속 주소는 다음과 같습니다.
+
+```text
+http://localhost:5174
+```
+
+### 5. 프로덕션 빌드 확인
+
+```bash
+npm run build
+npm run preview
+```
+
+---
+
 # 📍 Project Architecture
 <img width="600" height="600" alt="Architecture_Image" src="https://github.com/user-attachments/assets/1d738ef7-c306-4779-8f04-340c7b8924b6" />
 
@@ -41,4 +101,3 @@
 * **Student ID:** 22411841
 * **Email:** ret7258@naver.com
 * **GitHub:** [@Pdar124](https://github.com/Pdar124)
-
