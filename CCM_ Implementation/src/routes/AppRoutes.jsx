@@ -113,7 +113,11 @@ function AppRoutes() {
         path="/"
         element={
           user ? (
-            <DashboardPage user={user} setUser={setUser} />
+            <DashboardPage
+              key={user.uid || user.role}
+              user={user}
+              setUser={setUser}
+            />
           ) : (
             <Navigate to="/login" />
           )

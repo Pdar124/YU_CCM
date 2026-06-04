@@ -29,6 +29,9 @@ function Signup() {
 
     const SCHOOL_DOMAIN = '@yu.ac.kr';
 
+    const getDigitsOnly = (value) =>
+        value.replace(/\D/g, '');
+
     const validatePassword = (value) => {
         const regex =
             /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,16}$/;
@@ -39,7 +42,9 @@ function Signup() {
     const handleSignup = async (e) => {
         e.preventDefault();
 
-        const accountId = signupType === 'student' ? studentId.trim() : phone.trim();
+        const accountId = getDigitsOnly(
+            signupType === 'student' ? studentId : phone
+        );
 
         if (!accountId || !password || !passwordCheck) {
             alert('모든 정보를 입력해 주세요.');
@@ -90,6 +95,7 @@ function Signup() {
 
             localStorage.setItem('signup_uid', user.uid);
             localStorage.setItem('signup_accountId', accountId);
+            localStorage.setItem('signup_type', signupType);
 
             navigate('/signup/profile');
         } catch (error) {
@@ -258,8 +264,8 @@ function Signup() {
                                 value={signupType === 'student' ? studentId : phone}
                                 onChange={(e) =>
                                     signupType === 'student'
-                                        ? setStudentId(e.target.value)
-                                        : setPhone(e.target.value)
+                                        ? setStudentId(getDigitsOnly(e.target.value))
+                                        : setPhone(getDigitsOnly(e.target.value))
                                 }
                                 placeholder={
                                     signupType === 'student'

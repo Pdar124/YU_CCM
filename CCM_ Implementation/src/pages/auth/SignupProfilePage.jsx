@@ -6,10 +6,18 @@ import { ArrowRight, Building2, Phone, UserRound } from 'lucide-react';
 
 function SignupProfilePage() {
   const navigate = useNavigate();
+  const signupType = localStorage.getItem('signup_type');
+  const signupAccountId =
+    localStorage.getItem('signup_accountId') || '';
 
   const [nickname, setNickname] = useState('');
   const [department, setDepartment] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(
+    signupType === 'phone' ? signupAccountId : ''
+  );
+
+  const getDigitsOnly = (value) =>
+    value.replace(/\D/g, '');
 
   const handleNext = async () => {
     const uid =
@@ -124,7 +132,7 @@ function SignupProfilePage() {
                 placeholder="예: 010-1234-5678"
                 value={phone}
                 onChange={(e) =>
-                  setPhone(e.target.value)
+                  setPhone(getDigitsOnly(e.target.value))
                 }
                 className="min-w-0 flex-1 bg-transparent outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400"
               />

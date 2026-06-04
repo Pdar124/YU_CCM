@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import loginHeroSrc from '../../assets/ccm_login_hero.png';
 
 function Login({ onLoginSuccess, onGuestLogin }) {
-  const [studentId, setStudentId] = useState(''); // 💡 이메일 대신 학번 상태 사용
+  const [accountId, setAccountId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -16,29 +16,29 @@ function Login({ onLoginSuccess, onGuestLogin }) {
 
   // 💡 고정으로 사용할 학교 이메일 도메인
   const SCHOOL_DOMAIN = '@yu.ac.kr';
+  const getDigitsOnly = (value) =>
+    value.replace(/\D/g, '');
 
   // [경로 A] 기존 회원 로그인 처리
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    if (!studentId.trim() || !password.trim()) {
-      alert('학번과 비밀번호를 입력해주세요!');
+    if (!accountId.trim() || !password.trim()) {
+      alert('학번 또는 전화번호와 비밀번호를 입력해주세요!');
       return;
     }
 
-    // 💡 학번 뒤에 도메인을 붙여서 Firebase Auth용 이메일 형식 완성 (예: 20261234@yu.ac.kr)
-    const emailFormat = `${studentId.trim()}${SCHOOL_DOMAIN}`;
+    const emailFormat = `${accountId.trim()}${SCHOOL_DOMAIN}`;
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, emailFormat, password);
       const user = userCredential.user;
 
-      console.log("로그인 성공:", studentId);
-      // App.jsx에는 깔끔하게 도메인을 뗀 '학번'만 넘겨서 화면에 띄우기 좋게 합니다.
-      onLoginSuccess({ id: studentId, role: 'member', uid: user.uid });
+      console.log("로그인 성공:", accountId);
+      onLoginSuccess({ id: accountId, role: 'member', uid: user.uid });
     } catch (error) {
       console.error("로그인 에러:", error.code);
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        alert('등록되지 않은 학번이거나 비밀번호가 일치하지 않습니다.');
+        alert('등록되지 않은 계정이거나 비밀번호가 일치하지 않습니다.');
       } else {
         alert('로그인 중 오류가 발생했습니다.');
       }
@@ -70,7 +70,7 @@ function Login({ onLoginSuccess, onGuestLogin }) {
         {/* 1.1 인증 정보 입력 영역 */}
         <form onSubmit={handleLoginSubmit} className="space-y-4">
 
-          {/* 학번 입력란 (인풋 뒤에 학교 도메인을 시각적으로 표시해 주면 훨씬 친절합니다!) */}
+          {/* 학번 또는 전화번호 입력란 */}
           <div className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500">
             <span className="pl-3 text-slate-400">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -79,9 +79,10 @@ function Login({ onLoginSuccess, onGuestLogin }) {
             </span>
             <input
               type="text"
-              placeholder="학번 입력 (예: 20261234)"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
+              inputMode="numeric"
+              placeholder="학번 또는 전화번호 입력"
+              value={accountId}
+              onChange={(e) => setAccountId(getDigitsOnly(e.target.value))}
               className="w-full pl-2 pr-2 py-3 bg-transparent text-sm focus:outline-none"
               required
             />
