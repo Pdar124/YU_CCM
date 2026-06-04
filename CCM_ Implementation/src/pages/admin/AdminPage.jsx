@@ -25,6 +25,8 @@ function AdminPage() {
   const [requests, setRequests] = useState([]);
   const [catRequests, setCatRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showAllCaregiverRequests, setShowAllCaregiverRequests] =
+    useState(false);
 
   const getCatName = (catId) => {
     const cat = cats.find((item) => item.id === catId);
@@ -38,18 +40,41 @@ function AdminPage() {
     return catIds.map(getCatName).join(', ');
   };
 
-  useEffect(() => {
-    const q = query(
-      collection(db, 'caregiverRequests'),
-      where('status', '==', 'pending')
-    );
+  const getRequestStatusMeta = (status) => {
+    if (status === 'approved') {
+      return {
+        label: '승인 완료',
+        className: 'bg-emerald-100 text-emerald-700'
+      };
+    }
 
-    const unsub = onSnapshot(q, (snapshot) => {
+    if (status === 'rejected') {
+      return {
+        label: '반려',
+        className: 'bg-rose-100 text-rose-700'
+      };
+    }
+
+    return {
+      label: '승인 대기',
+      className: 'bg-yellow-100 text-yellow-700'
+    };
+  };
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'caregiverRequests'), (snapshot) => {
       setRequests(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        }))
+        snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          .sort((a, b) => {
+            const aTime = a.createdAt?.toMillis?.() || 0;
+            const bTime = b.createdAt?.toMillis?.() || 0;
+
+            return bTime - aTime;
+          })
       );
     });
 
@@ -135,6 +160,11 @@ function AdminPage() {
   };
 
   const handleReject = async (request) => {
+    if (request.status && request.status !== 'pending') {
+      alert('이미 처리된 요청입니다.');
+      return;
+    }
+
     try {
       await updateDoc(doc(db, 'caregiverRequests', request.id), {
         status: 'rejected',
@@ -220,7 +250,19 @@ function AdminPage() {
   const caregiverCount =
     users.filter(user => user.role === 'caregiver').length;
 
-  const pendingCount = requests.length + catRequests.length;
+  const pendingCaregiverRequests =
+    requests.filter((request) => request.status === 'pending');
+  const pendingCount = pendingCaregiverRequests.length + catRequests.length;
+  const displayedCaregiverRequests =
+    showAllCaregiverRequests ? requests : requests.slice(0, 1);
+  const todayText = new Date()
+    .toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    })
+    .replace(/\. /g, '.')
+    .replace(/\.$/, '');
 
   return (
     <div className="min-h-screen bg-white flex justify-center">
@@ -235,8 +277,7 @@ function AdminPage() {
             </button>
 
             <div className="text-center">
-              <div className="text-lg font-black">관리자 대시보드</div>
-              <div className="text-[11px] opacity-80">CCM Admin Mode</div>
+              <div className="text-lg font-black">CCM Admin Mode</div>
             </div>
 
             <button
@@ -255,7 +296,7 @@ function AdminPage() {
             </h2>
 
             <button className="text-xs border border-slate-200 rounded-xl px-3 py-2 text-slate-600">
-              2026.05.07 기준⌄
+              {todayText} 기준
             </button>
           </div>
 
@@ -283,77 +324,92 @@ function AdminPage() {
         </div>
 
 
-        {/* 돌보미 승인 대기 */}
+        {/* 돌보미 신청 관리 */}
         <div className="px-5 mt-5">
           <div className="bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-black text-slate-900">
-                돌보미 승인 대기
+                돌보미 신청 관리
                 <span className="text-xs bg-violet-50 text-violet-600 px-3 py-1 rounded-full font-bold">
                   {requests.length}건
                 </span>
               </h2>
 
-              <button className="text-xs text-violet-600 font-bold">
-                전체 보기 〉
-              </button>
+              {requests.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowAllCaregiverRequests((prev) => !prev)
+                  }
+                  className="text-xs text-violet-600 font-bold"
+                >
+                  {showAllCaregiverRequests ? '접기' : '전체 보기 〉'}
+                </button>
+              )}
 
             </div>
             {requests.length === 0 ? (
               <div className="text-center text-slate-400 py-10 bg-white border border-violet-100 rounded-3xl">
-                승인 대기 중인 신청이 없습니다.
+                돌보미 신청 내역이 없습니다.
               </div>
             ) : (
               <div className="space-y-4">
-                {requests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="border border-slate-200 rounded-3xl p-4 bg-white shadow-sm"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <div className="font-black text-slate-900">
-                          {request.nickname || request.studentId}
+                {displayedCaregiverRequests.map((request) => {
+                  const statusMeta = getRequestStatusMeta(request.status);
+                  const isPending = !request.status || request.status === 'pending';
+
+                  return (
+                    <div
+                      key={request.id}
+                      className="border border-slate-200 rounded-3xl p-4 bg-white shadow-sm"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <div className="font-black text-slate-900">
+                            {request.nickname || request.studentId}
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            학번: {request.studentId || '정보 없음'}
+                          </div>
                         </div>
-                        <div className="text-xs text-slate-400">
-                          학번: {request.studentId || '정보 없음'}
-                        </div>
+
+                        <span className={`text-xs px-3 py-1 rounded-full font-bold ${statusMeta.className}`}>
+                          신청 상태: {statusMeta.label}
+                        </span>
                       </div>
 
-                      <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">
-                        승인 대기
-                      </span>
-                    </div>
-
-                    <div className="bg-slate-50 rounded-2xl p-3 text-sm text-slate-600 mb-3">
-                      <div className="font-bold text-slate-800 mb-1">
-                        신청 사유
+                      <div className="bg-slate-50 rounded-2xl p-3 text-sm text-slate-600 mb-3">
+                        <div className="font-bold text-slate-800 mb-1">
+                          신청 사유
+                        </div>
+                        {request.reason}
                       </div>
-                      {request.reason}
-                    </div>
 
-                    <div className="text-xs text-slate-500 mb-4">
-                      신청 고양이:{' '}
-                      {getCatNamesText(request.catIds || [])}
-                    </div>
+                      <div className="text-xs text-slate-500 mb-4">
+                        신청 고양이:{' '}
+                        {getCatNamesText(request.catIds || [])}
+                      </div>
 
-                    <div className="flex gap-2 mt-6">
-                      <button
-                        onClick={() => handleApprove(request)}
-                        className="flex-1 py-3 rounded-2xl bg-violet-600 text-white font-bold"
-                      >
-                        승인
-                      </button>
+                      {isPending && (
+                        <div className="flex gap-2 mt-6">
+                          <button
+                            onClick={() => handleApprove(request)}
+                            className="flex-1 py-3 rounded-2xl bg-violet-600 text-white font-bold"
+                          >
+                            승인
+                          </button>
 
-                      <button
-                        onClick={() => handleReject(request)}
-                        className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold"
-                      >
-                        반려
-                      </button>
+                          <button
+                            onClick={() => handleReject(request)}
+                            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold"
+                          >
+                            반려
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
