@@ -19,7 +19,7 @@ function WikiEditForm({
   const [healthStatus, setHealthStatus] =
     useState(cat.healthStatus || '');
   const [territory, setTerritory] =
-    useState(cat.territory || '');
+    useState(cat.territory || cat.location || '');
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">

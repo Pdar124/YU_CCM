@@ -448,7 +448,8 @@ function DashboardPage({ user, setUser }) {
                 origin: formData.origin,
                 feature: formData.feature,
                 healthStatus: formData.healthStatus,
-                territory: formData.territory
+                territory: formData.territory,
+                location: formData.territory
             });
 
             await addDoc(collection(db, 'wikiHistories'), {

@@ -71,7 +71,7 @@ function CatDetail({
 
             <p className="flex items-center gap-1 text-xs text-slate-500 mt-1">
               <MapPin size={12} strokeWidth={2.5} className="shrink-0" />
-              <span>{cat.location || '위치 정보 없음'}</span>
+              <span>{cat.territory || cat.location || '위치 정보 없음'}</span>
             </p>
           </div>
         </div>
