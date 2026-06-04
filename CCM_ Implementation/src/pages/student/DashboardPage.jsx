@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../../config/firebase';
+import { auth, db } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
+
+import {
+    collection,
+    limit,
+    onSnapshot,
+    orderBy,
+    query
+} from 'firebase/firestore';
 
 import {
     getLatestReport
@@ -32,7 +40,6 @@ import CatDetail from '../../components/cat/CatDetail';
 import BottomNavigation from '../../components/navigation/BottomNavigation';
 import { updateCatWiki } from '../../services/catService';
 import { createReport } from '../../services/reportService';
-import { subscribeLatestDietLog } from '../../services/dietLogService';
 import { createWikiHistory } from '../../services/wikiService';
 
 function DashboardPage({ user, setUser }) {
@@ -438,19 +445,10 @@ function DashboardPage({ user, setUser }) {
 
             await updateCatWiki(wikiTargetCat.id, formData);
             await createWikiHistory({
-            await updateDoc(doc(db, 'cats', wikiTargetCat.id), {
-                origin: formData.origin,
-                feature: formData.feature,
-                estimatedAge: formData.estimatedAge,
-                weight: formData.weight,
-                healthStatus: formData.healthStatus,
-                territory: formData.territory,
-                location: formData.territory
-            });
-
-            await addDoc(collection(db, 'wikiHistories'), {
                 catId: wikiTargetCat.id,
-                user,
+                catName: wikiTargetCat.name,
+                userId: user?.uid || user?.id || '',
+                userName: user?.nickname || user?.studentId || '알 수 없음',
                 formData
             });
 
@@ -980,7 +978,6 @@ function DashboardPage({ user, setUser }) {
     }, [shelters, isRain, mapReady]);
 
     useEffect(() => {
-        const unsub = subscribeLatestDietLog(setLatestDietLog);
         const q = query(
             collection(db, 'dietLogs'),
             orderBy('fedAt', 'desc'),

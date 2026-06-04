@@ -4,7 +4,13 @@ import {
   Users,
   Cat
 } from 'lucide-react';
-import { auth } from '../../config/firebase';
+import {
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  updateDoc
+} from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import {
   approveCaregiverRequest,
@@ -39,6 +45,10 @@ function AdminPage() {
 
   useEffect(() => {
     const unsub = subscribePendingCaregiverRequests(setRequests);
+
+    return () => unsub();
+  }, []);
+
   const getCatName = (catId) => {
     const cat = cats.find((item) => item.id === catId);
 
@@ -72,25 +82,7 @@ function AdminPage() {
     };
   };
 
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'caregiverRequests'), (snapshot) => {
-      setRequests(
-        snapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data()
-          }))
-          .sort((a, b) => {
-            const aTime = a.createdAt?.toMillis?.() || 0;
-            const bTime = b.createdAt?.toMillis?.() || 0;
 
-            return bTime - aTime;
-          })
-      );
-    });
-
-    return () => unsub();
-  }, []);
 
   useEffect(() => {
     const unsubCats = subscribeCats(setCats);
@@ -489,7 +481,7 @@ function AdminPage() {
                 <div className="text-xs font-bold">사용자 관리</div>
               </button>
 
-    
+
               <button
                 onClick={() => navigate('/admin/cats')}
                 className="bg-violet-50 rounded-2xl p-4 flex flex-col items-center gap-2"
