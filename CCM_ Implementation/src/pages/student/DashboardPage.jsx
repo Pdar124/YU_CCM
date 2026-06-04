@@ -19,7 +19,6 @@ import {
     getLatestReport
 } from '../../utils/prediction';
 import {
-    AlertTriangle,
     LocateFixed,
     Route,
     Sparkles,
@@ -61,7 +60,7 @@ function DashboardPage({ user, setUser }) {
     const predictedLabelRef = useRef(null); // 예측 위치 라벨 참조 추가
     const polylineRef = useRef([]); // 동선 참조 추가
     const hasFitAllCatsRef = useRef(false);
-    const [latestDietLog, setLatestDietLog] = useState(null);
+    const [latestDietLogs, setLatestDietLogs] = useState([]);
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -448,8 +447,11 @@ function DashboardPage({ user, setUser }) {
             await updateDoc(doc(db, 'cats', wikiTargetCat.id), {
                 origin: formData.origin,
                 feature: formData.feature,
+                estimatedAge: formData.estimatedAge,
+                weight: formData.weight,
                 healthStatus: formData.healthStatus,
-                territory: formData.territory
+                territory: formData.territory,
+                location: formData.territory
             });
 
             await addDoc(collection(db, 'wikiHistories'), {
@@ -648,6 +650,12 @@ function DashboardPage({ user, setUser }) {
         document.head.appendChild(script);
     }, [isGuest]);
 
+    const caregiverCats =
+        user?.caregiverCatIds?.length
+            ? cats.filter(cat =>
+                user.caregiverCatIds.includes(cat.id)
+            )
+            : [];
     const filteredCats = cats.filter((cat) =>
         cat.name
             ?.toLowerCase()
@@ -655,12 +663,6 @@ function DashboardPage({ user, setUser }) {
     );
     const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter }
         = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
-    const caregiverCats =
-        user?.caregiverCatIds?.length
-            ? cats.filter(cat =>
-                user.caregiverCatIds.includes(cat.id)
-            )
-            : [];
 
     // 디버깅용 로그
     useEffect(() => {
@@ -1003,20 +1005,33 @@ function DashboardPage({ user, setUser }) {
         const q = query(
             collection(db, 'dietLogs'),
             orderBy('fedAt', 'desc'),
-            limit(1)
+            limit(30)
         );
 
         const unsub = onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                setLatestDietLog({
-                    id: snapshot.docs[0].id,
-                    ...snapshot.docs[0].data()
-                });
-            }
+            const caregiverCatIds = user?.caregiverCatIds || [];
+            const latestByCat = new Map();
+
+            snapshot.docs.forEach((docSnapshot) => {
+                const log = {
+                    id: docSnapshot.id,
+                    ...docSnapshot.data()
+                };
+
+                if (!caregiverCatIds.includes(log.catId)) return;
+                if (latestByCat.has(log.catId)) return;
+
+                latestByCat.set(log.catId, log);
+            });
+
+            const latestAssignedLogs =
+                Array.from(latestByCat.values());
+
+            setLatestDietLogs(latestAssignedLogs);
         });
 
         return () => unsub();
-    }, []);
+    }, [user?.caregiverCatIds]);
 
 
 
@@ -1036,7 +1051,7 @@ function DashboardPage({ user, setUser }) {
                     searchKeyword={searchKeyword}
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
-                    latestDietLog={latestDietLog}
+                    latestDietLogs={latestDietLogs}
                     caregiverCats={caregiverCats}
                     onCatClick={(cat) => {
                         if (!cat) {
@@ -1064,9 +1079,7 @@ function DashboardPage({ user, setUser }) {
                             reportCount={reportCount}
                             latestReport={latestReport}
                             nearestShelter={nearestShelter}
-                            hasLatestDietLog={
-                                user?.activeMode === 'caregiver' && !!latestDietLog
-                            }
+                            hasLatestDietLog={false}
                             onClose={() => setSelectedCatId(null)}
                             onReport={handleReportClick}
                             onWikiEdit={openWikiModal}
@@ -1132,22 +1145,6 @@ function DashboardPage({ user, setUser }) {
                         </div>
                     )}
                 </main>
-                {user?.activeMode === 'caregiver' && latestDietLog && (
-                    <div className="absolute left-4 right-4 bottom-20 z-30">
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
-                            <AlertTriangle
-                                size={18}
-                                strokeWidth={2.5}
-                                className="shrink-0 text-amber-600"
-                            />
-                            <span>
-                                {latestDietLog.catName}{' '}
-                                {getTimeAgo(latestDietLog.fedAt)}{' '}
-                                급여 기록이 있어요.
-                            </span>
-                        </div>
-                    </div>
-                )}
                 <BottomNavigation
                     activeItem={activeNavigation}
                     onSelect={handleNavigationSelect}
