@@ -648,6 +648,12 @@ function DashboardPage({ user, setUser }) {
         document.head.appendChild(script);
     }, [isGuest]);
 
+    const caregiverCats =
+        user?.caregiverCatIds?.length
+            ? cats.filter(cat =>
+                user.caregiverCatIds.includes(cat.id)
+            )
+            : [];
     const filteredCats = cats.filter((cat) =>
         cat.name
             ?.toLowerCase()
@@ -655,12 +661,6 @@ function DashboardPage({ user, setUser }) {
     );
     const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter }
         = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
-    const caregiverCats =
-        user?.caregiverCatIds?.length
-            ? cats.filter(cat =>
-                user.caregiverCatIds.includes(cat.id)
-            )
-            : [];
 
     // 디버깅용 로그
     useEffect(() => {
@@ -1021,20 +1021,26 @@ function DashboardPage({ user, setUser }) {
         const q = query(
             collection(db, 'dietLogs'),
             orderBy('fedAt', 'desc'),
-            limit(1)
+            limit(30)
         );
 
         const unsub = onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                setLatestDietLog({
-                    id: snapshot.docs[0].id,
-                    ...snapshot.docs[0].data()
-                });
-            }
+            const caregiverCatIds = user?.caregiverCatIds || [];
+            const latestAssignedLog =
+                snapshot.docs
+                    .map((docSnapshot) => ({
+                        id: docSnapshot.id,
+                        ...docSnapshot.data()
+                    }))
+                    .find((log) =>
+                        caregiverCatIds.includes(log.catId)
+                    );
+
+            setLatestDietLog(latestAssignedLog || null);
         });
 
         return () => unsub();
-    }, []);
+    }, [user?.caregiverCatIds]);
 
 
 

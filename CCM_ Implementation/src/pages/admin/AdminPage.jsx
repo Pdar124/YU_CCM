@@ -95,10 +95,19 @@ function AdminPage() {
       return;
     }
     try {
+      const targetUser =
+        users.find((user) => user.id === request.uid);
+      const mergedCatIds = Array.from(
+        new Set([
+          ...(targetUser?.caregiverCatIds || []),
+          ...(request.catIds || [])
+        ])
+      );
+
       await updateDoc(doc(db, 'users', request.uid), {
         role: 'caregiver',
         activeMode: 'student',
-        caregiverCatIds: request.catIds || []
+        caregiverCatIds: mergedCatIds
       });
 
       await updateDoc(doc(db, 'caregiverRequests', request.id), {
