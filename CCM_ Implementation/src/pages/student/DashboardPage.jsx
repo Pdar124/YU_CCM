@@ -7,7 +7,6 @@ import {
     getLatestReport
 } from '../../utils/prediction';
 import {
-    AlertTriangle,
     LocateFixed,
     Route,
     Sparkles,
@@ -52,7 +51,8 @@ function DashboardPage({ user, setUser }) {
     const predictedMarkerRef = useRef(null); // 예측 위치 마커 참조 추가
     const predictedLabelRef = useRef(null); // 예측 위치 라벨 참조 추가
     const polylineRef = useRef([]); // 동선 참조 추가
-    const [latestDietLog, setLatestDietLog] = useState(null);
+    const hasFitAllCatsRef = useRef(false);
+    const [latestDietLogs, setLatestDietLogs] = useState([]);
 
     const [searchKeyword, setSearchKeyword] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -277,8 +277,8 @@ function DashboardPage({ user, setUser }) {
         const markerButton = document.createElement('button');
         markerButton.type = 'button';
         markerButton.setAttribute('aria-label', `${cat.name} 마커`);
-        markerButton.style.width = isSelected ? '150px' : '56px';
-        markerButton.style.height = isSelected ? '112px' : '64px';
+        markerButton.style.width = isSelected ? '164px' : '72px';
+        markerButton.style.height = isSelected ? '128px' : '82px';
         markerButton.style.position = 'relative';
         markerButton.style.border = '0';
         markerButton.style.padding = '0';
@@ -355,8 +355,8 @@ function DashboardPage({ user, setUser }) {
         }
 
         const pin = document.createElement('div');
-        pin.style.width = isSelected ? '60px' : '52px';
-        pin.style.height = isSelected ? '60px' : '52px';
+        pin.style.width = isSelected ? '74px' : '64px';
+        pin.style.height = isSelected ? '74px' : '64px';
         pin.style.borderRadius = '999px';
         pin.style.background = isSelected ? '#fb923c' : '#10b981';
         pin.style.border = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
@@ -367,15 +367,15 @@ function DashboardPage({ user, setUser }) {
         pin.style.position = 'relative';
 
         const inner = document.createElement('div');
-        inner.style.width = isSelected ? '46px' : '40px';
-        inner.style.height = isSelected ? '46px' : '40px';
+        inner.style.width = isSelected ? '58px' : '50px';
+        inner.style.height = isSelected ? '58px' : '50px';
         inner.style.borderRadius = '999px';
         inner.style.background = '#ffffff';
         inner.style.overflow = 'hidden';
         inner.style.display = 'flex';
         inner.style.alignItems = 'center';
         inner.style.justifyContent = 'center';
-        inner.style.fontSize = isSelected ? '26px' : '22px';
+        inner.style.fontSize = isSelected ? '30px' : '26px';
         inner.style.lineHeight = '1';
 
         const catImageUrl = getCatImageUrl(cat);
@@ -395,9 +395,9 @@ function DashboardPage({ user, setUser }) {
         const tail = document.createElement('div');
         tail.style.position = 'absolute';
         tail.style.left = '50%';
-        tail.style.bottom = '-6px';
-        tail.style.width = '14px';
-        tail.style.height = '14px';
+        tail.style.bottom = '-7px';
+        tail.style.width = '17px';
+        tail.style.height = '17px';
         tail.style.background = isSelected ? '#fb923c' : '#10b981';
         tail.style.borderRight = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
         tail.style.borderBottom = `3px solid ${isSelected ? '#fed7aa' : '#bbf7d0'}`;
@@ -438,6 +438,17 @@ function DashboardPage({ user, setUser }) {
 
             await updateCatWiki(wikiTargetCat.id, formData);
             await createWikiHistory({
+            await updateDoc(doc(db, 'cats', wikiTargetCat.id), {
+                origin: formData.origin,
+                feature: formData.feature,
+                estimatedAge: formData.estimatedAge,
+                weight: formData.weight,
+                healthStatus: formData.healthStatus,
+                territory: formData.territory,
+                location: formData.territory
+            });
+
+            await addDoc(collection(db, 'wikiHistories'), {
                 catId: wikiTargetCat.id,
                 user,
                 formData
@@ -617,6 +628,12 @@ function DashboardPage({ user, setUser }) {
         document.head.appendChild(script);
     }, [isGuest]);
 
+    const caregiverCats =
+        user?.caregiverCatIds?.length
+            ? cats.filter(cat =>
+                user.caregiverCatIds.includes(cat.id)
+            )
+            : [];
     const filteredCats = cats.filter((cat) =>
         cat.name
             ?.toLowerCase()
@@ -624,12 +641,6 @@ function DashboardPage({ user, setUser }) {
     );
     const { currentSelectedCat, predictedLocation, reportCount, latestReport, nearestShelter }
         = useCatPrediction({ cats, reports, shelters, selectedCatId, isRain });
-    const caregiverCats =
-        user?.caregiverCatIds?.length
-            ? cats.filter(cat =>
-                user.caregiverCatIds.includes(cat.id)
-            )
-            : [];
 
     // 디버깅용 로그
     useEffect(() => {
@@ -691,6 +702,36 @@ function DashboardPage({ user, setUser }) {
 
             markersRef.current.push(marker);
         });
+
+        if (!selectedCatId && !hasFitAllCatsRef.current) {
+            const positions = visibleMarkerCats
+                .map((cat) => {
+                    const latestReport = getLatestReport(cat.id, reports);
+                    const lat = latestReport?.lat || cat.lat;
+                    const lng = latestReport?.lng || cat.lng;
+
+                    if (!lat || !lng) return null;
+
+                    return new window.kakao.maps.LatLng(lat, lng);
+                })
+                .filter(Boolean);
+
+            if (positions.length === 1) {
+                mapRef.current.panTo(positions[0]);
+                hasFitAllCatsRef.current = true;
+            }
+
+            if (positions.length > 1) {
+                const bounds = new window.kakao.maps.LatLngBounds();
+
+                positions.forEach((position) => {
+                    bounds.extend(position);
+                });
+
+                mapRef.current.setBounds(bounds);
+                hasFitAllCatsRef.current = true;
+            }
+        }
     }, [cats, reports, mapReady, selectedCatId]);
 
 
@@ -750,25 +791,7 @@ function DashboardPage({ user, setUser }) {
         predictionLabel.setMap(mapRef.current);
         mapRef.current.panTo(position);
 
-        const infowindow =
-            new window.kakao.maps.InfoWindow({
-                content: `
-            <div style="padding:10px 12px; font-size:12px; font-weight:800; color:#4338ca; border-radius:14px;">
-                Recency Weight 예측 위치
-            </div>
-        `
-            });
 
-        window.kakao.maps.event.addListener(
-            marker,
-            'click',
-            () => {
-                infowindow.open(
-                    mapRef.current,
-                    marker
-                );
-            }
-        );
 
         predictedMarkerRef.current = marker;
         predictedCircleRef.current = circle;
@@ -787,6 +810,11 @@ function DashboardPage({ user, setUser }) {
             return;
         }
 
+        const getReportObservedMillis = (report) =>
+            report.observedAt?.toMillis?.() ||
+            report.createdAt?.toMillis?.() ||
+            0;
+
         const catReports = reports
             .filter(
                 report =>
@@ -794,14 +822,14 @@ function DashboardPage({ user, setUser }) {
             )
             .sort(
                 (a, b) =>
-                    (b.observedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0) -
-                    (a.observedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0)
+                    getReportObservedMillis(b) -
+                    getReportObservedMillis(a)
             )
             .slice(0, 3)
             .sort(
                 (a, b) =>
-                    (a.observedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0) -
-                    (b.observedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0)
+                    getReportObservedMillis(a) -
+                    getReportObservedMillis(b)
             );
 
         polylineRef.current.forEach((overlay) => {
@@ -822,33 +850,33 @@ function DashboardPage({ user, setUser }) {
 
         const routeShadow = new window.kakao.maps.Polyline({
             path: curvedPath,
-            strokeWeight: 10,
-            strokeColor: '#ffffff',
-            strokeOpacity: 0.92,
+            strokeWeight: 11,
+            strokeColor: '#064e3b',
+            strokeOpacity: 0.34,
             strokeStyle: 'solid'
         });
 
         const routeLine = new window.kakao.maps.Polyline({
             path: curvedPath,
-            strokeWeight: 6,
+            strokeWeight: 5,
             strokeColor: '#10b981',
-            strokeOpacity: 0.95,
+            strokeOpacity: 1,
             strokeStyle: 'shortdash'
         });
 
         const startPoint = new window.kakao.maps.Circle({
             center: path[0],
-            radius: 9,
+            radius: 11,
             strokeWeight: 3,
             strokeColor: '#ffffff',
             strokeOpacity: 1,
-            fillColor: '#94a3b8',
+            fillColor: '#475569',
             fillOpacity: 1
         });
 
         const endPoint = new window.kakao.maps.Circle({
             center: path[path.length - 1],
-            radius: 12,
+            radius: 15,
             strokeWeight: 4,
             strokeColor: '#ffffff',
             strokeOpacity: 1,
@@ -953,9 +981,36 @@ function DashboardPage({ user, setUser }) {
 
     useEffect(() => {
         const unsub = subscribeLatestDietLog(setLatestDietLog);
+        const q = query(
+            collection(db, 'dietLogs'),
+            orderBy('fedAt', 'desc'),
+            limit(30)
+        );
+
+        const unsub = onSnapshot(q, (snapshot) => {
+            const caregiverCatIds = user?.caregiverCatIds || [];
+            const latestByCat = new Map();
+
+            snapshot.docs.forEach((docSnapshot) => {
+                const log = {
+                    id: docSnapshot.id,
+                    ...docSnapshot.data()
+                };
+
+                if (!caregiverCatIds.includes(log.catId)) return;
+                if (latestByCat.has(log.catId)) return;
+
+                latestByCat.set(log.catId, log);
+            });
+
+            const latestAssignedLogs =
+                Array.from(latestByCat.values());
+
+            setLatestDietLogs(latestAssignedLogs);
+        });
 
         return () => unsub();
-    }, []);
+    }, [user?.caregiverCatIds]);
 
 
 
@@ -975,12 +1030,13 @@ function DashboardPage({ user, setUser }) {
                     searchKeyword={searchKeyword}
                     onSearchChange={setSearchKeyword}
                     latestReport={latestReport}
-                    latestDietLog={latestDietLog}
+                    latestDietLogs={latestDietLogs}
                     caregiverCats={caregiverCats}
                     onCatClick={(cat) => {
                         if (!cat) {
                             setSelectedCatId(null);
                             setActiveNavigation('map');
+                            hasFitAllCatsRef.current = false;
                             return;
                         }
 
@@ -1002,9 +1058,7 @@ function DashboardPage({ user, setUser }) {
                             reportCount={reportCount}
                             latestReport={latestReport}
                             nearestShelter={nearestShelter}
-                            hasLatestDietLog={
-                                user?.activeMode === 'caregiver' && !!latestDietLog
-                            }
+                            hasLatestDietLog={false}
                             onClose={() => setSelectedCatId(null)}
                             onReport={handleReportClick}
                             onWikiEdit={openWikiModal}
@@ -1070,22 +1124,6 @@ function DashboardPage({ user, setUser }) {
                         </div>
                     )}
                 </main>
-                {user?.activeMode === 'caregiver' && latestDietLog && (
-                    <div className="absolute left-4 right-4 bottom-20 z-30">
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-sm flex items-center gap-2 shadow-lg">
-                            <AlertTriangle
-                                size={18}
-                                strokeWidth={2.5}
-                                className="shrink-0 text-amber-600"
-                            />
-                            <span>
-                                {latestDietLog.catName}{' '}
-                                {getTimeAgo(latestDietLog.fedAt)}{' '}
-                                급여 기록이 있어요.
-                            </span>
-                        </div>
-                    </div>
-                )}
                 <BottomNavigation
                     activeItem={activeNavigation}
                     onSelect={handleNavigationSelect}
@@ -1095,8 +1133,11 @@ function DashboardPage({ user, setUser }) {
                     isOpen={isModalOpen && !isGuest}
                     onClose={() => setIsModalOpen(false)}
                     cats={cats}
+                    reports={reports}
+                    shelters={shelters}
                     clickedCoords={clickedCoords}
                     selectedCatId={selectedCatId}
+                    isRain={isRain}
                     onSubmit={handleAddReport}
                     user={user}
                 />

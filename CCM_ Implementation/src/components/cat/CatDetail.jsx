@@ -1,5 +1,5 @@
 // src/components/cat/CatDetail.jsx
-import { Cat, CloudRain, MapPin, X } from 'lucide-react';
+import { CalendarClock, Cat, CloudRain, MapPin, Scale, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CatCaregiverActions from './CatCaregiverActions';
 import CatStudentActions from './CatStudentActions';
@@ -71,8 +71,19 @@ function CatDetail({
 
             <p className="flex items-center gap-1 text-xs text-slate-500 mt-1">
               <MapPin size={12} strokeWidth={2.5} className="shrink-0" />
-              <span>{cat.location || '위치 정보 없음'}</span>
+              <span>{cat.territory || cat.location || '위치 정보 없음'}</span>
             </p>
+
+            <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-500">
+              <span className="flex items-center gap-1 rounded-full bg-slate-50 px-2 py-1">
+                <CalendarClock size={11} strokeWidth={2.5} className="text-sky-500" />
+                {cat.estimatedAge || '나이 정보 없음'}
+              </span>
+              <span className="flex items-center gap-1 rounded-full bg-slate-50 px-2 py-1">
+                <Scale size={11} strokeWidth={2.5} className="text-violet-500" />
+                {cat.weight || '몸무게 정보 없음'}
+              </span>
+            </div>
           </div>
         </div>
 

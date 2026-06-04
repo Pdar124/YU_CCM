@@ -19,6 +19,7 @@ function Header({
     searchKeyword,
     onSearchChange,
     latestReport,
+    latestDietLogs,
     onCatClick
 }) {
     const navigate = useNavigate();
@@ -146,6 +147,7 @@ function Header({
                     isRain={isRain}
                     latestReport={latestReport}
                     activeMode={user?.activeMode}
+                    latestDietLogs={latestDietLogs}
                 />
             )}
         </header>
