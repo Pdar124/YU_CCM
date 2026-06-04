@@ -1,20 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, auth } from '../../config/firebase';
+import { auth } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
 
-import {
-    collection,
-    query,
-    orderBy,
-    limit,
-    onSnapshot,
-    addDoc,
-    serverTimestamp,
-    doc,
-    updateDoc,
-    Timestamp
-} from 'firebase/firestore';
 import {
     getLatestReport
 } from '../../utils/prediction';
@@ -42,6 +30,10 @@ import MapContainer from '../../components/map/MapContainer';
 import ReportModal from '../../components/modal/ReportModal';
 import CatDetail from '../../components/cat/CatDetail';
 import BottomNavigation from '../../components/navigation/BottomNavigation';
+import { updateCatWiki } from '../../services/catService';
+import { createReport } from '../../services/reportService';
+import { subscribeLatestDietLog } from '../../services/dietLogService';
+import { createWikiHistory } from '../../services/wikiService';
 
 function DashboardPage({ user, setUser }) {
     const navigate = useNavigate();
@@ -444,6 +436,8 @@ function DashboardPage({ user, setUser }) {
                 return;
             }
 
+            await updateCatWiki(wikiTargetCat.id, formData);
+            await createWikiHistory({
             await updateDoc(doc(db, 'cats', wikiTargetCat.id), {
                 origin: formData.origin,
                 feature: formData.feature,
@@ -456,12 +450,8 @@ function DashboardPage({ user, setUser }) {
 
             await addDoc(collection(db, 'wikiHistories'), {
                 catId: wikiTargetCat.id,
-                editorUid: user.uid,
-                editorName:
-                    user.studentId ||
-                    user.nickname,
-                ...formData,
-                editedAt: serverTimestamp()
+                user,
+                formData
             });
 
             alert('위키 수정이 저장되었습니다.');
@@ -485,22 +475,10 @@ function DashboardPage({ user, setUser }) {
         }
 
         try {
-            await addDoc(collection(db, 'reports'), {
-                catId: reportData.catId,
-                lat: clickedCoords.lat,
-                lng: clickedCoords.lng,
-                memo: reportData.memo || '',
-                imageUrl: reportData.imageUrl || '',
-                reporterUid: user?.uid || '',
-                reporterName:
-                    user?.nickname ||
-                    user?.studentId ||
-                    user?.id ||
-                    '익명 사용자',
-                observedAt: reportData.observedAt
-                    ? Timestamp.fromDate(reportData.observedAt)
-                    : serverTimestamp(),
-                createdAt: serverTimestamp()
+            await createReport({
+                reportData,
+                clickedCoords,
+                user
             });
 
             setIsModalOpen(false);
@@ -1002,6 +980,7 @@ function DashboardPage({ user, setUser }) {
     }, [shelters, isRain, mapReady]);
 
     useEffect(() => {
+        const unsub = subscribeLatestDietLog(setLatestDietLog);
         const q = query(
             collection(db, 'dietLogs'),
             orderBy('fedAt', 'desc'),

@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
-import { db } from '../../config/firebase';
 import useCats from '../../hooks/useCats';
 import { getCatImageUrl } from '../../utils/catImage';
+import { createCaregiverRequest } from '../../services/caregiverRequestService';
 
 function CaregiverApplicationPage({ user }) {
   const navigate = useNavigate();
@@ -39,15 +34,11 @@ function CaregiverApplicationPage({ user }) {
     }
 
     try {
-      await addDoc(collection(db, 'caregiverRequests'), {
-        uid: user.uid,
-        studentId: user.studentId || user.id,
-        nickname: user.nickname || user.id,
+      await createCaregiverRequest({
+        user,
         catIds: selectedCatIds,
-        reason: reason.trim(),
-        authCode: authCode.trim(),
-        status: 'pending',
-        createdAt: serverTimestamp()
+        reason,
+        authCode
       });
 
       alert('돌보미 신청이 접수되었습니다.');

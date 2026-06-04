@@ -2,12 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import {
   CalendarClock,
   Cat,
   ChevronDown,
@@ -20,6 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { getCatImageUrl } from '../../utils/catImage';
+import { createCatRegistrationRequest } from '../../services/catRegistrationService';
 import { getPredictedLocation } from '../../utils/prediction';
 
 const getTimestampMillis = (value) => {
@@ -154,25 +149,14 @@ function ReportModal({
     }
 
     try {
-      await addDoc(
-        collection(db, 'catRegistrationRequests'),
-        {
-          tempName: tempName.trim() || '이름 미정',
-          gender,
-          description: description.trim(),
-          requesterUid: user?.uid || '',
-          requesterName:
-            user?.nickname ||
-            user?.studentId ||
-            user?.id ||
-            '익명 사용자',
-          lat: clickedCoords?.lat,
-          lng: clickedCoords?.lng,
-          observedAt: observedAt ? new Date(observedAt) : new Date(),
-          status: 'pending',
-          createdAt: serverTimestamp()
-        }
-      );
+      await createCatRegistrationRequest({
+        tempName,
+        gender,
+        description,
+        user,
+        clickedCoords,
+        observedAt
+      });
 
       alert('신규 고양이 등록 요청이 접수되었습니다.');
 

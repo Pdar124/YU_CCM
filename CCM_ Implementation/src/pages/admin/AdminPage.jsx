@@ -1,21 +1,30 @@
 import { useEffect, useState } from 'react';
 import { signOut } from 'firebase/auth';
 import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
-  updateDoc,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
-import {
   Users,
   Cat
 } from 'lucide-react';
-import { db, auth } from '../../config/firebase';
+import { auth } from '../../config/firebase';
 import { useNavigate } from 'react-router-dom';
+import {
+  approveCaregiverRequest,
+  rejectCaregiverRequest,
+  subscribePendingCaregiverRequests
+} from '../../services/caregiverRequestService';
+import {
+  approveCatRegistrationRequest,
+  rejectCatRegistrationRequest,
+  subscribePendingCatRegistrationRequests
+} from '../../services/catRegistrationService';
+import {
+  createCatFromRegistrationRequest,
+  subscribeCats
+} from '../../services/catService';
+import { subscribeReports } from '../../services/reportService';
+import {
+  approveCaregiverUser,
+  subscribeUsers
+} from '../../services/userService';
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -28,6 +37,8 @@ function AdminPage() {
   const [showAllCaregiverRequests, setShowAllCaregiverRequests] =
     useState(false);
 
+  useEffect(() => {
+    const unsub = subscribePendingCaregiverRequests(setRequests);
   const getCatName = (catId) => {
     const cat = cats.find((item) => item.id === catId);
 
@@ -82,41 +93,11 @@ function AdminPage() {
   }, []);
 
   useEffect(() => {
-    const unsubCats = onSnapshot(collection(db, 'cats'), (snapshot) => {
-      setCats(snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })));
-    });
-
-    const unsubReports = onSnapshot(collection(db, 'reports'), (snapshot) => {
-      setReports(snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })));
-    });
-
-    const unsubUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      setUsers(snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })));
-    });
-    const catRequestQuery = query(
-      collection(db, 'catRegistrationRequests'),
-      where('status', '==', 'pending')
-    );
-    const unsubCatRequests = onSnapshot(
-      catRequestQuery,
-      (snapshot) => {
-        setCatRequests(
-          snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }))
-        );
-      }
-    );
+    const unsubCats = subscribeCats(setCats);
+    const unsubReports = subscribeReports(setReports);
+    const unsubUsers = subscribeUsers(setUsers);
+    const unsubCatRequests =
+      subscribePendingCatRegistrationRequests(setCatRequests);
 
     return () => {
       unsubCats();
@@ -132,6 +113,8 @@ function AdminPage() {
       return;
     }
     try {
+      await approveCaregiverUser(request.uid, request.catIds || []);
+      await approveCaregiverRequest(request.id);
       const targetUser =
         users.find((user) => user.id === request.uid);
       const mergedCatIds = Array.from(
@@ -166,10 +149,7 @@ function AdminPage() {
     }
 
     try {
-      await updateDoc(doc(db, 'caregiverRequests', request.id), {
-        status: 'rejected',
-        rejectedAt: serverTimestamp()
-      });
+      await rejectCaregiverRequest(request.id);
 
       alert('돌보미 신청을 반려했습니다.');
     } catch (error) {
@@ -183,6 +163,8 @@ function AdminPage() {
       return;
     }
     try {
+      await createCatFromRegistrationRequest(request);
+      await approveCatRegistrationRequest(request.id);
       await addDoc(collection(db, 'cats'), {
         name: request.tempName || '이름 미정',
         gender: request.gender || 'unknown',
@@ -224,13 +206,7 @@ function AdminPage() {
       return;
     }
     try {
-      await updateDoc(
-        doc(db, 'catRegistrationRequests', request.id),
-        {
-          status: 'rejected',
-          rejectedAt: serverTimestamp()
-        }
-      );
+      await rejectCatRegistrationRequest(request.id);
 
       alert('신규 고양이 등록 요청을 반려했습니다.');
     } catch (error) {

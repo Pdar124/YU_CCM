@@ -1,24 +1,13 @@
 // src/hooks/useCats.js
 
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { subscribeCats } from '../services/catService';
 
 export default function useCats() {
   const [cats, setCats] = useState([]);
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, 'cats'),
-      (snapshot) => {
-        setCats(
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data()
-          }))
-        );
-      }
-    );
+    const unsub = subscribeCats(setCats);
 
     return () => unsub();
   }, []);
