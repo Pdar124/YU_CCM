@@ -1,17 +1,20 @@
-# [Conceptualization] 22411841_박다래
+<div align="center">
 
+# CCM(Campus Cat Mate)
+
+## -1. Conceptualization-
 
 <img width="300" height="300" alt="Logo_Image" src="https://github.com/user-attachments/assets/d16ac81e-b9c0-491a-a371-f0545958a865" />
 
-**Project Title:** CCM (Campus Cat Mate)
+| Student No | 22411841 |
+| --- | --- |
+| Name | 박다래 |
+| E-Mail | ret7258@naver.com |
+| Github repository | https://github.com/Pdar124/YU_CCM.git |
 
-**Student No:** 22411841
+</div>
 
-**Name:** 박다래
-
-**E-mail:** ret7258@naver.com
-
-**Github repository:** https://github.com/Pdar124/OSS_2026.git
+---
 
 ### [ Revision history ]
 
